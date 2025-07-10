@@ -1,0 +1,44 @@
+﻿using EFlow.Domain.Models;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
+
+namespace EFlow.Persistence.EntityTypeConfiguration;
+
+public class SubmissionSlotConfiguration : IEntityTypeConfiguration<SubmissionSlot>
+{
+    public void Configure(EntityTypeBuilder<SubmissionSlot> builder)
+    {
+        builder.ToTable("submission_slots");
+
+        builder.HasKey(s => s.Id)
+            .HasName("pk_submission_slots");
+
+        builder.Property(s => s.Id)
+            .HasColumnName("id");
+
+        builder.Property(s => s.SubjectId)
+            .HasColumnName("subject_id")
+            .IsRequired();
+
+        builder.Property(s => s.StartTime)
+            .HasColumnName("start_time")
+            .IsRequired();
+
+        builder.Property(s => s.EndTime)
+            .HasColumnName("end_time")
+            .IsRequired();
+
+        builder.Property(s => s.MaxStudents)
+            .HasColumnName("max_students")
+            .IsRequired();
+
+        builder.Property(s => s.Location)
+            .HasColumnName("location")
+            .HasMaxLength(127);
+
+        builder.HasOne(s => s.Subject)
+            .WithMany()
+            .HasForeignKey(s => s.SubjectId)
+            .HasConstraintName("fk_submission_slots_subjects");
+    }
+}

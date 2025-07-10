@@ -1,0 +1,18 @@
+﻿namespace EFlow.Domain.Models;
+
+public sealed class SubmissionSlot
+{
+    public required Guid Id { get; init; }
+
+    public required Guid SubjectId { get; init; }
+
+    public required DateTime StartTime { get; init; }
+
+    public required DateTime EndTime { get; init; }
+
+    public required int MaxStudents { get; init; }
+
+    public string? Location { get; init; }
+
+    public Subject? Subject { get; init; }
+}
