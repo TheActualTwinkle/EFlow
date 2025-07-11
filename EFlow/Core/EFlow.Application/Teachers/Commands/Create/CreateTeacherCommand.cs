@@ -18,5 +18,5 @@ public record CreateTeacherCommand : IRequest<Result<Guid>>, ITransactionalReque
 
     public required DateOnly BirthDate { get; init; }
 
-    public DateTime CreatedAt { get; init; } = DateTime.UtcNow;
+    public DateTime? CreatedAt { get; init; }
 }
