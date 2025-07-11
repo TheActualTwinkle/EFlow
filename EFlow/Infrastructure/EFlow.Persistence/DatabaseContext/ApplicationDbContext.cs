@@ -14,13 +14,13 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public required DbSet<Teacher> Teachers { get; init; }
 
     public required DbSet<Student> Students { get; init; }
-    
+
     public required DbSet<Group> Groups { get; init; }
-    
+
     public required DbSet<Subject> Subjects { get; init; }
-    
+
     public required DbSet<SubmissionSlot> SubmissionSlots { get; init; }
-    
+
     public required DbSet<Booking> Bookings { get; init; }
 
     public DbSet<TEntity> SetEntity<TEntity>() where TEntity : class =>

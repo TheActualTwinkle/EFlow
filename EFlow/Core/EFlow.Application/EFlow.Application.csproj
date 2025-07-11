@@ -7,24 +7,24 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="FluentResults" Version="4.0.0" />
-      <PackageReference Include="FluentValidation" Version="12.0.0" />
-      <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="12.0.0" />
-      <PackageReference Include="Mapster" Version="7.4.0" />
-      <PackageReference Include="Mapster.DependencyInjection" Version="1.0.1" />
-      <PackageReference Include="MediatR" Version="13.0.0" />
+        <PackageReference Include="FluentResults" Version="4.0.0"/>
+        <PackageReference Include="FluentValidation" Version="12.0.0"/>
+        <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="12.0.0"/>
+        <PackageReference Include="Mapster" Version="7.4.0"/>
+        <PackageReference Include="Mapster.DependencyInjection" Version="1.0.1"/>
+        <PackageReference Include="MediatR" Version="13.0.0"/>
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\EFlow.Domain\EFlow.Domain.csproj" />
+        <ProjectReference Include="..\EFlow.Domain\EFlow.Domain.csproj"/>
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="Bookings\" />
-      <Folder Include="Groups\" />
-      <Folder Include="Students\" />
-      <Folder Include="Subjects\" />
-      <Folder Include="SubmissionSlots\" />
+        <Folder Include="Bookings\"/>
+        <Folder Include="Groups\"/>
+        <Folder Include="Students\"/>
+        <Folder Include="Subjects\"/>
+        <Folder Include="SubmissionSlots\"/>
     </ItemGroup>
 
 </Project>

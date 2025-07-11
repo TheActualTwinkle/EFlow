@@ -10,13 +10,13 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\Core\EFlow.Domain\EFlow.Domain.csproj" />
-      <ProjectReference Include="..\..\Core\EFlow.Application\EFlow.Application.csproj" />
+        <ProjectReference Include="..\..\Core\EFlow.Domain\EFlow.Domain.csproj"/>
+        <ProjectReference Include="..\..\Core\EFlow.Application\EFlow.Application.csproj"/>
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="8.0.1" />
-      <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.0.1" />
+        <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="8.0.1"/>
+        <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.0.1"/>
     </ItemGroup>
 
 </Project>

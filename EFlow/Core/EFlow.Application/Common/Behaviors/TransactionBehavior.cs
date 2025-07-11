@@ -45,7 +45,7 @@ public class TransactionBehavior<TRequest, TResponse>(
 
                 throw new AggregateException("Error during transaction rollback", e, rollbackException);
             }
-            
+
             logger.LogInformation("Transaction rolled back for {Request}", typeof(TRequest).Name);
 
             throw;

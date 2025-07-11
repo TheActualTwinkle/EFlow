@@ -4,16 +4,6 @@ namespace EFlow.Domain.Models;
 
 public sealed class Identity : IdentityUser<Guid>
 {
-    public static class Roles
-    {
-        public const string Admin = "Admin";
-        public const string Teacher = "Teacher";
-        public const string Student = "Student";
-
-        public static IEnumerable<string> GetAll() =>
-            [Admin, Teacher, Student];
-    }
-
     public enum Role
     {
         Admin,
@@ -29,4 +19,14 @@ public sealed class Identity : IdentityUser<Guid>
             Role.Student => Roles.Student,
             _ => throw new ArgumentOutOfRangeException(nameof(role), role, null)
         };
+
+    public static class Roles
+    {
+        public const string Admin = "Admin";
+        public const string Teacher = "Teacher";
+        public const string Student = "Student";
+
+        public static IEnumerable<string> GetAll() =>
+            [Admin, Teacher, Student];
+    }
 }

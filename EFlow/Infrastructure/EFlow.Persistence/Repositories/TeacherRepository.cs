@@ -7,18 +7,18 @@ namespace EFlow.Persistence.Repositories;
 public class TeacherRepository(ApplicationDbContext context) :
     RepositoryBase<Teacher>(context), ITeacherRepository
 {
-    public async Task CreateTeacherAsync(Teacher teacher, CancellationToken cancellationToken = new()) =>
+    public async Task CreateAsync(Teacher teacher, CancellationToken cancellationToken = new()) =>
         await CreateInternalAsync(teacher, cancellationToken);
 
-    public async Task<Teacher?> GetTeacherByIdAsync(Guid id, CancellationToken cancellationToken = new()) =>
-        await GetByIdInternalAsync(id, cancellationToken);
-
-    public IEnumerable<Teacher> GetAllTeachers() =>
+    public IEnumerable<Teacher> GetAll() =>
         GetAllInternal();
 
-    public void UpdateTeacher(Teacher teacher) =>
+    public async Task<Teacher?> GetByIdAsync(Guid id, CancellationToken cancellationToken = new()) =>
+        await GetByIdInternalAsync(id, cancellationToken);
+
+    public void Update(Teacher teacher) =>
         UpdateInternal(teacher);
 
-    public void DeleteTeacher(Teacher teacher) =>
+    public void Delete(Teacher teacher) =>
         DeleteInternal(teacher);
 }

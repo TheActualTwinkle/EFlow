@@ -4,13 +4,13 @@ namespace EFlow.Domain.Repositories;
 
 public interface ITeacherRepository : IRepository
 {
-    public Task CreateTeacherAsync(Teacher teacher, CancellationToken cancellationToken = new());
-    
-    public Task<Teacher?> GetTeacherByIdAsync(Guid id, CancellationToken cancellationToken = new());
+    public Task CreateAsync(Teacher teacher, CancellationToken cancellationToken = new());
 
-    public IEnumerable<Teacher> GetAllTeachers();
-    
-    public void UpdateTeacher(Teacher teacher);
-    
-    public void DeleteTeacher(Teacher teacher);
+    public IEnumerable<Teacher> GetAll();
+
+    public Task<Teacher?> GetByIdAsync(Guid id, CancellationToken cancellationToken = new());
+
+    public void Update(Teacher teacher);
+
+    public void Delete(Teacher teacher);
 }

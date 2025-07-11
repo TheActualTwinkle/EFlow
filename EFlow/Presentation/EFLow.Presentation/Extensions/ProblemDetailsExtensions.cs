@@ -17,7 +17,7 @@ public static class ProblemDetailsExtensions
             Status = statusCode,
             Title = error.Message,
             Detail = error.Reasons?.FirstOrDefault()?.Message,
-            Type = error.GetType().Name,
+            Type = error.GetType().Name
         };
 
         if (error.Metadata is null)

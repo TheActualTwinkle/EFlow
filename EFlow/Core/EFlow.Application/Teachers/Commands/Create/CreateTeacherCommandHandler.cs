@@ -45,7 +45,7 @@ public class CreateTeacherCommandHandler(
 
         var teacherRepository = unitOfWork.GetRepository<ITeacherRepository>();
 
-        await teacherRepository.CreateTeacherAsync(teacher, cancellationToken);
+        await teacherRepository.CreateAsync(teacher, cancellationToken);
 
         return Result.Ok(identity.Id);
     }

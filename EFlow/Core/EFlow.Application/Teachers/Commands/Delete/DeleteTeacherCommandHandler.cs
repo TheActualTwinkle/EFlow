@@ -28,12 +28,12 @@ public class DeleteTeacherCommandHandler(IUnitOfWork unitOfWork, UserManager<Ide
 
         var teacherRepository = unitOfWork.GetRepository<ITeacherRepository>();
 
-        var teacher = await teacherRepository.GetTeacherByIdAsync(request.Id, cancellationToken);
+        var teacher = await teacherRepository.GetByIdAsync(request.Id, cancellationToken);
 
         if (teacher is null)
             return Result.Ok();
 
-        teacherRepository.DeleteTeacher(teacher);
+        teacherRepository.Delete(teacher);
 
         return Result.Ok();
     }

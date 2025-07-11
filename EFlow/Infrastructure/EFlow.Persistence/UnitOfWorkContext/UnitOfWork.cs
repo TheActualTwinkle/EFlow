@@ -14,15 +14,12 @@ public sealed class UnitOfWork(
     IServiceProvider serviceProvider)
     : IUnitOfWork
 {
-    private IDbContextTransaction? CurrentTransaction =>
-        context.Database.CurrentTransaction;
-
     private readonly ConcurrentDictionary<Type, IRepository> _repositories = new();
 
     private bool _disposed;
 
-    ~UnitOfWork() =>
-        Dispose(false);
+    private IDbContextTransaction? CurrentTransaction =>
+        context.Database.CurrentTransaction;
 
     public T GetRepository<T>() where T : IRepository
     {
@@ -83,6 +80,9 @@ public sealed class UnitOfWork(
     public async Task SaveChangesAsync(CancellationToken cancellationToken = new()) =>
         await context.SaveChangesAsync(cancellationToken);
 
+    ~UnitOfWork() =>
+        Dispose(false);
+
     #region Dispose
 
     public async ValueTask DisposeAsync()
@@ -121,7 +121,7 @@ public sealed class UnitOfWork(
         if (disposing)
         {
             _repositories.Clear();
-            
+
             CurrentTransaction?.Dispose();
             context.Dispose();
         }

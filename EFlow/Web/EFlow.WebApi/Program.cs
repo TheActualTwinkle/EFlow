@@ -54,7 +54,7 @@ builder.Services.AddSwaggerGen(c =>
         Type = "string",
         Example = new OpenApiString("00:00:00")
     });
-    
+
     c.MapType<DateOnly>(() => new OpenApiSchema
     {
         Type = "string",

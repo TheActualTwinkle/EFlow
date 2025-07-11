@@ -1,19 +1,21 @@
 ﻿using EFlow.Domain.Models;
-using EFlow.Persistence.DatabaseContext;
 using EFlow.Domain.Repositories;
+using EFlow.Persistence.DatabaseContext;
 
 namespace EFlow.Persistence.Repositories;
 
 public class AdminRepository(ApplicationDbContext context) :
     RepositoryBase<Admin>(context), IAdminRepository
 {
-    public Task CreateAsync(Admin admin, CancellationToken cancellationToken = new())
-    {
-        ArgumentNullException.ThrowIfNull(admin);
+    public async Task CreateAsync(Admin admin, CancellationToken cancellationToken = new()) =>
+        await CreateInternalAsync(admin, cancellationToken);
 
-        return CreateInternalAsync(admin, cancellationToken);
-    }
+    public IEnumerable<Admin> GetAll() =>
+        GetAllInternal();
 
-    public Task<Admin?> GetByIdAsync(Guid id, CancellationToken cancellationToken = new()) =>
-        GetByIdInternalAsync(id, cancellationToken);
+    public async Task<Admin?> GetByIdAsync(Guid id, CancellationToken cancellationToken = new()) =>
+        await GetByIdInternalAsync(id, cancellationToken);
+
+    public void Delete(Admin admin) =>
+        DeleteInternal(admin);
 }

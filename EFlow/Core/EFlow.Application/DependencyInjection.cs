@@ -16,19 +16,18 @@ public static class DependencyInjection
         services.AddSingleton(TypeAdapterConfig.GlobalSettings);
 
         services.AddScoped<IMapper, ServiceMapper>();
-        
+
         services.AddMediatR(cfg =>
         {
             cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly());
-            
+
             cfg.AddOpenBehavior(typeof(ValidationBehavior<,>));
             cfg.AddOpenBehavior(typeof(RequestLoggingBehavior<,>));
             cfg.AddOpenBehavior(typeof(TransactionBehavior<,>));
         });
-        
+
         services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
 
         return services;
     }
-
 }

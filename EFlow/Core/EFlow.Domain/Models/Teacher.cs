@@ -11,7 +11,7 @@ public sealed class Teacher
     public string? MiddleName { get; init; }
 
     public required DateOnly BirthDate { get; init; }
-    
+
     public DateTime? CreatedAt { get; init; }
 
     public Identity? Identity { get; init; }

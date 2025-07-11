@@ -1,8 +1,35 @@
-﻿using EFlow.Domain.Repositories;
+﻿using EFlow.Domain.Models;
+using EFlow.Domain.Repositories;
+using EFlow.Persistence.DatabaseContext;
+using Microsoft.EntityFrameworkCore;
 
 namespace EFlow.Persistence.Repositories;
 
-public class BookingRepository : IBookingRepository
+public class BookingRepository(ApplicationDbContext context) :
+    RepositoryBase<Booking>(context), IBookingRepository
 {
-    
+    public async Task CreateAsync(Booking booking, CancellationToken cancellationToken = new()) =>
+        await CreateInternalAsync(booking, cancellationToken);
+
+    public IEnumerable<Booking> GetAll() =>
+        GetAllInternal();
+
+    public async Task<Booking?> GetByIdAsync(Guid id, CancellationToken cancellationToken = new()) =>
+        await GetByIdInternalAsync(id, cancellationToken);
+
+    public async Task<IEnumerable<Booking>> GetByStudentIdAsync(Guid studentId, CancellationToken cancellationToken = new()) =>
+        await Context.Bookings
+            .Where(b => b.StudentId == studentId)
+            .ToListAsync(cancellationToken);
+
+    public async Task<IEnumerable<Booking>> GetBySlotIdAsync(Guid slotId, CancellationToken cancellationToken = new()) =>
+        await Context.Bookings
+            .Where(b => b.SlotId == slotId)
+            .ToListAsync(cancellationToken);
+
+    public void Update(Booking booking) =>
+        UpdateInternal(booking);
+
+    public void Delete(Booking booking) =>
+        DeleteInternal(booking);
 }

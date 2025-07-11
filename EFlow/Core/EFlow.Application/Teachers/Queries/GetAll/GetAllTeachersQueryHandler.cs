@@ -13,7 +13,7 @@ public class GetAllTeachersQueryHandler(IUnitOfWork unitOfWork)
     {
         var teacherRepository = unitOfWork.GetRepository<ITeacherRepository>();
 
-        var teachers = teacherRepository.GetAllTeachers().Adapt<IEnumerable<TeacherDto>>();
+        var teachers = teacherRepository.GetAll().Adapt<IEnumerable<TeacherDto>>();
 
         return Task.FromResult(Result.Ok(teachers));
     }

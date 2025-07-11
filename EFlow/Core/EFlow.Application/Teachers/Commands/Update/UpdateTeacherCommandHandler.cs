@@ -14,7 +14,7 @@ public class UpdateTeacherCommandHandler(IUnitOfWork unitOfWork) : IRequestHandl
     {
         var repository = unitOfWork.GetRepository<ITeacherRepository>();
 
-        var teacher = await repository.GetTeacherByIdAsync(request.Id, cancellationToken);
+        var teacher = await repository.GetByIdAsync(request.Id, cancellationToken);
 
         if (teacher is null)
             return Result.Fail(
@@ -24,7 +24,7 @@ public class UpdateTeacherCommandHandler(IUnitOfWork unitOfWork) : IRequestHandl
 
         request.Adapt(teacher);
 
-        repository.UpdateTeacher(teacher);
+        repository.Update(teacher);
 
         return Result.Ok();
     }
