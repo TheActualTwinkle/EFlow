@@ -1,6 +1,7 @@
 ﻿using EFlow.Domain.Models;
 using EFlow.Domain.Repositories;
 using EFlow.Persistence.DatabaseContext;
+using Microsoft.EntityFrameworkCore;
 
 namespace EFlow.Persistence.Repositories;
 
@@ -11,10 +12,14 @@ public class GroupRepository(ApplicationDbContext context) :
         await CreateInternalAsync(group, cancellationToken);
 
     public async Task<IEnumerable<Group>> GetAllAsync(CancellationToken cancellationToken = new()) =>
-        await GetAllInternalAsync(cancellationToken);
+        await Context.Groups
+            .Include(s => s.Students)
+            .ToListAsync(cancellationToken);
 
     public async Task<Group?> GetByIdAsync(Guid id, CancellationToken cancellationToken = new()) =>
-        await GetByIdInternalAsync(id, cancellationToken);
+        await Context.Groups
+            .Include(s => s.Students)
+            .FirstOrDefaultAsync(s => s.Id == id, cancellationToken);
 
     public void Update(Group group) =>
         UpdateInternal(group);

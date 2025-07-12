@@ -12,14 +12,19 @@ public class StudentRepository(ApplicationDbContext context) :
         await CreateInternalAsync(student, cancellationToken);
 
     public async Task<IEnumerable<Student>> GetAllAsync(CancellationToken cancellationToken = new()) =>
-        await GetAllInternalAsync(cancellationToken);
+        await Context.Students
+            .Include(s => s.Group)
+            .ToListAsync(cancellationToken);
 
     public async Task<Student?> GetByIdAsync(Guid id, CancellationToken cancellationToken = new()) =>
-        await GetByIdInternalAsync(id, cancellationToken);
+        await Context.Students
+            .Include(s => s.Group)
+            .FirstOrDefaultAsync(s => s.Id == id, cancellationToken);
 
     public async Task<IEnumerable<Student>> GetByGroupIdAsync(Guid groupId, CancellationToken cancellationToken = new()) =>
         await Context.Students
             .Where(s => s.GroupId == groupId)
+            .Include(s => s.Group)
             .ToListAsync(cancellationToken);
 
     public void Update(Student student) =>

@@ -8,7 +8,14 @@ public class SubmissionSlotConfiguration : IEntityTypeConfiguration<SubmissionSl
 {
     public void Configure(EntityTypeBuilder<SubmissionSlot> builder)
     {
-        builder.ToTable("submission_slots");
+        builder.ToTable(
+            "submission_slots",
+            t =>
+            {
+                t.HasCheckConstraint(
+                    "CK_SubmissionSlots_ValidTimeRange",
+                    "start_time < end_time");
+            });
 
         builder.HasKey(s => s.Id)
             .HasName("pk_submission_slots");

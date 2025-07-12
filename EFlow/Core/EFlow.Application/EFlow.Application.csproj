@@ -19,11 +19,4 @@
         <ProjectReference Include="..\EFlow.Domain\EFlow.Domain.csproj"/>
     </ItemGroup>
 
-    <ItemGroup>
-        <Folder Include="Bookings\"/>
-        <Folder Include="Groups\"/>
-        <Folder Include="Subjects\"/>
-        <Folder Include="SubmissionSlots\"/>
-    </ItemGroup>
-
 </Project>
