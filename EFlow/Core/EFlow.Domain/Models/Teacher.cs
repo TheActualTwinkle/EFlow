@@ -1,7 +1,10 @@
 ﻿namespace EFlow.Domain.Models;
 
-public sealed class Teacher
+public sealed class Teacher : IEntity
 {
+    public Guid Id =>
+        IdentityId;
+
     public required Guid IdentityId { get; init; }
 
     public required string FirstName { get; init; }
@@ -12,7 +15,7 @@ public sealed class Teacher
 
     public required DateOnly BirthDate { get; init; }
 
-    public DateTime? CreatedAt { get; init; }
+    public required DateTime CreatedAt { get; init; }
 
     public Identity? Identity { get; init; }
 }

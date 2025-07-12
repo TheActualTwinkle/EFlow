@@ -6,7 +6,7 @@ public interface IBookingRepository : IRepository
 {
     public Task CreateAsync(Booking booking, CancellationToken cancellationToken = new());
 
-    public IEnumerable<Booking> GetAll();
+    public Task<IEnumerable<Booking>> GetAllAsync(CancellationToken cancellationToken = new());
 
     public Task<Booking?> GetByIdAsync(Guid id, CancellationToken cancellationToken = new());
 
@@ -15,6 +15,6 @@ public interface IBookingRepository : IRepository
     public Task<IEnumerable<Booking>> GetBySlotIdAsync(Guid slotId, CancellationToken cancellationToken = new());
 
     public void Update(Booking booking);
-
-    public void Delete(Booking booking);
+    
+    public Task DeleteAsync(Guid id, CancellationToken cancellationToken = new());
 }

@@ -1,6 +1,6 @@
 ﻿namespace EFlow.Domain.Models;
 
-public sealed class Group
+public sealed class Group : IEntity
 {
     public required Guid Id { get; init; }
 

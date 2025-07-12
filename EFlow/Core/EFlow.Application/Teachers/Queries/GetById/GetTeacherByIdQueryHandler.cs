@@ -1,5 +1,4 @@
 ﻿using EFlow.Application.Common.Errors.Abstractions;
-using EFlow.Application.Common.Errors.Teachers;
 using EFlow.Domain;
 using EFlow.Domain.Repositories;
 using FluentResults;
@@ -12,13 +11,13 @@ public class GetTeacherByIdQueryHandler(IUnitOfWork unitOfWork) : IRequestHandle
 {
     public async Task<Result<TeacherDto>> Handle(GetTeacherByIdQuery request, CancellationToken cancellationToken)
     {
-        var teacherRepository = unitOfWork.GetRepository<ITeacherRepository>();
-
-        var teacher = await teacherRepository.GetByIdAsync(request.Id, cancellationToken);
+        var teacher = await unitOfWork
+            .GetRepository<ITeacherRepository>()
+            .GetByIdAsync(request.Id, cancellationToken);
 
         if (teacher is null)
             return Result.Fail(
-                new TeacherNotFoundError()
+                new NotFoundError()
                     .WithMessage("Teacher not found")
                     .WithId(request.Id));
 

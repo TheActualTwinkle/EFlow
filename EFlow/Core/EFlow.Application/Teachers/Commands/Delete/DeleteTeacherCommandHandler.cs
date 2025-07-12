@@ -26,14 +26,9 @@ public class DeleteTeacherCommandHandler(IUnitOfWork unitOfWork, UserManager<Ide
                     .WithMessage("Failed to delete user")
                     .WithIdentityErrors(result.Errors));
 
-        var teacherRepository = unitOfWork.GetRepository<ITeacherRepository>();
-
-        var teacher = await teacherRepository.GetByIdAsync(request.Id, cancellationToken);
-
-        if (teacher is null)
-            return Result.Ok();
-
-        teacherRepository.Delete(teacher);
+        await unitOfWork
+            .GetRepository<ITeacherRepository>()
+            .DeleteAsync(request.Id, cancellationToken);
 
         return Result.Ok();
     }

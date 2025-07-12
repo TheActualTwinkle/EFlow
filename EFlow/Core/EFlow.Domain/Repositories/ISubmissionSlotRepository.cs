@@ -6,7 +6,7 @@ public interface ISubmissionSlotRepository : IRepository
 {
     public Task CreateAsync(SubmissionSlot slot, CancellationToken cancellationToken = new());
 
-    public IEnumerable<SubmissionSlot> GetAll();
+    public Task<IEnumerable<SubmissionSlot>> GetAllAsync(CancellationToken cancellationToken = new());
 
     public Task<SubmissionSlot?> GetByIdAsync(Guid id, CancellationToken cancellationToken = new());
 
@@ -16,5 +16,5 @@ public interface ISubmissionSlotRepository : IRepository
 
     public void Update(SubmissionSlot slot);
 
-    public void Delete(SubmissionSlot slot);
+    public Task DeleteAsync(Guid id, CancellationToken cancellationToken = new());
 }

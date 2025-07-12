@@ -11,8 +11,8 @@ public class SubmissionSlotRepository(ApplicationDbContext context) :
     public async Task CreateAsync(SubmissionSlot slot, CancellationToken cancellationToken = new()) =>
         await CreateInternalAsync(slot, cancellationToken);
 
-    public IEnumerable<SubmissionSlot> GetAll() =>
-        GetAllInternal();
+    public async Task<IEnumerable<SubmissionSlot>> GetAllAsync(CancellationToken cancellationToken = new()) =>
+        await GetAllInternalAsync(cancellationToken);
 
     public async Task<SubmissionSlot?> GetByIdAsync(Guid id, CancellationToken cancellationToken = new()) =>
         await GetByIdInternalAsync(id, cancellationToken);
@@ -30,6 +30,6 @@ public class SubmissionSlotRepository(ApplicationDbContext context) :
     public void Update(SubmissionSlot slot) =>
         UpdateInternal(slot);
 
-    public void Delete(SubmissionSlot slot) =>
-        DeleteInternal(slot);
+    public Task DeleteAsync(Guid id, CancellationToken cancellationToken = new()) =>
+        DeleteInternalAsync(id, cancellationToken);
 }

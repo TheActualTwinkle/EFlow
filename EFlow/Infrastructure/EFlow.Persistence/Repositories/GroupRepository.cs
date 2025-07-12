@@ -10,8 +10,8 @@ public class GroupRepository(ApplicationDbContext context) :
     public async Task CreateAsync(Group group, CancellationToken cancellationToken = new()) =>
         await CreateInternalAsync(group, cancellationToken);
 
-    public IEnumerable<Group> GetAll() =>
-        GetAllInternal();
+    public async Task<IEnumerable<Group>> GetAllAsync(CancellationToken cancellationToken = new()) =>
+        await GetAllInternalAsync(cancellationToken);
 
     public async Task<Group?> GetByIdAsync(Guid id, CancellationToken cancellationToken = new()) =>
         await GetByIdInternalAsync(id, cancellationToken);
@@ -19,6 +19,6 @@ public class GroupRepository(ApplicationDbContext context) :
     public void Update(Group group) =>
         UpdateInternal(group);
 
-    public void Delete(Group group) =>
-        DeleteInternal(group);
+    public Task DeleteAsync(Guid id, CancellationToken cancellationToken = new()) =>
+        DeleteInternalAsync(id, cancellationToken);
 }

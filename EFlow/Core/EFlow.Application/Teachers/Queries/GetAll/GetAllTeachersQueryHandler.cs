@@ -11,9 +11,10 @@ public class GetAllTeachersQueryHandler(IUnitOfWork unitOfWork)
 {
     public Task<Result<IEnumerable<TeacherDto>>> Handle(GetAllTeachersQuery request, CancellationToken cancellationToken)
     {
-        var teacherRepository = unitOfWork.GetRepository<ITeacherRepository>();
-
-        var teachers = teacherRepository.GetAll().Adapt<IEnumerable<TeacherDto>>();
+        var teachers = unitOfWork
+            .GetRepository<ITeacherRepository>()
+            .GetAllAsync(cancellationToken)
+            .Adapt<IEnumerable<TeacherDto>>();
 
         return Task.FromResult(Result.Ok(teachers));
     }

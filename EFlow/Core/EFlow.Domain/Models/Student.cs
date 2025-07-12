@@ -1,7 +1,10 @@
 ﻿namespace EFlow.Domain.Models;
 
-public class Student
+public sealed class Student : IEntity
 {
+    public Guid Id =>
+        IdentityId;
+    
     public required Guid IdentityId { get; init; }
 
     public required Guid GroupId { get; init; }

@@ -1,6 +1,6 @@
 ﻿namespace EFlow.Domain.Models;
 
-public sealed class Booking
+public sealed class Booking : IEntity
 {
     public required Guid Id { get; init; }
 

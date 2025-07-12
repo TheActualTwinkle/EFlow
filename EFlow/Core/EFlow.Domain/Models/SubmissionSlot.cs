@@ -1,6 +1,6 @@
 ﻿namespace EFlow.Domain.Models;
 
-public sealed class SubmissionSlot
+public sealed class SubmissionSlot : IEntity
 {
     public required Guid Id { get; init; }
 

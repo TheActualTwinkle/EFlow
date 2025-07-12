@@ -1,12 +1,11 @@
 ﻿using EFlow.Application.Common.Errors.Abstractions;
-using EFlow.Application.Common.Errors.Teachers;
 using EFlow.Domain;
 using EFlow.Domain.Repositories;
 using FluentResults;
 using Mapster;
 using MediatR;
 
-namespace EFlow.Application.Teachers.Commands.Update;
+namespace EFlow.Application.Teachers.Commands;
 
 public class UpdateTeacherCommandHandler(IUnitOfWork unitOfWork) : IRequestHandler<UpdateTeacherCommand, Result>
 {
@@ -14,13 +13,13 @@ public class UpdateTeacherCommandHandler(IUnitOfWork unitOfWork) : IRequestHandl
     {
         var repository = unitOfWork.GetRepository<ITeacherRepository>();
 
-        var teacher = await repository.GetByIdAsync(request.Id, cancellationToken);
+        var teacher = await repository.GetByIdAsync(request.IdentityId, cancellationToken);
 
         if (teacher is null)
             return Result.Fail(
-                new TeacherNotFoundError()
+                new NotFoundError()
                     .WithMessage("Teacher not found")
-                    .WithId(request.Id));
+                    .WithId(request.IdentityId));
 
         request.Adapt(teacher);
 

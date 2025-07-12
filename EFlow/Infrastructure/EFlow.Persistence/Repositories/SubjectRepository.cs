@@ -11,8 +11,8 @@ public class SubjectRepository(ApplicationDbContext context) :
     public async Task CreateAsync(Subject subject, CancellationToken cancellationToken = new()) =>
         await CreateInternalAsync(subject, cancellationToken);
 
-    public IEnumerable<Subject> GetAll() =>
-        GetAllInternal();
+    public async Task<IEnumerable<Subject>> GetAllAsync(CancellationToken cancellationToken = new()) =>
+        await GetAllInternalAsync(cancellationToken);
 
     public async Task<Subject?> GetByIdAsync(Guid id, CancellationToken cancellationToken = new()) =>
         await GetByIdInternalAsync(id, cancellationToken);
@@ -24,7 +24,7 @@ public class SubjectRepository(ApplicationDbContext context) :
 
     public void Update(Subject subject) =>
         UpdateInternal(subject);
-
-    public void Delete(Subject subject) =>
-        DeleteInternal(subject);
+    
+    public Task DeleteAsync(Guid id, CancellationToken cancellationToken = new()) =>
+        DeleteInternalAsync(id, cancellationToken);
 }

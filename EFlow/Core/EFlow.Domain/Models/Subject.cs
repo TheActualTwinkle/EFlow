@@ -1,6 +1,6 @@
 ﻿namespace EFlow.Domain.Models;
 
-public sealed class Subject
+public sealed class Subject : IEntity
 {
     public required Guid Id { get; init; }
 

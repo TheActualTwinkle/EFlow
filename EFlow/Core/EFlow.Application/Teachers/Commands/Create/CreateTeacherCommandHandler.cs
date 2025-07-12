@@ -40,12 +40,12 @@ public class CreateTeacherCommandHandler(
             LastName = request.LastName,
             MiddleName = request.MiddleName,
             BirthDate = request.BirthDate,
-            CreatedAt = request.CreatedAt
+            CreatedAt = request.CreatedAt ?? DateTime.UtcNow
         };
 
-        var teacherRepository = unitOfWork.GetRepository<ITeacherRepository>();
-
-        await teacherRepository.CreateAsync(teacher, cancellationToken);
+        await unitOfWork
+            .GetRepository<ITeacherRepository>()
+            .CreateAsync(teacher, cancellationToken);
 
         return Result.Ok(identity.Id);
     }

@@ -35,7 +35,8 @@ public class TeacherConfiguration : IEntityTypeConfiguration<Teacher>
             .IsRequired();
 
         builder.Property(t => t.CreatedAt)
-            .HasColumnName("created_at");
+            .HasColumnName("created_at")
+            .IsRequired();
 
         builder.HasOne(t => t.Identity)
             .WithOne()

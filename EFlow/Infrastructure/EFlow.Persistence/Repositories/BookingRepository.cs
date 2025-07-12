@@ -11,8 +11,8 @@ public class BookingRepository(ApplicationDbContext context) :
     public async Task CreateAsync(Booking booking, CancellationToken cancellationToken = new()) =>
         await CreateInternalAsync(booking, cancellationToken);
 
-    public IEnumerable<Booking> GetAll() =>
-        GetAllInternal();
+    public async Task<IEnumerable<Booking>> GetAllAsync(CancellationToken cancellationToken = new()) =>
+        await GetAllInternalAsync(cancellationToken);
 
     public async Task<Booking?> GetByIdAsync(Guid id, CancellationToken cancellationToken = new()) =>
         await GetByIdInternalAsync(id, cancellationToken);
@@ -30,6 +30,6 @@ public class BookingRepository(ApplicationDbContext context) :
     public void Update(Booking booking) =>
         UpdateInternal(booking);
 
-    public void Delete(Booking booking) =>
-        DeleteInternal(booking);
+    public Task DeleteAsync(Guid id, CancellationToken cancellationToken = new()) =>
+        DeleteInternalAsync(id, cancellationToken);
 }

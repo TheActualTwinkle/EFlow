@@ -6,7 +6,7 @@ public interface IStudentRepository : IRepository
 {
     public Task CreateAsync(Student student, CancellationToken cancellationToken = new());
 
-    public IEnumerable<Student> GetAll();
+    public Task<IEnumerable<Student>> GetAllAsync(CancellationToken cancellationToken = new());
 
     public Task<Student?> GetByIdAsync(Guid id, CancellationToken cancellationToken = new());
 
@@ -14,5 +14,5 @@ public interface IStudentRepository : IRepository
 
     public void Update(Student student);
 
-    public void Delete(Student student);
+    public Task DeleteAsync(Guid id, CancellationToken cancellationToken = new());
 }

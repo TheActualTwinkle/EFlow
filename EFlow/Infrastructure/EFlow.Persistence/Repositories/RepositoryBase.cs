@@ -1,9 +1,11 @@
-﻿using EFlow.Persistence.DatabaseContext;
+﻿using EFlow.Domain;
+using EFlow.Persistence.DatabaseContext;
+using Microsoft.EntityFrameworkCore;
 
 namespace EFlow.Persistence.Repositories;
 
 public abstract class RepositoryBase<TEntity>(ApplicationDbContext context)
-    where TEntity : class
+    where TEntity : class, IEntity
 {
     protected readonly ApplicationDbContext Context = context;
 
@@ -13,8 +15,8 @@ public abstract class RepositoryBase<TEntity>(ApplicationDbContext context)
     protected async Task CreateBulkInternalAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken = new()) =>
         await Context.SetEntity<TEntity>().AddRangeAsync(entities, cancellationToken);
 
-    protected IEnumerable<TEntity> GetAllInternal() =>
-        Context.SetEntity<TEntity>().AsEnumerable();
+    protected async Task<IEnumerable<TEntity>> GetAllInternalAsync(CancellationToken cancellationToken = new()) =>
+        await Context.SetEntity<TEntity>().ToListAsync(cancellationToken);
 
     protected async Task<TEntity?> GetByIdInternalAsync(Guid id, CancellationToken cancellationToken = new()) =>
         await Context.SetEntity<TEntity>().FindAsync([id], cancellationToken);
@@ -28,9 +30,13 @@ public abstract class RepositoryBase<TEntity>(ApplicationDbContext context)
     protected void UpdateBulkInternal(IEnumerable<TEntity> entities) =>
         Context.SetEntity<TEntity>().UpdateRange(entities);
 
-    protected void DeleteInternal(TEntity entity) =>
-        Context.SetEntity<TEntity>().Remove(entity);
+    protected async Task DeleteInternalAsync(Guid id, CancellationToken cancellationToken = new()) =>
+        await Context.SetEntity<TEntity>()
+            .Where(e => e.Id == id)
+            .ExecuteDeleteAsync(cancellationToken);
 
-    protected void DeleteBulkInternal(IEnumerable<TEntity> entities) =>
-        Context.SetEntity<TEntity>().RemoveRange(entities);
+    protected async Task DeleteBulkInternal(IEnumerable<Guid> ids, CancellationToken cancellationToken = new()) =>
+        await Context.SetEntity<TEntity>()
+            .Where(e => ids.Contains(e.Id))
+            .ExecuteDeleteAsync(cancellationToken);
 }

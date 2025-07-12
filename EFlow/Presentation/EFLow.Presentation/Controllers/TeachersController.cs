@@ -1,6 +1,5 @@
 ﻿using System.Security.Claims;
 using EFlow.Application.Teachers.Commands;
-using EFlow.Application.Teachers.Commands.Update;
 using EFlow.Application.Teachers.Queries;
 using EFlow.Domain.Models;
 using EFLow.Presentation.Extensions;
@@ -62,7 +61,7 @@ public class TeachersController(ISender sender) : ControllerBase
                 return Forbid("You can only update your own profile.");
         }
 
-        var result = await sender.Send(command with { Id = id }, cancellationToken);
+        var result = await sender.Send(command with { IdentityId = id }, cancellationToken);
 
         return result.IsFailed ?
             result.Errors[0].ToProblemDetails() :

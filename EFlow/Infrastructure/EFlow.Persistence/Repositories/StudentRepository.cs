@@ -11,8 +11,8 @@ public class StudentRepository(ApplicationDbContext context) :
     public async Task CreateAsync(Student student, CancellationToken cancellationToken = new()) =>
         await CreateInternalAsync(student, cancellationToken);
 
-    public IEnumerable<Student> GetAll() =>
-        GetAllInternal();
+    public async Task<IEnumerable<Student>> GetAllAsync(CancellationToken cancellationToken = new()) =>
+        await GetAllInternalAsync(cancellationToken);
 
     public async Task<Student?> GetByIdAsync(Guid id, CancellationToken cancellationToken = new()) =>
         await GetByIdInternalAsync(id, cancellationToken);
@@ -25,6 +25,6 @@ public class StudentRepository(ApplicationDbContext context) :
     public void Update(Student student) =>
         UpdateInternal(student);
 
-    public void Delete(Student student) =>
-        DeleteInternal(student);
+    public Task DeleteAsync(Guid id, CancellationToken cancellationToken = new()) =>
+        DeleteInternalAsync(id, cancellationToken);
 }

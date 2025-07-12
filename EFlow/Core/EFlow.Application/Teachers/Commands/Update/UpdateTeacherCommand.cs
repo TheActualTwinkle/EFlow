@@ -3,12 +3,12 @@ using EFlow.Application.Common.Markers;
 using FluentResults;
 using MediatR;
 
-namespace EFlow.Application.Teachers.Commands.Update;
+namespace EFlow.Application.Teachers.Commands;
 
 public record UpdateTeacherCommand : IRequest<Result>, ITransactionalRequest
 {
     [JsonIgnore]
-    public Guid Id { get; init; }
+    public Guid IdentityId { get; init; }
 
     public string? FirstName { get; init; }
 

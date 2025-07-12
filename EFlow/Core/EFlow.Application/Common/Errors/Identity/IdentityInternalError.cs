@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Identity;
 
 namespace EFlow.Application.Common.Errors.Identity;
 
-public record IdentityInternalError : InternalError
+public record IdentityInternalError : UnprocessableEntityError
 {
     public override string? Message { get; init; }
 

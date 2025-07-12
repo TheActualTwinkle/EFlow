@@ -6,11 +6,11 @@ public interface IGroupRepository : IRepository
 {
     public Task CreateAsync(Group group, CancellationToken cancellationToken = new());
 
-    public IEnumerable<Group> GetAll();
+    public Task<IEnumerable<Group>> GetAllAsync(CancellationToken cancellationToken = new());
 
     public Task<Group?> GetByIdAsync(Guid id, CancellationToken cancellationToken = new());
 
     public void Update(Group group);
 
-    public void Delete(Group group);
+    public Task DeleteAsync(Guid id, CancellationToken cancellationToken = new());
 }

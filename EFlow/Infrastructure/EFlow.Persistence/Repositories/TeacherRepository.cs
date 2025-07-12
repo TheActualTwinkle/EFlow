@@ -10,8 +10,8 @@ public class TeacherRepository(ApplicationDbContext context) :
     public async Task CreateAsync(Teacher teacher, CancellationToken cancellationToken = new()) =>
         await CreateInternalAsync(teacher, cancellationToken);
 
-    public IEnumerable<Teacher> GetAll() =>
-        GetAllInternal();
+    public async Task<IEnumerable<Teacher>> GetAllAsync(CancellationToken cancellationToken = new()) =>
+        await GetAllInternalAsync(cancellationToken);
 
     public async Task<Teacher?> GetByIdAsync(Guid id, CancellationToken cancellationToken = new()) =>
         await GetByIdInternalAsync(id, cancellationToken);
@@ -19,6 +19,6 @@ public class TeacherRepository(ApplicationDbContext context) :
     public void Update(Teacher teacher) =>
         UpdateInternal(teacher);
 
-    public void Delete(Teacher teacher) =>
-        DeleteInternal(teacher);
+    public async Task DeleteAsync(Guid id, CancellationToken cancellationToken = new()) =>
+        await DeleteInternalAsync(id, cancellationToken);
 }
