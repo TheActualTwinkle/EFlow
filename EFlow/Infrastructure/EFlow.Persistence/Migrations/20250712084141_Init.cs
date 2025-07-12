@@ -95,15 +95,15 @@ namespace EFlow.Persistence.Migrations
                 name: "admins",
                 columns: table => new
                 {
-                    identity_id = table.Column<Guid>(type: "uuid", nullable: false),
+                    id = table.Column<Guid>(type: "uuid", nullable: false),
                     created_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("pk_admins", x => x.identity_id);
+                    table.PrimaryKey("pk_admins", x => x.id);
                     table.ForeignKey(
                         name: "fk_admins_identity",
-                        column: x => x.identity_id,
+                        column: x => x.id,
                         principalSchema: "identity",
                         principalTable: "AspNetUsers",
                         principalColumn: "Id",
@@ -208,19 +208,19 @@ namespace EFlow.Persistence.Migrations
                 name: "teachers",
                 columns: table => new
                 {
-                    identity_id = table.Column<Guid>(type: "uuid", nullable: false),
+                    id = table.Column<Guid>(type: "uuid", nullable: false),
                     first_name = table.Column<string>(type: "character varying(31)", maxLength: 31, nullable: false),
-                    middle_name = table.Column<string>(type: "character varying(31)", maxLength: 31, nullable: true),
                     last_name = table.Column<string>(type: "character varying(31)", maxLength: 31, nullable: false),
+                    middle_name = table.Column<string>(type: "character varying(31)", maxLength: 31, nullable: true),
                     birth_date = table.Column<DateOnly>(type: "date", nullable: false),
-                    created_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
+                    created_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("pk_teachers", x => x.identity_id);
+                    table.PrimaryKey("pk_teachers", x => x.id);
                     table.ForeignKey(
                         name: "fk_teachers_identity",
-                        column: x => x.identity_id,
+                        column: x => x.id,
                         principalSchema: "identity",
                         principalTable: "AspNetUsers",
                         principalColumn: "Id",
@@ -231,17 +231,17 @@ namespace EFlow.Persistence.Migrations
                 name: "students",
                 columns: table => new
                 {
-                    identity_id = table.Column<Guid>(type: "uuid", nullable: false),
+                    id = table.Column<Guid>(type: "uuid", nullable: false),
                     group_id = table.Column<Guid>(type: "uuid", nullable: false),
                     first_name = table.Column<string>(type: "character varying(31)", maxLength: 31, nullable: false),
-                    middle_name = table.Column<string>(type: "character varying(31)", maxLength: 31, nullable: true),
                     last_name = table.Column<string>(type: "character varying(31)", maxLength: 31, nullable: false),
+                    middle_name = table.Column<string>(type: "character varying(31)", maxLength: 31, nullable: true),
                     birth_date = table.Column<DateOnly>(type: "date", nullable: false),
                     created_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("pk_students", x => x.identity_id);
+                    table.PrimaryKey("pk_students", x => x.id);
                     table.ForeignKey(
                         name: "fk_students_groups",
                         column: x => x.group_id,
@@ -250,7 +250,7 @@ namespace EFlow.Persistence.Migrations
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "fk_students_identity",
-                        column: x => x.identity_id,
+                        column: x => x.id,
                         principalSchema: "identity",
                         principalTable: "AspNetUsers",
                         principalColumn: "Id",
@@ -262,7 +262,7 @@ namespace EFlow.Persistence.Migrations
                 columns: table => new
                 {
                     id = table.Column<Guid>(type: "uuid", nullable: false),
-                    name = table.Column<string>(type: "character varying(63)", maxLength: 63, nullable: false),
+                    name = table.Column<string>(type: "character varying(127)", maxLength: 127, nullable: false),
                     teacher_id = table.Column<Guid>(type: "uuid", nullable: false)
                 },
                 constraints: table =>
@@ -272,7 +272,7 @@ namespace EFlow.Persistence.Migrations
                         name: "fk_subjects_teachers",
                         column: x => x.teacher_id,
                         principalTable: "teachers",
-                        principalColumn: "identity_id",
+                        principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
@@ -285,7 +285,7 @@ namespace EFlow.Persistence.Migrations
                     start_time = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     end_time = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     max_students = table.Column<int>(type: "integer", nullable: false),
-                    location = table.Column<string>(type: "character varying(63)", maxLength: 63, nullable: true)
+                    location = table.Column<string>(type: "character varying(127)", maxLength: 127, nullable: true)
                 },
                 constraints: table =>
                 {
@@ -314,7 +314,7 @@ namespace EFlow.Persistence.Migrations
                         name: "fk_bookings_students",
                         column: x => x.student_id,
                         principalTable: "students",
-                        principalColumn: "identity_id",
+                        principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "fk_bookings_submission_slots",

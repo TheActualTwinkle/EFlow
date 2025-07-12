@@ -35,7 +35,7 @@ public class CreateTeacherCommandHandler(
 
         var teacher = new Teacher
         {
-            IdentityId = identity.Id,
+            Id = identity.Id,
             FirstName = request.FirstName,
             LastName = request.LastName,
             MiddleName = request.MiddleName,

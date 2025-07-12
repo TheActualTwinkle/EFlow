@@ -2,10 +2,7 @@
 
 public sealed class Teacher : IEntity
 {
-    public Guid Id =>
-        IdentityId;
-
-    public required Guid IdentityId { get; init; }
+    public required Guid Id { get; init; }
 
     public required string FirstName { get; init; }
 

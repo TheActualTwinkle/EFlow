@@ -10,11 +10,11 @@ public class AdminConfiguration : IEntityTypeConfiguration<Admin>
     {
         builder.ToTable("admins");
 
-        builder.HasKey(a => a.IdentityId)
+        builder.HasKey(a => a.Id)
             .HasName("pk_admins");
 
-        builder.Property(a => a.IdentityId)
-            .HasColumnName("identity_id");
+        builder.Property(a => a.Id)
+            .HasColumnName("id");
 
         builder.Property(a => a.CreatedAt)
             .HasColumnName("created_at")
@@ -22,7 +22,7 @@ public class AdminConfiguration : IEntityTypeConfiguration<Admin>
 
         builder.HasOne(a => a.Identity)
             .WithOne()
-            .HasForeignKey<Admin>(a => a.IdentityId)
+            .HasForeignKey<Admin>(a => a.Id)
             .HasConstraintName("fk_admins_identity");
     }
 }

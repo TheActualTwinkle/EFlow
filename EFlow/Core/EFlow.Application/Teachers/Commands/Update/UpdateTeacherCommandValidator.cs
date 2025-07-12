@@ -7,7 +7,7 @@ public class UpdateTeacherCommandValidator : AbstractValidator<UpdateTeacherComm
 {
     public UpdateTeacherCommandValidator()
     {
-        RuleFor(x => x.IdentityId)
+        RuleFor(x => x.Id)
             .NotEmpty().WithMessage("Teacher ID is required");
 
         When(

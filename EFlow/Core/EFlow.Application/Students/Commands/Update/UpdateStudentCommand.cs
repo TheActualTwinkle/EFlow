@@ -8,7 +8,7 @@ namespace EFlow.Application.Students.Commands.Update;
 public record UpdateStudentCommand : IRequest<Result>, ITransactionalRequest
 {
     [JsonIgnore]
-    public Guid IdentityId { get; init; }
+    public Guid Id { get; init; }
 
     public Guid? GroupId { get; init; }
 

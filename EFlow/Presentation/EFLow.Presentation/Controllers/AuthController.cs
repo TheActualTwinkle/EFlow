@@ -17,6 +17,30 @@ public class AuthController(
     IConfiguration configuration)
     : ControllerBase
 {
+    // TODO: убрать этот endpoint когда появится другая возможность регистрации админов
+    [HttpPost("register")]
+    public async Task<IActionResult> Register(RegisterRequest request)
+    {
+        var user = new Identity
+        {
+            Id = Guid.NewGuid(),
+            UserName = request.Username
+        };
+
+        var result = await userManager.CreateAsync(user, request.Password);
+
+        if (!result.Succeeded)
+            return BadRequest(result.Errors);
+
+        await userManager.AddToRoleAsync(user, Identity.GetRoleName(request.Role));
+
+        await signInManager.SignInAsync(user, true);
+
+        var token = GenerateJwtToken(user);
+
+        return Ok(new { Token = token });
+    }
+
     [HttpPost("login")]
     public async Task<IActionResult> Login(LoginRequest request)
     {
@@ -92,6 +116,8 @@ public class AuthController(
 
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
+
+    public record RegisterRequest(string Username, string Password, Identity.Role Role);
 }
 
 public record LoginRequest(string Username, string Password);

@@ -13,13 +13,13 @@ public class UpdateTeacherCommandHandler(IUnitOfWork unitOfWork) : IRequestHandl
     {
         var repository = unitOfWork.GetRepository<ITeacherRepository>();
 
-        var teacher = await repository.GetByIdAsync(request.IdentityId, cancellationToken);
+        var teacher = await repository.GetByIdAsync(request.Id, cancellationToken);
 
         if (teacher is null)
             return Result.Fail(
                 new NotFoundError()
                     .WithMessage("Teacher not found")
-                    .WithId(request.IdentityId));
+                    .WithId(request.Id));
 
         request.Adapt(teacher);
 

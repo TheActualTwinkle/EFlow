@@ -19,14 +19,14 @@ public class MapsterRegister : IRegister
 
     private void MapAdmin(TypeAdapterConfig config) =>
         config.NewConfig<Admin, AdminDto>()
-            .Map(dest => dest.IdentityId, src => src.IdentityId)
+            .Map(dest => dest.Id, src => src.Id)
             .Map(dest => dest.CreatedAt, src => src.CreatedAt)
             .Map(dest => dest.UserName, src => src.Identity!.UserName);
 
     private void MapTeacher(TypeAdapterConfig config)
     {
         config.NewConfig<Teacher, TeacherDto>()
-            .Map(dest => dest.IdentityId, src => src.IdentityId)
+            .Map(dest => dest.Id, src => src.Id)
             .Map(dest => dest.FirstName, src => src.FirstName)
             .Map(dest => dest.LastName, src => src.LastName)
             .Map(dest => dest.MiddleName, src => src.MiddleName)
@@ -38,14 +38,14 @@ public class MapsterRegister : IRegister
             .Map(dest => dest.LastName, src => src.LastName)
             .Map(dest => dest.MiddleName, src => src.MiddleName)
             .Map(dest => dest.BirthDate, src => src.BirthDate)
-            .Ignore(dest => dest.IdentityId)
+            .Ignore(dest => dest.Id)
             .IgnoreNullValues(true);
     }
 
     private void MapStudent(TypeAdapterConfig config)
     {
         config.NewConfig<Student, StudentDto>()
-            .Map(dest => dest.IdentityId, src => src.IdentityId)
+            .Map(dest => dest.Id, src => src.Id)
             .Map(dest => dest.FirstName, src => src.FirstName)
             .Map(dest => dest.LastName, src => src.LastName)
             .Map(dest => dest.MiddleName, src => src.MiddleName)
@@ -57,7 +57,7 @@ public class MapsterRegister : IRegister
             .Map(dest => dest.LastName, src => src.LastName)
             .Map(dest => dest.MiddleName, src => src.MiddleName)
             .Map(dest => dest.BirthDate, src => src.BirthDate)
-            .Ignore(dest => dest.IdentityId)
+            .Ignore(dest => dest.Id)
             .IgnoreNullValues(true);
     }
 }

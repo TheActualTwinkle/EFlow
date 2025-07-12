@@ -10,11 +10,11 @@ public class TeacherConfiguration : IEntityTypeConfiguration<Teacher>
     {
         builder.ToTable("teachers");
 
-        builder.HasKey(t => t.IdentityId)
+        builder.HasKey(t => t.Id)
             .HasName("pk_teachers");
 
-        builder.Property(t => t.IdentityId)
-            .HasColumnName("identity_id");
+        builder.Property(t => t.Id)
+            .HasColumnName("id");
 
         builder.Property(t => t.FirstName)
             .HasColumnName("first_name")
@@ -40,7 +40,7 @@ public class TeacherConfiguration : IEntityTypeConfiguration<Teacher>
 
         builder.HasOne(t => t.Identity)
             .WithOne()
-            .HasForeignKey<Teacher>(t => t.IdentityId)
+            .HasForeignKey<Teacher>(t => t.Id)
             .OnDelete(DeleteBehavior.Cascade)
             .HasConstraintName("fk_teachers_identity");
     }

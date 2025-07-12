@@ -24,15 +24,15 @@ namespace EFlow.Persistence.Migrations
 
             modelBuilder.Entity("EFlow.Domain.Models.Admin", b =>
                 {
-                    b.Property<Guid>("IdentityId")
+                    b.Property<Guid>("Id")
                         .HasColumnType("uuid")
-                        .HasColumnName("identity_id");
+                        .HasColumnName("id");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at");
 
-                    b.HasKey("IdentityId")
+                    b.HasKey("Id")
                         .HasName("pk_admins");
 
                     b.ToTable("admins", (string)null);
@@ -155,9 +155,9 @@ namespace EFlow.Persistence.Migrations
 
             modelBuilder.Entity("EFlow.Domain.Models.Student", b =>
                 {
-                    b.Property<Guid>("IdentityId")
+                    b.Property<Guid>("Id")
                         .HasColumnType("uuid")
-                        .HasColumnName("identity_id");
+                        .HasColumnName("id");
 
                     b.Property<DateOnly>("BirthDate")
                         .HasColumnType("date")
@@ -188,7 +188,7 @@ namespace EFlow.Persistence.Migrations
                         .HasColumnType("character varying(31)")
                         .HasColumnName("middle_name");
 
-                    b.HasKey("IdentityId")
+                    b.HasKey("Id")
                         .HasName("pk_students");
 
                     b.HasIndex("GroupId");
@@ -205,8 +205,8 @@ namespace EFlow.Persistence.Migrations
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasMaxLength(63)
-                        .HasColumnType("character varying(63)")
+                        .HasMaxLength(127)
+                        .HasColumnType("character varying(127)")
                         .HasColumnName("name");
 
                     b.Property<Guid>("TeacherId")
@@ -233,8 +233,8 @@ namespace EFlow.Persistence.Migrations
                         .HasColumnName("end_time");
 
                     b.Property<string>("Location")
-                        .HasMaxLength(63)
-                        .HasColumnType("character varying(63)")
+                        .HasMaxLength(127)
+                        .HasColumnType("character varying(127)")
                         .HasColumnName("location");
 
                     b.Property<int>("MaxStudents")
@@ -259,15 +259,15 @@ namespace EFlow.Persistence.Migrations
 
             modelBuilder.Entity("EFlow.Domain.Models.Teacher", b =>
                 {
-                    b.Property<Guid>("IdentityId")
+                    b.Property<Guid>("Id")
                         .HasColumnType("uuid")
-                        .HasColumnName("identity_id");
+                        .HasColumnName("id");
 
                     b.Property<DateOnly>("BirthDate")
                         .HasColumnType("date")
                         .HasColumnName("birth_date");
 
-                    b.Property<DateTime?>("CreatedAt")
+                    b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at");
 
@@ -288,7 +288,7 @@ namespace EFlow.Persistence.Migrations
                         .HasColumnType("character varying(31)")
                         .HasColumnName("middle_name");
 
-                    b.HasKey("IdentityId")
+                    b.HasKey("Id")
                         .HasName("pk_teachers");
 
                     b.ToTable("teachers", (string)null);
@@ -428,7 +428,7 @@ namespace EFlow.Persistence.Migrations
                 {
                     b.HasOne("EFlow.Domain.Models.Identity", "Identity")
                         .WithOne()
-                        .HasForeignKey("EFlow.Domain.Models.Admin", "IdentityId")
+                        .HasForeignKey("EFlow.Domain.Models.Admin", "Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_admins_identity");
@@ -468,7 +468,7 @@ namespace EFlow.Persistence.Migrations
 
                     b.HasOne("EFlow.Domain.Models.Identity", "Identity")
                         .WithOne()
-                        .HasForeignKey("EFlow.Domain.Models.Student", "IdentityId")
+                        .HasForeignKey("EFlow.Domain.Models.Student", "Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_students_identity");
@@ -506,7 +506,7 @@ namespace EFlow.Persistence.Migrations
                 {
                     b.HasOne("EFlow.Domain.Models.Identity", "Identity")
                         .WithOne()
-                        .HasForeignKey("EFlow.Domain.Models.Teacher", "IdentityId")
+                        .HasForeignKey("EFlow.Domain.Models.Teacher", "Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_teachers_identity");

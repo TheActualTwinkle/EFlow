@@ -35,7 +35,7 @@ public class CreateAdminCommandHandler(
 
         var admin = new Admin
         {
-            IdentityId = identity.Id,
+            Id = identity.Id,
             CreatedAt = request.CreatedAt ?? DateTime.UtcNow
         };
 

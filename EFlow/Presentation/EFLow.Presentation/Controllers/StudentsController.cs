@@ -59,10 +59,14 @@ public class StudentsController(ISender sender) : ControllerBase
             var studentId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
             if (studentId != id.ToString())
-                return Forbid("You can only update your own profile.");
+                return Problem(
+                    title: "Forbidden",
+                    detail: "You can only update your own profile.",
+                    statusCode: StatusCodes.Status403Forbidden
+                );
         }
 
-        var result = await sender.Send(command with { IdentityId = id }, cancellationToken);
+        var result = await sender.Send(command with { Id = id }, cancellationToken);
 
         return result.IsFailed ?
             result.Errors[0].ToProblemDetails() :

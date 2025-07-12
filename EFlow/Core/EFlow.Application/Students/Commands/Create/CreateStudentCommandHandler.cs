@@ -35,7 +35,7 @@ public class CreateStudentCommandHandler(
 
         var student = new Student
         {
-            IdentityId = identity.Id,
+            Id = identity.Id,
             GroupId = request.GroupId,
             FirstName = request.FirstName,
             LastName = request.LastName,

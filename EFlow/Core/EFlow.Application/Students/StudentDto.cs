@@ -2,7 +2,7 @@
 
 public record StudentDto
 {
-    public required Guid IdentityId { get; init; }
+    public required Guid Id { get; init; }
 
     public required Guid GroupId { get; init; }
 

@@ -18,7 +18,7 @@ public class AdminRepository(ApplicationDbContext context) :
 
     public async Task<Admin?> GetByIdAsync(Guid id, CancellationToken cancellationToken = new()) =>
         await Context.Admins
-            .Where(a => a.IdentityId == id)
+            .Where(a => a.Id == id)
             .Include(a => a.Identity)
             .FirstOrDefaultAsync(cancellationToken);
 

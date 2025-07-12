@@ -10,11 +10,11 @@ public class StudentConfiguration : IEntityTypeConfiguration<Student>
     {
         builder.ToTable("students");
 
-        builder.HasKey(s => s.IdentityId)
+        builder.HasKey(s => s.Id)
             .HasName("pk_students");
 
-        builder.Property(s => s.IdentityId)
-            .HasColumnName("identity_id");
+        builder.Property(s => s.Id)
+            .HasColumnName("id");
 
         builder.Property(s => s.GroupId)
             .HasColumnName("group_id")
@@ -44,7 +44,7 @@ public class StudentConfiguration : IEntityTypeConfiguration<Student>
 
         builder.HasOne(s => s.Identity)
             .WithOne()
-            .HasForeignKey<Student>(s => s.IdentityId)
+            .HasForeignKey<Student>(s => s.Id)
             .HasConstraintName("fk_students_identity");
 
         builder.HasOne(s => s.Group)

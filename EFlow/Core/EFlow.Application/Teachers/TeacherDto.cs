@@ -2,7 +2,7 @@
 
 public record TeacherDto
 {
-    public required Guid IdentityId { get; init; }
+    public required Guid Id { get; init; }
 
     public required string FirstName { get; init; }
 

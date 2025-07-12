@@ -2,7 +2,7 @@
 
 public record AdminDto
 {
-    public required Guid IdentityId { get; init; }
+    public required Guid Id { get; init; }
     
     public required string UserName { get; init; }
 
