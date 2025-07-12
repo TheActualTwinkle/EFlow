@@ -61,6 +61,9 @@ public class SubmissionSlotsController(ISender sender) : ControllerBase
     [Authorize]
     public async Task<IActionResult> GetAvailableSlots([FromQuery] DateTime fromDate, CancellationToken cancellationToken)
     {
+        if (fromDate.Kind != DateTimeKind.Utc)
+            fromDate = DateTime.SpecifyKind(fromDate, DateTimeKind.Utc);
+
         var result = await sender.Send(new GetAvailableSubmissionSlotsQuery { FromDate = fromDate }, cancellationToken);
 
         return result.IsFailed ?

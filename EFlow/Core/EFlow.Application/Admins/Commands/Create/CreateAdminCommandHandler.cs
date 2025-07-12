@@ -36,7 +36,7 @@ public class CreateAdminCommandHandler(
         var admin = new Admin
         {
             Id = identity.Id,
-            CreatedAt = request.CreatedAt ?? DateTime.UtcNow
+            CreatedAt = DateTime.UtcNow
         };
 
         await unitOfWork

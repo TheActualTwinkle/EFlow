@@ -9,6 +9,4 @@ public record CreateBookingCommand : IRequest<Result<Guid>>, ITransactionalReque
     public required Guid StudentId { get; init; }
 
     public required Guid SlotId { get; init; }
-
-    public DateTime? CreatedAt { get; init; }
 }

@@ -19,6 +19,4 @@ public record CreateStudentCommand : IRequest<Result<Guid>>, ITransactionalReque
     public required string LastName { get; init; }
 
     public required DateOnly BirthDate { get; init; }
-
-    public DateTime? CreatedAt { get; init; }
 }

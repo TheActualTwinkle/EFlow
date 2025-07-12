@@ -41,7 +41,7 @@ public class CreateStudentCommandHandler(
             LastName = request.LastName,
             MiddleName = request.MiddleName,
             BirthDate = request.BirthDate,
-            CreatedAt = request.CreatedAt ?? DateTime.UtcNow
+            CreatedAt = DateTime.UtcNow
         };
 
         await unitOfWork

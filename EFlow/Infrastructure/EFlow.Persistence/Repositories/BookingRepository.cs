@@ -20,11 +20,15 @@ public class BookingRepository(ApplicationDbContext context) :
     public async Task<IEnumerable<Booking>> GetByStudentIdAsync(Guid studentId, CancellationToken cancellationToken = new()) =>
         await Context.Bookings
             .Where(b => b.StudentId == studentId)
+            .Include(b => b.SubmissionSlot)
             .ToListAsync(cancellationToken);
 
     public async Task<IEnumerable<Booking>> GetBySlotIdAsync(Guid slotId, CancellationToken cancellationToken = new()) =>
         await Context.Bookings
             .Where(b => b.SlotId == slotId)
+            .Include(b => b.Student)
+            .OrderBy(b => b.CreatedAt)
+            .ThenBy(b => b.Id)
             .ToListAsync(cancellationToken);
 
     public void Update(Booking booking) =>

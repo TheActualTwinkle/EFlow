@@ -17,7 +17,7 @@ public class CreateBookingCommandHandler(
             Id = Guid.NewGuid(),
             StudentId = request.StudentId,
             SlotId = request.SlotId,
-            CreatedAt = request.CreatedAt ?? DateTime.UtcNow
+            CreatedAt = DateTime.UtcNow
         };
 
         await unitOfWork
