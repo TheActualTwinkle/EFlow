@@ -29,6 +29,7 @@ public static class DependencyInjection
         services.AddScoped<ISubjectRepository, SubjectRepository>();
         services.AddScoped<ISubmissionSlotRepository, SubmissionSlotRepository>();
         services.AddScoped<IBookingRepository, BookingRepository>();
+        services.AddScoped<IOutboxMessageRepository, OutboxMessageRepository>();
 
         return services;
     }

@@ -2,6 +2,7 @@ using EFlow.Application;
 using EFlow.Persistence;
 using EFLow.Presentation;
 using EFlow.Presentation.Middleware;
+using EFlow.Services;
 using EFlow.WebApi;
 using EFlow.WebApi.Extensions;
 using HealthChecks.UI.Client;
@@ -74,6 +75,7 @@ builder.Services
 
 builder.Services.AddApplication();
 builder.Services.AddPersistence(builder.Configuration);
+builder.Services.AddOutbox(builder.Configuration);
 
 var app = builder.Build();
 

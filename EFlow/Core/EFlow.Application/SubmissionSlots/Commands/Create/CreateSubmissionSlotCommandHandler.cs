@@ -1,7 +1,10 @@
-﻿using EFlow.Domain;
+﻿using System.Text.Json;
+using EFlow.Application.SubmissionSlots.Commands.Events;
+using EFlow.Domain;
 using EFlow.Domain.Models;
 using EFlow.Domain.Repositories;
 using FluentResults;
+using Mapster;
 using MediatR;
 
 namespace EFlow.Application.SubmissionSlots.Commands;
@@ -23,8 +26,26 @@ public class CreateSubmissionSlotCommandHandler(
         };
 
         await unitOfWork
-            .GetRepository<ISubmissionSlotRepository>()
+            .GetRepository<ISubmissionSlotRepository>() 
             .CreateAsync(slot, cancellationToken);
+        
+        var createdEvent = new SubmissionSlotCreatedEvent
+        {
+            SubmissionSlot = slot.Adapt<SubmissionSlotDto>()
+        };
+
+        var outboxMessage = new OutboxMessage
+        {
+            Id = Guid.NewGuid(),
+            Type = createdEvent.GetType().AssemblyQualifiedName ??
+                   throw new InvalidOperationException("Event type cannot be null"),
+            Payload = JsonSerializer.Serialize(createdEvent),
+            CreatedAt = DateTime.UtcNow
+        };
+
+        await unitOfWork
+            .GetRepository<IOutboxMessageRepository>()
+            .CreateAsync(outboxMessage, cancellationToken);
 
         return Result.Ok(slot.Id);
     }

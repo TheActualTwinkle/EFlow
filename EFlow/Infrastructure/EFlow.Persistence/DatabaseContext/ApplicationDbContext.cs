@@ -23,6 +23,8 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 
     public required DbSet<Booking> Bookings { get; init; }
 
+    public required DbSet<OutboxMessage> OutboxMessages { get; init; }
+
     public DbSet<TEntity> SetEntity<TEntity>() where TEntity : class =>
         Set<TEntity>();
 
@@ -39,6 +41,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
         modelBuilder.ApplyConfiguration(new SubjectConfiguration());
         modelBuilder.ApplyConfiguration(new SubmissionSlotConfiguration());
         modelBuilder.ApplyConfiguration(new BookingConfiguration());
+        modelBuilder.ApplyConfiguration(new OutboxMessageConfiguration());
     }
 
     private static void ConfigureIdentityModels(ModelBuilder modelBuilder)
