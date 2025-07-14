@@ -13,7 +13,7 @@ public class OutboxProcessor(
     ILogger<OutboxProcessor> logger)
     : IOutboxProcessor
 {
-    public async Task ProcessPendingAsync(int batchSize, CancellationToken cancellationToken)
+    public async Task ProcessPendingAsync(int batchSize, CancellationToken cancellationToken = new())
     {
         var outboxMessageRepository = unitOfWork.GetRepository<IOutboxMessageRepository>();
 
@@ -40,5 +40,18 @@ public class OutboxProcessor(
             {
                 logger.LogError(e, "Error processing outbox message with ID {MessageId}", message.Id);
             }
+    }
+
+    public async Task DeleteProcessedAsync(TimeSpan deleteAfter, CancellationToken cancellationToken = new())
+    {
+        var beforeDate = DateTime.UtcNow - deleteAfter;
+
+        logger.LogInformation("Deleting processed outbox messages older than {BeforeDate}", beforeDate);
+
+        await unitOfWork
+            .GetRepository<IOutboxMessageRepository>()
+            .DeleteProcessedAsync(beforeDate, cancellationToken);
+        
+        logger.LogInformation("Deleted outbox messages older than {BeforeDate} deleted", beforeDate);
     }
 }

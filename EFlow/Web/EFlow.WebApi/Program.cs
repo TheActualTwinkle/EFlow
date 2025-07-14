@@ -5,6 +5,7 @@ using EFlow.Presentation.Middleware;
 using EFlow.Services;
 using EFlow.WebApi;
 using EFlow.WebApi.Extensions;
+using Hangfire;
 using HealthChecks.UI.Client;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.OpenApi.Any;
@@ -75,6 +76,7 @@ builder.Services
 
 builder.Services.AddApplication();
 builder.Services.AddPersistence(builder.Configuration);
+builder.Services.AddJobScheduler(builder.Configuration);
 builder.Services.AddOutbox(builder.Configuration);
 
 var app = builder.Build();
@@ -85,6 +87,13 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
+
+    app.UseHangfireDashboard(
+        "/hangfire", new DashboardOptions
+        {
+            DashboardTitle = "EFlow Hangfire Dashboard",
+            Authorization = []
+        });
 }
 
 app.UseHttpsRedirection();
@@ -104,6 +113,8 @@ app.UseSerilogRequestLogging();
 app.UseRouting();
 
 await app.CreateRolesAsync();
+
+app.UseOutbox();
 
 app.UseAuthentication();
 app.UseAuthorization();

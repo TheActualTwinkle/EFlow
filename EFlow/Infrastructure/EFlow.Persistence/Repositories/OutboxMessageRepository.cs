@@ -16,8 +16,8 @@ public class OutboxMessageRepository(ApplicationDbContext context) :
             .FromSqlRaw(
                 """
                     SELECT * FROM "outbox_messages"
-                    WHERE "ProcessedAt" IS NULL
-                    ORDER BY "CreatedAt"
+                    WHERE "processed_at" IS NULL
+                    ORDER BY "created_at"
                     LIMIT {0}
                     FOR UPDATE SKIP LOCKED
                 """,
