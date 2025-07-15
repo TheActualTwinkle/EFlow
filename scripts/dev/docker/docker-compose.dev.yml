@@ -1,0 +1,36 @@
+name: eflow-dev
+services:
+  database:
+    image: postgres:16
+    environment:
+      - PGPORT=${PGPORT}
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    ports:
+      - "${PGPORT}:${PGPORT}"
+    volumes:
+      - ./pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -h localhost -p ${PGPORT} -U ${POSTGRES_USER}"]
+      interval: 15s
+      timeout: 15s
+      retries: 3
+
+  rabbitmq:
+    image: rabbitmq:management
+    hostname: ${RABBITMQ_HOST}
+    environment:
+      - RABBITMQ_NODE_PORT=${RABBITMQ_PORT}
+      - RABBITMQ_DEFAULT_USER=${RABBITMQ_USER}
+      - RABBITMQ_DEFAULT_PASS=${RABBITMQ_PASSWORD}
+    ports:
+      - "${RABBITMQ_PORT}:${RABBITMQ_PORT}"
+      - "15672:15672"
+    volumes:
+      - ./rabbitmq_data:/var/lib/rabbitmq 
+    healthcheck:
+      test: rabbitmq-diagnostics -q ping
+      interval: 15s
+      timeout: 15s
+      retries: 3
