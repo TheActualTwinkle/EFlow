@@ -16,6 +16,7 @@
     </ItemGroup>
 
     <ItemGroup>
+        <ProjectReference Include="..\..\..\EFlow.Contracts\EFlow.Contracts.csproj" />
         <ProjectReference Include="..\EFlow.Domain\EFlow.Domain.csproj"/>
     </ItemGroup>
 

@@ -106,9 +106,9 @@ app.MapHealthChecks(
         ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
     });
 
-app.UseExceptionHandler();
-
 app.UseSerilogRequestLogging();
+
+app.UseExceptionHandler();
 
 app.UseRouting();
 

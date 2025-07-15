@@ -18,8 +18,10 @@ public sealed class UnitOfWork(
 
     private bool _disposed;
 
-    private IDbContextTransaction? CurrentTransaction =>
-        context.Database.CurrentTransaction;
+    private IDbContextTransaction? _currentTransaction;
+
+    ~UnitOfWork() =>
+        Dispose(false);
 
     public T GetRepository<T>() where T : IRepository
     {
@@ -40,21 +42,21 @@ public sealed class UnitOfWork(
         IsolationLevel isolationLevel = IsolationLevel.ReadCommitted,
         CancellationToken cancellationToken = new())
     {
-        if (CurrentTransaction is not null)
+        if (_currentTransaction is not null)
             throw new InvalidOperationException("Transaction already started");
 
-        await context.Database.BeginTransactionAsync(isolationLevel, cancellationToken);
+        _currentTransaction = await context.Database.BeginTransactionAsync(isolationLevel, cancellationToken);
     }
 
     public async Task CommitAsync(CancellationToken cancellationToken = new())
     {
-        if (CurrentTransaction is null)
+        if (_currentTransaction is null)
             throw new InvalidOperationException("No active transaction");
 
         try
         {
             await context.SaveChangesAsync(cancellationToken);
-            await CurrentTransaction.CommitAsync(cancellationToken);
+            await _currentTransaction.CommitAsync(cancellationToken);
         }
         finally
         {
@@ -64,12 +66,12 @@ public sealed class UnitOfWork(
 
     public async Task RollbackAsync(CancellationToken cancellationToken = new())
     {
-        if (CurrentTransaction is null)
+        if (_currentTransaction is null)
             return;
 
         try
         {
-            await CurrentTransaction.RollbackAsync(cancellationToken);
+            await _currentTransaction.RollbackAsync(cancellationToken);
         }
         finally
         {
@@ -80,18 +82,17 @@ public sealed class UnitOfWork(
     public async Task SaveChangesAsync(CancellationToken cancellationToken = new()) =>
         await context.SaveChangesAsync(cancellationToken);
 
-    ~UnitOfWork() =>
-        Dispose(false);
+    private async Task DisposeTransactionAsync()
+    {
+        if (_currentTransaction is null)
+            return;
+
+        await _currentTransaction.DisposeAsync().ConfigureAwait(false);
+
+        _currentTransaction = null;
+    }
 
     #region Dispose
-
-    public async ValueTask DisposeAsync()
-    {
-        await DisposeAsyncCore().ConfigureAwait(false);
-
-        Dispose(false);
-        GC.SuppressFinalize(this);
-    }
 
     public void Dispose()
     {
@@ -99,18 +100,25 @@ public sealed class UnitOfWork(
         GC.SuppressFinalize(this);
     }
 
-    private async Task DisposeTransactionAsync()
+    public async ValueTask DisposeAsync()
     {
-        if (CurrentTransaction is not null)
-            await CurrentTransaction.DisposeAsync().ConfigureAwait(false);
+        await DisposeAsyncCore();
+
+        Dispose(false);
+        GC.SuppressFinalize(this);
     }
 
     private async ValueTask DisposeAsyncCore()
     {
-        if (CurrentTransaction is not null)
-            await CurrentTransaction.DisposeAsync().ConfigureAwait(false);
+        if (_disposed)
+            return;
 
+        await DisposeTransactionAsync();
         await context.DisposeAsync();
+
+        _repositories.Clear();
+
+        _disposed = true;
     }
 
     private void Dispose(bool disposing)
@@ -120,10 +128,10 @@ public sealed class UnitOfWork(
 
         if (disposing)
         {
-            _repositories.Clear();
-
-            CurrentTransaction?.Dispose();
+            _currentTransaction?.Dispose();
             context.Dispose();
+
+            _repositories.Clear();
         }
 
         _disposed = true;
