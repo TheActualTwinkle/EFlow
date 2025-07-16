@@ -13,6 +13,9 @@ public static class DependencyInjection
     public static IServiceCollection AddApplication(this IServiceCollection services)
     {
         TypeAdapterConfig.GlobalSettings.Apply(new MapsterRegister());
+        TypeAdapterConfig.GlobalSettings.RequireExplicitMapping = true;
+        TypeAdapterConfig.GlobalSettings.Default.IgnoreNonMapped(true);
+
         services.AddSingleton(TypeAdapterConfig.GlobalSettings);
 
         services.AddScoped<IMapper, ServiceMapper>();

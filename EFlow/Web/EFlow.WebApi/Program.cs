@@ -1,4 +1,5 @@
 using EFlow.Application;
+using EFlow.Messaging;
 using EFlow.Persistence;
 using EFLow.Presentation;
 using EFlow.Presentation.Middleware;
@@ -78,6 +79,7 @@ builder.Services.AddApplication();
 builder.Services.AddPersistence(builder.Configuration);
 builder.Services.AddJobScheduler(builder.Configuration);
 builder.Services.AddOutbox(builder.Configuration);
+builder.Services.AddMessaging(builder.Configuration);
 
 var app = builder.Build();
 
@@ -106,9 +108,9 @@ app.MapHealthChecks(
         ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
     });
 
-app.UseExceptionHandler();
-
 app.UseSerilogRequestLogging();
+
+app.UseExceptionHandler();
 
 app.UseRouting();
 
