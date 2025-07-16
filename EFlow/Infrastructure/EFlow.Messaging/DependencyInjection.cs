@@ -1,7 +1,6 @@
 ﻿using MassTransit;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using RegistrationExtensions = MassTransit.RegistrationExtensions;
 
 namespace EFlow.Messaging;
 
