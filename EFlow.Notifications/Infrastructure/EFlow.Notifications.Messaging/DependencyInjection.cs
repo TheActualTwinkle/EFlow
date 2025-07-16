@@ -4,7 +4,7 @@ using MassTransit;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace EFlow.Messaging;
+namespace EFlow.Notifications.Messaging;
 
 public static class DependencyInjection
 {

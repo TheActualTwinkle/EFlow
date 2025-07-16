@@ -1,4 +1,4 @@
-using EFlow.Messaging;
+using EFlow.Notifications.Messaging;
 using EFlow.Notifications.Services;
 
 var builder = WebApplication.CreateBuilder(args);
