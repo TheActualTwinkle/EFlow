@@ -40,6 +40,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EFlow.Notifications.Messagi
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EFlow.Notifications.Services", "EFlow.Notifications\Core\EFlow.Notifications.Services\EFlow.Notifications.Services.csproj", "{B68F9C47-4354-4914-8800-5A66710559F5}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EFlow.Messaging", "EFlow\Infrastructure\EFlow.Messaging\EFlow.Messaging.csproj", "{5D7CB060-88B2-4AD1-B021-38C9589F1495}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -94,6 +96,10 @@ Global
 		{B68F9C47-4354-4914-8800-5A66710559F5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B68F9C47-4354-4914-8800-5A66710559F5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B68F9C47-4354-4914-8800-5A66710559F5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5D7CB060-88B2-4AD1-B021-38C9589F1495}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5D7CB060-88B2-4AD1-B021-38C9589F1495}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5D7CB060-88B2-4AD1-B021-38C9589F1495}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5D7CB060-88B2-4AD1-B021-38C9589F1495}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{CBD35D59-9A66-42D5-8A63-BD64A26169D5} = {140A259E-89E9-4BAD-BC98-C324A1896346}
@@ -115,5 +121,6 @@ Global
 		{21F3D0E6-1766-4FC5-9B6B-9B15BB0226BD} = {4D916408-DE5F-4B8E-A2F3-8D8A55B62098}
 		{37A55CCE-D6D1-413C-B888-A99140430604} = {7739E123-CA58-4A95-81F4-EBE3D4B82684}
 		{B68F9C47-4354-4914-8800-5A66710559F5} = {5951CBE1-F678-4827-97F4-0BA5CBCC53EC}
+		{5D7CB060-88B2-4AD1-B021-38C9589F1495} = {0BC83752-8364-40E4-9CF0-1C67BB8248C7}
 	EndGlobalSection
 EndGlobal

@@ -7,7 +7,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 builder.Services.AddNotificationServices();
-builder.Services.AddBus(builder.Configuration);
+builder.Services.AddMessaging(builder.Configuration);
 
 var app = builder.Build();
 

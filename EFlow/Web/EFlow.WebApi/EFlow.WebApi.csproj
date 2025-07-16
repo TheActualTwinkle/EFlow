@@ -21,6 +21,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\..\Infrastructure\EFlow.Persistence\EFlow.Persistence.csproj"/>
+        <ProjectReference Include="..\..\Infrastructure\EFlow.Messaging\EFlow.Messaging.csproj"/>
         <ProjectReference Include="..\..\Core\EFlow.Services\EFlow.Services.csproj"/>
         <ProjectReference Include="..\..\Presentation\EFlow.Presentation\EFlow.Presentation.csproj"/>
     </ItemGroup>

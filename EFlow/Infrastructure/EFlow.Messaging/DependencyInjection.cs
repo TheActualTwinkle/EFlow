@@ -1,8 +1,7 @@
-﻿using EFlow.Notifications.Messaging.Consumers;
-using EFlow.Notifications.Messaging.Consumers.Settings;
-using MassTransit;
+﻿using MassTransit;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using RegistrationExtensions = MassTransit.RegistrationExtensions;
 
 namespace EFlow.Messaging;
 
@@ -14,9 +13,7 @@ public static class DependencyInjection
         {
             x.SetKebabCaseEndpointNameFormatter();
 
-            x.AddConsumer<SubmissionSlotCreatedConsumer>();
-
-            x.UsingRabbitMq((context, cfg) =>
+            x.UsingRabbitMq((_, cfg) =>
             {
                 var configurationSection = configuration.GetRequiredSection("RabbitMqSettings");
 
@@ -39,31 +36,9 @@ public static class DependencyInjection
                         h.Username(username);
                         h.Password(password);
                     });
-
-                cfg.ReceiveEndpoint(
-                    "eflow-submission-slot-created",
-                    e => e.Consumer<SubmissionSlotCreatedConsumer>(context));
             });
         });
 
-        AddConsumerSettings(services, configuration);
-
         return services;
-    }
-
-    private static void AddConsumerSettings(IServiceCollection services, IConfiguration configuration)
-    {
-        var defaultCancellationTimeoutString = configuration
-            .GetRequiredSection("ConsumersSettings")["DefaultCancellationTimeout"];
-
-        if (string.IsNullOrEmpty(defaultCancellationTimeoutString))
-            throw new InvalidOperationException("DefaultCancellationTimeout is not configured in ConsumersSettings.");
-
-        var defaultCancellationTimeout = TimeSpan.Parse(defaultCancellationTimeoutString);
-
-        services.AddSingleton<ConsumerSettings>(_ => new ConsumerSettings
-        {
-            DefaultCancellationTimeout = defaultCancellationTimeout
-        });
     }
 }
