@@ -11,8 +11,14 @@ public sealed class SubmissionSlot : IEntity
     public required DateTime EndTime { get; init; }
 
     public required int MaxStudents { get; init; }
+    
+    public bool IsForAllGroups { get; init; }
+    
+    public ICollection<Guid> AllowedGroupIds { get; init; } = new List<Guid>();
 
     public string? Location { get; init; }
 
     public Subject? Subject { get; init; }
+    
+    public ICollection<Group>? AllowedGroups { get; init; }
 }

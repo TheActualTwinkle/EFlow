@@ -34,14 +34,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 
         ConfigureIdentityModels(modelBuilder);
 
-        modelBuilder.ApplyConfiguration(new AdminConfiguration());
-        modelBuilder.ApplyConfiguration(new TeacherConfiguration());
-        modelBuilder.ApplyConfiguration(new StudentConfiguration());
-        modelBuilder.ApplyConfiguration(new GroupConfiguration());
-        modelBuilder.ApplyConfiguration(new SubjectConfiguration());
-        modelBuilder.ApplyConfiguration(new SubmissionSlotConfiguration());
-        modelBuilder.ApplyConfiguration(new BookingConfiguration());
-        modelBuilder.ApplyConfiguration(new OutboxMessageConfiguration());
+        modelBuilder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
     }
 
     private static void ConfigureIdentityModels(ModelBuilder modelBuilder)

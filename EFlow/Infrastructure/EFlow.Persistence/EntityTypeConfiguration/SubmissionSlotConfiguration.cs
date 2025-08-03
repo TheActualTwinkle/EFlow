@@ -43,9 +43,22 @@ public class SubmissionSlotConfiguration : IEntityTypeConfiguration<SubmissionSl
             .HasColumnName("location")
             .HasMaxLength(127);
 
+        builder.Property(s => s.IsForAllGroups)
+            .HasColumnName("is_for_all_groups")
+            .IsRequired();
+
+        builder.Property(s => s.AllowedGroupIds)
+            .HasColumnName("allowed_group_ids")
+            .HasColumnType("uuid[]")
+            .IsRequired();
+
         builder.HasOne(s => s.Subject)
             .WithMany()
             .HasForeignKey(s => s.SubjectId)
             .HasConstraintName("fk_submission_slots_subjects");
+
+        builder.HasMany(s => s.AllowedGroups)
+            .WithMany(g => g.SubmissionSlots)
+            .UsingEntity("group_submission_slot");
     }
 }
