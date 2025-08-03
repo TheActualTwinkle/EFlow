@@ -14,7 +14,7 @@ public sealed class SubmissionSlot : IEntity
     
     public bool IsForAllGroups { get; init; }
     
-    public ICollection<Guid> AllowedGroupIds { get; init; } = new List<Guid>();
+    public ICollection<Guid>? AllowedGroupIds { get; init; }
 
     public string? Location { get; init; }
 
