@@ -16,7 +16,8 @@ public class CreateSubjectCommandHandler(
         {
             Id = Guid.NewGuid(),
             Name = request.Name,
-            TeacherId = request.TeacherId
+            TeacherId = request.TeacherId,
+            GroupIds = request.GroupIds
         };
 
         await unitOfWork

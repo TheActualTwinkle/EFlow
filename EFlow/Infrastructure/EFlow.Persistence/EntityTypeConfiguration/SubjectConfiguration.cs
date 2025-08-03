@@ -25,9 +25,18 @@ public class SubjectConfiguration : IEntityTypeConfiguration<Subject>
             .HasColumnName("teacher_id")
             .IsRequired();
 
+        builder.Property(s => s.GroupIds)
+            .HasColumnName("group_ids")
+            .HasColumnType("uuid[]")
+            .IsRequired();
+
         builder.HasOne(s => s.Teacher)
             .WithMany()
             .HasForeignKey(s => s.TeacherId)
             .HasConstraintName("fk_subjects_teachers");
+
+        builder.HasMany(s => s.Groups)
+            .WithMany(g => g.Subjects)
+            .UsingEntity("group_subject");
     }
 }
