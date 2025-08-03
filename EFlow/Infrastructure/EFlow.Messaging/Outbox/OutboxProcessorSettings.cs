@@ -1,4 +1,4 @@
-﻿namespace EFlow.Services.Outbox;
+﻿namespace EFlow.Messaging.Outbox;
 
 public record OutboxProcessorSettings
 {

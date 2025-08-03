@@ -1,11 +1,11 @@
 ﻿using System.Text.Json;
 using EFlow.Domain;
 using EFlow.Domain.Repositories;
-using EFlow.Services.Outbox.Interfaces;
+using EFlow.Messaging.Outbox.Interfaces;
 using MediatR;
 using Microsoft.Extensions.Logging;
 
-namespace EFlow.Services.Outbox;
+namespace EFlow.Messaging.Outbox;
 
 public class OutboxProcessor(
     IUnitOfWork unitOfWork,

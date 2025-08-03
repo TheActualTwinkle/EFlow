@@ -3,6 +3,8 @@ using EFlow.Domain.Repositories;
 using EFlow.Persistence.DatabaseContext;
 using EFlow.Persistence.Repositories;
 using EFlow.Persistence.UnitOfWorkContext;
+using Hangfire;
+using Hangfire.PostgreSql;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -30,6 +32,27 @@ public static class DependencyInjection
         services.AddScoped<ISubmissionSlotRepository, SubmissionSlotRepository>();
         services.AddScoped<IBookingRepository, BookingRepository>();
         services.AddScoped<IOutboxMessageRepository, OutboxMessageRepository>();
+
+        return services;
+    }
+    
+    public static IServiceCollection AddJobScheduler(this IServiceCollection services, IConfiguration configuration)
+    {
+        var hangfireConnectionString = configuration.GetConnectionString("HangfireDb") ??
+                                       throw new InvalidOperationException("Hangfire connection string is not configured.");
+
+        services.AddHangfire(c =>
+            c.UseDynamicJobs()
+                .UseSimpleAssemblyNameTypeSerializer()
+                .UseRecommendedSerializerSettings()
+                .UsePostgreSqlStorage(o => o.UseNpgsqlConnection(hangfireConnectionString))
+                .UseFilter(new AutomaticRetryAttribute { Attempts = 3 }));
+
+        services.AddHangfireServer(o =>
+        {
+            o.Queues = ["eflow-outbox"];
+            o.SchedulePollingInterval = TimeSpan.FromSeconds(10);
+        });
 
         return services;
     }
