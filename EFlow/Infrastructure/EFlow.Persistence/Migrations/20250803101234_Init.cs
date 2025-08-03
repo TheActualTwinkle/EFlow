@@ -69,6 +69,22 @@ namespace EFlow.Persistence.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "outbox_messages",
+                columns: table => new
+                {
+                    id = table.Column<Guid>(type: "uuid", nullable: false),
+                    type = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
+                    payload = table.Column<string>(type: "jsonb", nullable: false),
+                    created_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    processed_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    error_message = table.Column<string>(type: "text", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("pk_outbox_messages", x => x.id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "AspNetRoleClaims",
                 schema: "identity",
                 columns: table => new
@@ -263,7 +279,8 @@ namespace EFlow.Persistence.Migrations
                 {
                     id = table.Column<Guid>(type: "uuid", nullable: false),
                     name = table.Column<string>(type: "character varying(127)", maxLength: 127, nullable: false),
-                    teacher_id = table.Column<Guid>(type: "uuid", nullable: false)
+                    teacher_id = table.Column<Guid>(type: "uuid", nullable: false),
+                    group_ids = table.Column<Guid[]>(type: "uuid[]", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -277,6 +294,30 @@ namespace EFlow.Persistence.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "group_subject",
+                columns: table => new
+                {
+                    GroupsId = table.Column<Guid>(type: "uuid", nullable: false),
+                    SubjectsId = table.Column<Guid>(type: "uuid", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_group_subject", x => new { x.GroupsId, x.SubjectsId });
+                    table.ForeignKey(
+                        name: "FK_group_subject_groups_GroupsId",
+                        column: x => x.GroupsId,
+                        principalTable: "groups",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_group_subject_subjects_SubjectsId",
+                        column: x => x.SubjectsId,
+                        principalTable: "subjects",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "submission_slots",
                 columns: table => new
                 {
@@ -285,11 +326,14 @@ namespace EFlow.Persistence.Migrations
                     start_time = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     end_time = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     max_students = table.Column<int>(type: "integer", nullable: false),
+                    is_for_all_groups = table.Column<bool>(type: "boolean", nullable: false),
+                    allowed_group_ids = table.Column<Guid[]>(type: "uuid[]", nullable: false),
                     location = table.Column<string>(type: "character varying(127)", maxLength: 127, nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("pk_submission_slots", x => x.id);
+                    table.CheckConstraint("CK_SubmissionSlots_ValidTimeRange", "start_time < end_time");
                     table.ForeignKey(
                         name: "fk_submission_slots_subjects",
                         column: x => x.subject_id,
@@ -319,6 +363,30 @@ namespace EFlow.Persistence.Migrations
                     table.ForeignKey(
                         name: "fk_bookings_submission_slots",
                         column: x => x.slot_id,
+                        principalTable: "submission_slots",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "group_submission_slot",
+                columns: table => new
+                {
+                    AllowedGroupsId = table.Column<Guid>(type: "uuid", nullable: false),
+                    SubmissionSlotsId = table.Column<Guid>(type: "uuid", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_group_submission_slot", x => new { x.AllowedGroupsId, x.SubmissionSlotsId });
+                    table.ForeignKey(
+                        name: "FK_group_submission_slot_groups_AllowedGroupsId",
+                        column: x => x.AllowedGroupsId,
+                        principalTable: "groups",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_group_submission_slot_submission_slots_SubmissionSlotsId",
+                        column: x => x.SubmissionSlotsId,
                         principalTable: "submission_slots",
                         principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
@@ -380,6 +448,16 @@ namespace EFlow.Persistence.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
+                name: "IX_group_subject_SubjectsId",
+                table: "group_subject",
+                column: "SubjectsId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_group_submission_slot_SubmissionSlotsId",
+                table: "group_submission_slot",
+                column: "SubmissionSlotsId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_students_group_id",
                 table: "students",
                 column: "group_id");
@@ -423,6 +501,15 @@ namespace EFlow.Persistence.Migrations
 
             migrationBuilder.DropTable(
                 name: "bookings");
+
+            migrationBuilder.DropTable(
+                name: "group_subject");
+
+            migrationBuilder.DropTable(
+                name: "group_submission_slot");
+
+            migrationBuilder.DropTable(
+                name: "outbox_messages");
 
             migrationBuilder.DropTable(
                 name: "AspNetRoles",

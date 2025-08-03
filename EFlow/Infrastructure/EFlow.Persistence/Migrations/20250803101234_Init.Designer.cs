@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace EFlow.Persistence.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250714100716_Outbox")]
-    partial class Outbox
+    [Migration("20250803101234_Init")]
+    partial class Init
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -242,6 +242,11 @@ namespace EFlow.Persistence.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
+                    b.Property<Guid[]>("GroupIds")
+                        .IsRequired()
+                        .HasColumnType("uuid[]")
+                        .HasColumnName("group_ids");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(127)
@@ -267,9 +272,18 @@ namespace EFlow.Persistence.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
+                    b.Property<Guid[]>("AllowedGroupIds")
+                        .IsRequired()
+                        .HasColumnType("uuid[]")
+                        .HasColumnName("allowed_group_ids");
+
                     b.Property<DateTime>("EndTime")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("end_time");
+
+                    b.Property<bool>("IsForAllGroups")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_for_all_groups");
 
                     b.Property<string>("Location")
                         .HasMaxLength(127)
@@ -466,6 +480,36 @@ namespace EFlow.Persistence.Migrations
                     b.ToTable("AspNetUserTokens", "identity");
                 });
 
+            modelBuilder.Entity("group_subject", b =>
+                {
+                    b.Property<Guid>("GroupsId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("SubjectsId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("GroupsId", "SubjectsId");
+
+                    b.HasIndex("SubjectsId");
+
+                    b.ToTable("group_subject");
+                });
+
+            modelBuilder.Entity("group_submission_slot", b =>
+                {
+                    b.Property<Guid>("AllowedGroupsId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("SubmissionSlotsId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("AllowedGroupsId", "SubmissionSlotsId");
+
+                    b.HasIndex("SubmissionSlotsId");
+
+                    b.ToTable("group_submission_slot");
+                });
+
             modelBuilder.Entity("EFlow.Domain.Models.Admin", b =>
                 {
                     b.HasOne("EFlow.Domain.Models.Identity", "Identity")
@@ -603,6 +647,36 @@ namespace EFlow.Persistence.Migrations
                     b.HasOne("EFlow.Domain.Models.Identity", null)
                         .WithMany()
                         .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("group_subject", b =>
+                {
+                    b.HasOne("EFlow.Domain.Models.Group", null)
+                        .WithMany()
+                        .HasForeignKey("GroupsId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("EFlow.Domain.Models.Subject", null)
+                        .WithMany()
+                        .HasForeignKey("SubjectsId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("group_submission_slot", b =>
+                {
+                    b.HasOne("EFlow.Domain.Models.Group", null)
+                        .WithMany()
+                        .HasForeignKey("AllowedGroupsId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("EFlow.Domain.Models.SubmissionSlot", null)
+                        .WithMany()
+                        .HasForeignKey("SubmissionSlotsId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
