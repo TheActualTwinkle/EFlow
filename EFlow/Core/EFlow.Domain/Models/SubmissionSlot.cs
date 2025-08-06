@@ -12,7 +12,7 @@ public sealed class SubmissionSlot : IEntity
 
     public required int MaxStudents { get; init; }
     
-    public bool IsForAllGroups { get; init; }
+    public bool AllowAllGroups { get; init; }
     
     public ICollection<Guid>? AllowedGroupIds { get; init; }
 

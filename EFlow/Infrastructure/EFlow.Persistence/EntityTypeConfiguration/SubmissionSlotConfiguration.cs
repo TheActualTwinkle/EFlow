@@ -43,8 +43,8 @@ public class SubmissionSlotConfiguration : IEntityTypeConfiguration<SubmissionSl
             .HasColumnName("location")
             .HasMaxLength(127);
 
-        builder.Property(s => s.IsForAllGroups)
-            .HasColumnName("is_for_all_groups")
+        builder.Property(s => s.AllowAllGroups)
+            .HasColumnName("allow_all_groups")
             .IsRequired();
 
         builder.Property(s => s.AllowedGroupIds)
