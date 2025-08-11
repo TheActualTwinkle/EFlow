@@ -44,6 +44,7 @@ public static class DependencyInjection
 
         return services;
     }
+    
     public static IServiceCollection AddOutbox(this IServiceCollection services, IConfiguration configuration)
     {
         var batchSize = configuration
@@ -79,8 +80,6 @@ public static class DependencyInjection
 
         return services;
     }
-
-
 
     public static IApplicationBuilder UseOutbox(this WebApplication app)
     {
