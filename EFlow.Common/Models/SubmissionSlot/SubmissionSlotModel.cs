@@ -1,6 +1,9 @@
-﻿namespace EFlow.Contracts.Messages.Models;
+﻿using MemoryPack;
 
-public record SubmissionSlotModel
+namespace EFlow.Common.Models.SubmissionSlot;
+
+[MemoryPackable]
+public partial record SubmissionSlotModel
 {
     public required Guid Id { get; init; }
 

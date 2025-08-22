@@ -1,10 +1,17 @@
-﻿using EFlow.Messaging.Outbox;
+﻿using Confluent.Kafka;
+using EFlow.Common.Messaging.Init;
+using EFlow.Common.Messaging.Producers;
+using EFlow.Common.Messaging.Serialization;
+using EFlow.Common.Messaging.Settings;
+using EFlow.Messaging.Outbox;
 using EFlow.Messaging.Outbox.Interfaces;
+using EFlow.Messaging.Outbox.MessageProcessing.Factories;
+using EFlow.Messaging.Outbox.MessageProcessing.Factories.Interfaces;
 using Hangfire;
-using MassTransit;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 
 namespace EFlow.Messaging;
 
@@ -12,40 +19,83 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddMessaging(this IServiceCollection services, IConfiguration configuration)
     {
-        services.AddMassTransit(x =>
+        services.AddScoped<TopicInitializer>();
+
+        services.Configure<KafkaSettings>(configuration.GetRequiredSection("KafkaSettings"));
+        services.Configure<KafkaTopicsSettings>(configuration.GetRequiredSection("KafkaSettings"));
+
+        services.AddScoped(typeof(ICommitLogProducer<,>), typeof(CommitLogProducer<,>));
+        
+        services.AddSingleton<ProducerConfig>(serviceProvider =>
         {
-            x.SetKebabCaseEndpointNameFormatter();
+            var settings = serviceProvider.GetRequiredService<IOptions<KafkaSettings>>().Value;
 
-            x.UsingRabbitMq((_, cfg) =>
+            return new ProducerConfig
             {
-                var configurationSection = configuration.GetRequiredSection("RabbitMqSettings");
+                BootstrapServers = settings.BootstrapServers
+            };
+        });
 
-                var host = configurationSection["Host"] ??
-                           throw new InvalidOperationException("RabbitMqSettings:Host is not configured.");
+        services.AddScoped(typeof(ISerializer<>), typeof(JsonSerializer<>));
 
-                var port = ushort.Parse(
-                    configurationSection["Port"] ??
-                    throw new InvalidOperationException("RabbitMqSettings:Port is not configured."));
+        services.AddSingleton<IAdminClient>(serviceProvider =>
+        {
+            var settings = serviceProvider.GetRequiredService<IOptions<KafkaSettings>>().Value;
 
-                var username = configurationSection["Username"] ??
-                               throw new InvalidOperationException("RabbitMqSettings:Username is not configured.");
-
-                var password = configurationSection["Password"] ??
-                               throw new InvalidOperationException("RabbitMqSettings:Password is not configured.");
-
-                cfg.Host(
-                    host, port, "/", h =>
-                    {
-                        h.Username(username);
-                        h.Password(password);
-                    });
-            });
+            return new AdminClientBuilder(new AdminClientConfig { BootstrapServers = settings.BootstrapServers })
+                .Build();
         });
 
         return services;
     }
-    
+
     public static IServiceCollection AddOutbox(this IServiceCollection services, IConfiguration configuration)
+    {
+        AddOutboxProcessor(services, configuration);
+
+        services.AddScoped<IOutboxMessageProcessorFactory, OutboxMessageProcessorFactory>();
+
+        return services;
+    }
+
+    public static IApplicationBuilder UseMessaging(this WebApplication app)
+    {
+        using var scope = app.Services.CreateScope();
+
+        scope.ServiceProvider
+            .GetRequiredService<TopicInitializer>()
+            .EnsureTopicsCreatedAsync()
+            .GetAwaiter().GetResult();
+        
+        return app;
+    }
+
+    public static IApplicationBuilder UseOutbox(this WebApplication app)
+    {
+        var settings = app.Services.GetRequiredService<OutboxProcessorSettings>();
+
+        var recurringJobManager = app.Services.GetRequiredService<IRecurringJobManager>();
+
+        recurringJobManager.AddOrUpdateDynamic<IOutboxProcessor>(
+            "ProcessOutboxMessages",
+            p => p.ProcessPendingAsync(settings.BatchSize, CancellationToken.None),
+            settings.ProcessIntervalCron,
+#pragma warning disable CS0618 // Type or member is obsolete
+            new DynamicRecurringJobOptions { QueueName = "eflow-outbox" });
+#pragma warning restore CS0618 // Type or member is obsolete
+
+        recurringJobManager.AddOrUpdateDynamic<IOutboxProcessor>(
+            "DeleteOutboxMessages",
+            p => p.DeleteProcessedAsync(settings.DeleteAfter, CancellationToken.None),
+            settings.DeleteIntervalCron,
+#pragma warning disable CS0618 // Type or member is obsolete
+            new DynamicRecurringJobOptions { QueueName = "eflow-outbox" });
+#pragma warning restore CS0618 // Type or member is obsolete
+
+        return app;
+    }
+
+    private static void AddOutboxProcessor(IServiceCollection services, IConfiguration configuration)
     {
         var batchSize = configuration
             .GetRequiredSection("OutboxProcessorSettings")
@@ -77,32 +127,5 @@ public static class DependencyInjection
         });
 
         services.AddScoped<IOutboxProcessor, OutboxProcessor>();
-
-        return services;
-    }
-
-    public static IApplicationBuilder UseOutbox(this WebApplication app)
-    {
-        var settings = app.Services.GetRequiredService<OutboxProcessorSettings>();
-
-        var recurringJobManager = app.Services.GetRequiredService<IRecurringJobManager>();
-
-        recurringJobManager.AddOrUpdateDynamic<IOutboxProcessor>(
-            "ProcessOutboxMessages",
-            p => p.ProcessPendingAsync(settings.BatchSize, CancellationToken.None),
-            settings.ProcessIntervalCron,
-#pragma warning disable CS0618 // Type or member is obsolete
-            new DynamicRecurringJobOptions { QueueName = "eflow-outbox" });
-#pragma warning restore CS0618 // Type or member is obsolete
-
-        recurringJobManager.AddOrUpdateDynamic<IOutboxProcessor>(
-            "DeleteOutboxMessages",
-            p => p.DeleteProcessedAsync(settings.DeleteAfter, CancellationToken.None),
-            settings.DeleteIntervalCron,
-#pragma warning disable CS0618 // Type or member is obsolete
-            new DynamicRecurringJobOptions { QueueName = "eflow-outbox" });
-#pragma warning restore CS0618 // Type or member is obsolete
-
-        return app;
     }
 }

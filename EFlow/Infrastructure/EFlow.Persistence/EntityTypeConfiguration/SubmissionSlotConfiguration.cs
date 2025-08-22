@@ -49,8 +49,7 @@ public class SubmissionSlotConfiguration : IEntityTypeConfiguration<SubmissionSl
 
         builder.Property(s => s.AllowedGroupIds)
             .HasColumnName("allowed_group_ids")
-            .HasColumnType("uuid[]")
-            .IsRequired();
+            .HasColumnType("uuid[]");
 
         builder.HasOne(s => s.Subject)
             .WithMany()

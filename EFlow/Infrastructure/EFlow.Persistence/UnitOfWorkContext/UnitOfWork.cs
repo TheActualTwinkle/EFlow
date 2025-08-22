@@ -30,7 +30,8 @@ public sealed class UnitOfWork(
         var type = typeof(T);
 
         return (T)_repositories.GetOrAdd(
-            type, _ =>
+            type,
+            _ =>
             {
                 var repo = (T)serviceProvider.GetRequiredService(type);
 
@@ -38,7 +39,7 @@ public sealed class UnitOfWork(
             });
     }
 
-    public async Task BeginAsync(
+    public async Task BeginTransactionAsync(
         IsolationLevel isolationLevel = IsolationLevel.ReadCommitted,
         CancellationToken cancellationToken = new())
     {
@@ -48,7 +49,7 @@ public sealed class UnitOfWork(
         _currentTransaction = await context.Database.BeginTransactionAsync(isolationLevel, cancellationToken);
     }
 
-    public async Task CommitAsync(CancellationToken cancellationToken = new())
+    public async Task CommitTransactionAsync(CancellationToken cancellationToken = new())
     {
         if (_currentTransaction is null)
             throw new InvalidOperationException("No active transaction");
@@ -64,7 +65,7 @@ public sealed class UnitOfWork(
         }
     }
 
-    public async Task RollbackAsync(CancellationToken cancellationToken = new())
+    public async Task RollbackTransactionAsync(CancellationToken cancellationToken = new())
     {
         if (_currentTransaction is null)
             return;

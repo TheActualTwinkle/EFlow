@@ -1,45 +1,54 @@
-﻿using System.Text.Json;
-using EFlow.Domain;
+﻿using EFlow.Domain;
 using EFlow.Domain.Repositories;
 using EFlow.Messaging.Outbox.Interfaces;
-using MediatR;
+using EFlow.Messaging.Outbox.MessageProcessing.Factories.Interfaces;
 using Microsoft.Extensions.Logging;
 
 namespace EFlow.Messaging.Outbox;
 
 public class OutboxProcessor(
     IUnitOfWork unitOfWork,
-    IPublisher publisher,
+    IOutboxMessageProcessorFactory messageProcessorFactory,
     ILogger<OutboxProcessor> logger)
     : IOutboxProcessor
 {
+    // TODO: Use a transaction in UOW.
     public async Task ProcessPendingAsync(int batchSize, CancellationToken cancellationToken = new())
     {
         var outboxMessageRepository = unitOfWork.GetRepository<IOutboxMessageRepository>();
 
         var messages = await outboxMessageRepository.GetUnprocessedAsync(batchSize, cancellationToken);
+        
+        if (messages.Count == 0)
+            return;
 
         foreach (var message in messages)
             try
             {
-                var eventType = Type.GetType(message.Type);
+                var messageType = Type.GetType(message.Type);
 
-                if (eventType is null)
-                    throw new InvalidOperationException($"Event type {message.Type} not found");
+                if (messageType is null)
+                    throw new InvalidOperationException($"Outbox message type {message.Type} is null");
 
-                var payload = JsonSerializer.Deserialize(message.Payload, eventType);
+                var messageProcessor = messageProcessorFactory.Get(messageType);
 
-                if (payload is null)
-                    throw new InvalidOperationException($"Payload for {message.Type} cannot be null");
+                if (messageProcessor is null)
+                {
+                    logger.LogError(
+                        "No message processor found for type {MessageType}. Will skip and mark as processed.",
+                        messageType.FullName);
 
-                await publisher.Publish(payload, cancellationToken);
+                    continue;
+                }
 
-                await outboxMessageRepository.MarkAsProcessedAsync([message.Id], cancellationToken);
+                await messageProcessor.ProcessAsync(message, cancellationToken);
             }
             catch (InvalidOperationException e)
             {
                 logger.LogError(e, "Error processing outbox message with ID {MessageId}", message.Id);
             }
+
+        await outboxMessageRepository.MarkAsProcessedAsync(messages.Select(m => m.Id), cancellationToken);
     }
 
     public async Task DeleteProcessedAsync(TimeSpan deleteAfter, CancellationToken cancellationToken = new())
@@ -51,7 +60,7 @@ public class OutboxProcessor(
         await unitOfWork
             .GetRepository<IOutboxMessageRepository>()
             .DeleteProcessedAsync(beforeDate, cancellationToken);
-        
-        logger.LogInformation("Deleted outbox messages older than {BeforeDate} deleted", beforeDate);
+
+        logger.LogInformation("Deleted outbox messages older than {BeforeDate}", beforeDate);
     }
 }

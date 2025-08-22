@@ -11,7 +11,7 @@ using EFlow.Application.SubmissionSlots;
 using EFlow.Application.SubmissionSlots.Commands.Update;
 using EFlow.Application.Teachers;
 using EFlow.Application.Teachers.Commands;
-using EFlow.Contracts.Messages.Models;
+using EFlow.Common.Models.SubmissionSlot;
 using EFlow.Domain.Models;
 using Mapster;
 
@@ -119,7 +119,7 @@ public class MapsterRegister : IRegister
             .Ignore(dest => dest.Id)
             .IgnoreNullValues(true);
 
-        config.NewConfig<SubmissionSlotDto, SubmissionSlotModel>()
+        config.NewConfig<SubmissionSlot, SubmissionSlotModel>()
             .Map(dest => dest.Id, src => src.Id)
             .Map(dest => dest.SubjectId, src => src.SubjectId)
             .Map(dest => dest.StartTime, src => src.StartTime)

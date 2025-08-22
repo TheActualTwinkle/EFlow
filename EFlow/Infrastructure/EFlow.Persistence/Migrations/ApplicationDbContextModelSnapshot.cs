@@ -168,9 +168,9 @@ namespace EFlow.Persistence.Migrations
                         .HasColumnType("text")
                         .HasColumnName("error_message");
 
-                    b.Property<string>("Payload")
+                    b.Property<byte[]>("Payload")
                         .IsRequired()
-                        .HasColumnType("jsonb")
+                        .HasColumnType("bytea")
                         .HasColumnName("payload");
 
                     b.Property<DateTime?>("ProcessedAt")
@@ -274,7 +274,6 @@ namespace EFlow.Persistence.Migrations
                         .HasColumnName("allow_all_groups");
 
                     b.Property<Guid[]>("AllowedGroupIds")
-                        .IsRequired()
                         .HasColumnType("uuid[]")
                         .HasColumnName("allowed_group_ids");
 

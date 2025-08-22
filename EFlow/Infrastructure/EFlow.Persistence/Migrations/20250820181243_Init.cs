@@ -74,7 +74,7 @@ namespace EFlow.Persistence.Migrations
                 {
                     id = table.Column<Guid>(type: "uuid", nullable: false),
                     type = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
-                    payload = table.Column<string>(type: "jsonb", nullable: false),
+                    payload = table.Column<byte[]>(type: "bytea", nullable: false),
                     created_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     processed_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     error_message = table.Column<string>(type: "text", nullable: true)
@@ -326,8 +326,8 @@ namespace EFlow.Persistence.Migrations
                     start_time = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     end_time = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     max_students = table.Column<int>(type: "integer", nullable: false),
-                    is_for_all_groups = table.Column<bool>(type: "boolean", nullable: false),
-                    allowed_group_ids = table.Column<Guid[]>(type: "uuid[]", nullable: false),
+                    allow_all_groups = table.Column<bool>(type: "boolean", nullable: false),
+                    allowed_group_ids = table.Column<Guid[]>(type: "uuid[]", nullable: true),
                     location = table.Column<string>(type: "character varying(127)", maxLength: 127, nullable: true)
                 },
                 constraints: table =>

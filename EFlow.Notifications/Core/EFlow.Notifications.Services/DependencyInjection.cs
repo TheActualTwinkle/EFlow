@@ -8,7 +8,7 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddNotificationServices(this IServiceCollection services)
     {
-        services.AddScoped<INotificationService, EmailNotificationService>();
+        services.AddHostedService<EmailNotificationService>();
 
         return services;
     }

@@ -20,9 +20,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Web", "Web", "{F0446D9E-ECC
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EFlow.WebApi", "EFlow\Web\EFlow.WebApi\EFlow.WebApi.csproj", "{409EAF91-6A27-4DDC-8383-A9FEB0298011}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Eflow.Contracts", "Eflow.Contracts", "{9DE89F28-149C-436F-86EC-BED5D212E19C}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Eflow.Common", "Eflow.Common", "{9DE89F28-149C-436F-86EC-BED5D212E19C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EFlow.Contracts", "EFlow.Contracts\EFlow.Contracts.csproj", "{B8543FC0-535F-42BA-87DF-0FFC8B2C3FCA}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EFlow.Common", "EFlow.Common\EFlow.Common.csproj", "{B8543FC0-535F-42BA-87DF-0FFC8B2C3FCA}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "EFlow.Notifications", "EFlow.Notifications", "{9CC8FA35-5931-44C1-B2D0-042B335EB43A}"
 EndProject

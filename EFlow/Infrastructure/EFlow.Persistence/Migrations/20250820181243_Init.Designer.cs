@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace EFlow.Persistence.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250803101234_Init")]
+    [Migration("20250820181243_Init")]
     partial class Init
     {
         /// <inheritdoc />
@@ -171,9 +171,9 @@ namespace EFlow.Persistence.Migrations
                         .HasColumnType("text")
                         .HasColumnName("error_message");
 
-                    b.Property<string>("Payload")
+                    b.Property<byte[]>("Payload")
                         .IsRequired()
-                        .HasColumnType("jsonb")
+                        .HasColumnType("bytea")
                         .HasColumnName("payload");
 
                     b.Property<DateTime?>("ProcessedAt")
@@ -272,18 +272,17 @@ namespace EFlow.Persistence.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
+                    b.Property<bool>("AllowAllGroups")
+                        .HasColumnType("boolean")
+                        .HasColumnName("allow_all_groups");
+
                     b.Property<Guid[]>("AllowedGroupIds")
-                        .IsRequired()
                         .HasColumnType("uuid[]")
                         .HasColumnName("allowed_group_ids");
 
                     b.Property<DateTime>("EndTime")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("end_time");
-
-                    b.Property<bool>("IsForAllGroups")
-                        .HasColumnType("boolean")
-                        .HasColumnName("is_for_all_groups");
 
                     b.Property<string>("Location")
                         .HasMaxLength(127)
