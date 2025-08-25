@@ -7,14 +7,15 @@ using Microsoft.Extensions.Logging;
 namespace EFlow.Messaging.Outbox;
 
 public class OutboxProcessor(
-    IUnitOfWork unitOfWork,
+    IUnitOfWorkFactory unitOfWorkFactory,
     IOutboxMessageProcessorFactory messageProcessorFactory,
     ILogger<OutboxProcessor> logger)
     : IOutboxProcessor
 {
-    // TODO: Use a transaction in UOW.
     public async Task ProcessPendingAsync(int batchSize, CancellationToken cancellationToken = new())
     {
+        await using var unitOfWork = await unitOfWorkFactory.CreateTransactionalAsync(cancellationToken: cancellationToken);
+        
         var outboxMessageRepository = unitOfWork.GetRepository<IOutboxMessageRepository>();
 
         var messages = await outboxMessageRepository.GetUnprocessedAsync(batchSize, cancellationToken);
@@ -53,6 +54,8 @@ public class OutboxProcessor(
 
     public async Task DeleteProcessedAsync(TimeSpan deleteAfter, CancellationToken cancellationToken = new())
     {
+        await using var unitOfWork = await unitOfWorkFactory.CreateTransactionalAsync(cancellationToken: cancellationToken);
+        
         var beforeDate = DateTime.UtcNow - deleteAfter;
 
         logger.LogInformation("Deleting processed outbox messages older than {BeforeDate}", beforeDate);
