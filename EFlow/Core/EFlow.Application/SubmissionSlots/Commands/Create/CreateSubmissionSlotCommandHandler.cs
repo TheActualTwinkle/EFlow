@@ -24,7 +24,7 @@ public class CreateSubmissionSlotCommandHandler(
             MaxStudents = request.MaxStudents,
             AllowAllGroups = request.AllowAllGroups,
             AllowedGroupIds = request.AllowedGroupIds,
-            Location = request.Location,
+            Location = request.Location
         };
 
         await unitOfWork

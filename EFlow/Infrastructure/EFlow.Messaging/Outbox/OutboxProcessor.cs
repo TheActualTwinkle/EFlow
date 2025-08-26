@@ -15,11 +15,11 @@ public class OutboxProcessor(
     public async Task ProcessPendingAsync(int batchSize, CancellationToken cancellationToken = new())
     {
         await using var unitOfWork = await unitOfWorkFactory.CreateTransactionalAsync(cancellationToken: cancellationToken);
-        
+
         var outboxMessageRepository = unitOfWork.GetRepository<IOutboxMessageRepository>();
 
         var messages = await outboxMessageRepository.GetUnprocessedAsync(batchSize, cancellationToken);
-        
+
         if (messages.Count == 0)
             return;
 
@@ -50,12 +50,16 @@ public class OutboxProcessor(
             }
 
         await outboxMessageRepository.MarkAsProcessedAsync(messages.Select(m => m.Id), cancellationToken);
+        
+        await unitOfWork.CommitTransactionAsync(cancellationToken);
+        
+        logger.LogInformation("Processed {MessageCount} outbox messages", messages.Count);
     }
 
     public async Task DeleteProcessedAsync(TimeSpan deleteAfter, CancellationToken cancellationToken = new())
     {
         await using var unitOfWork = await unitOfWorkFactory.CreateTransactionalAsync(cancellationToken: cancellationToken);
-        
+
         var beforeDate = DateTime.UtcNow - deleteAfter;
 
         logger.LogInformation("Deleting processed outbox messages older than {BeforeDate}", beforeDate);
@@ -64,6 +68,8 @@ public class OutboxProcessor(
             .GetRepository<IOutboxMessageRepository>()
             .DeleteProcessedAsync(beforeDate, cancellationToken);
 
+        await unitOfWork.CommitTransactionAsync(cancellationToken);
+        
         logger.LogInformation("Deleted outbox messages older than {BeforeDate}", beforeDate);
     }
 }

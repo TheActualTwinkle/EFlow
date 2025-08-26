@@ -1,4 +1,4 @@
-﻿using EFlow.Application.Common.Errors.Abstractions;
+﻿using EFlow.Application.Common.Errors;
 using FluentResults;
 using Microsoft.AspNetCore.Mvc;
 

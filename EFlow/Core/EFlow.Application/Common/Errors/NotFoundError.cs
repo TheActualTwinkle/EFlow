@@ -1,6 +1,7 @@
-﻿using FluentResults;
+﻿using EFlow.Application.Common.Errors.Abstractions;
+using FluentResults;
 
-namespace EFlow.Application.Common.Errors.Abstractions;
+namespace EFlow.Application.Common.Errors;
 
 public record NotFoundError : ApplicationError
 {

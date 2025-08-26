@@ -7,7 +7,6 @@ namespace EFlow.Messaging.Outbox.MessageProcessing.Factories;
 
 public class OutboxMessageProcessorFactory(IServiceProvider serviceProvider) : IOutboxMessageProcessorFactory
 {
-    // TODO: Delete hardcoded...
     public IOutboxMessageProcessor? Get(Type messageType) =>
-        new KafkaMessageProcessor(serviceProvider.GetRequiredService<ICommitLogProducer<Guid, byte[]>>());
+        serviceProvider.GetKeyedService<IOutboxMessageProcessor>(messageType);
 }

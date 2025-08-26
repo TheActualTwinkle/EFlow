@@ -1,5 +1,4 @@
 ﻿using EFlow.Notifications.Services.NotificationServices;
-using EFlow.Notifications.Services.NotificationServices.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace EFlow.Notifications.Services;

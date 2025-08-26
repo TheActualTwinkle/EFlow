@@ -3,10 +3,13 @@ using EFlow.Common.Messaging.Init;
 using EFlow.Common.Messaging.Producers;
 using EFlow.Common.Messaging.Serialization;
 using EFlow.Common.Messaging.Settings;
+using EFlow.Common.Models.Markers;
 using EFlow.Messaging.Outbox;
 using EFlow.Messaging.Outbox.Interfaces;
+using EFlow.Messaging.Outbox.MessageProcessing;
 using EFlow.Messaging.Outbox.MessageProcessing.Factories;
 using EFlow.Messaging.Outbox.MessageProcessing.Factories.Interfaces;
+using EFlow.Messaging.Outbox.MessageProcessing.Interfaces;
 using Hangfire;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
@@ -51,21 +54,22 @@ public static class DependencyInjection
 
     public static IServiceCollection AddOutbox(this IServiceCollection services, IConfiguration configuration)
     {
-        AddOutboxProcessor(services, configuration);
+        services.AddOutboxProcessor(configuration);
+
+        services.AddOutboxMessageProcessor<IKafkaMessage, KafkaMessageProcessor>();
 
         services.AddScoped<IOutboxMessageProcessorFactory, OutboxMessageProcessorFactory>();
 
         return services;
     }
 
-    public static IApplicationBuilder UseMessaging(this WebApplication app)
+    public static async Task<IApplicationBuilder> UseMessagingAsync(this WebApplication app)
     {
         using var scope = app.Services.CreateScope();
 
-        scope.ServiceProvider
+        await scope.ServiceProvider
             .GetRequiredService<TopicInitializer>()
-            .EnsureTopicsCreatedAsync()
-            .GetAwaiter().GetResult();
+            .EnsureTopicsCreatedAsync();
         
         return app;
     }
@@ -78,7 +82,7 @@ public static class DependencyInjection
 
         recurringJobManager.AddOrUpdateDynamic<IOutboxProcessor>(
             "ProcessOutboxMessages",
-            p => p.ProcessPendingAsync(settings.BatchSize, CancellationToken.None),
+            p => p.ProcessPendingAsync(settings.BatchSize, new CancellationTokenSource(TimeSpan.FromSeconds(30)).Token),
             settings.ProcessIntervalCron,
 #pragma warning disable CS0618 // Type or member is obsolete
             new DynamicRecurringJobOptions { QueueName = "eflow-outbox" });
@@ -86,7 +90,7 @@ public static class DependencyInjection
 
         recurringJobManager.AddOrUpdateDynamic<IOutboxProcessor>(
             "DeleteOutboxMessages",
-            p => p.DeleteProcessedAsync(settings.DeleteAfter, CancellationToken.None),
+            p => p.DeleteProcessedAsync(settings.DeleteAfter, new CancellationTokenSource(TimeSpan.FromSeconds(30)).Token),
             settings.DeleteIntervalCron,
 #pragma warning disable CS0618 // Type or member is obsolete
             new DynamicRecurringJobOptions { QueueName = "eflow-outbox" });
@@ -95,7 +99,7 @@ public static class DependencyInjection
         return app;
     }
 
-    private static void AddOutboxProcessor(IServiceCollection services, IConfiguration configuration)
+    private static IServiceCollection AddOutboxProcessor(this IServiceCollection services, IConfiguration configuration)
     {
         var batchSize = configuration
             .GetRequiredSection("OutboxProcessorSettings")
@@ -127,5 +131,25 @@ public static class DependencyInjection
         });
 
         services.AddScoped<IOutboxProcessor, OutboxProcessor>();
+
+        return services;
+    }
+
+    private static IServiceCollection AddOutboxMessageProcessor<TMessage, TMessageProcessor>(this IServiceCollection services)
+        where TMessageProcessor : class, IOutboxMessageProcessor
+    {
+        var messageType = typeof(TMessage);
+
+        var assemblies = AppDomain.CurrentDomain.GetAssemblies();
+
+        var messageTypes = assemblies
+            .SelectMany(a => a.GetTypes())
+            .Where(type => messageType.IsAssignableFrom(type) && !type.IsAbstract)
+            .ToList();
+
+        foreach (var type in messageTypes)
+            services.AddKeyedScoped<IOutboxMessageProcessor, TMessageProcessor>(type);
+
+        return services;
     }
 }

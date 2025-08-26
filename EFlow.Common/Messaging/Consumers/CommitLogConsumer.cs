@@ -1,6 +1,5 @@
 ﻿using System.Reactive.Concurrency;
 using System.Reactive.Linq;
-using System.Text.Json;
 using Confluent.Kafka;
 using Microsoft.Extensions.Logging;
 

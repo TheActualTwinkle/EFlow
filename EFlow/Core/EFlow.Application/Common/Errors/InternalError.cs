@@ -1,8 +1,9 @@
-﻿using FluentResults;
+﻿using EFlow.Application.Common.Errors.Abstractions;
+using FluentResults;
 
-namespace EFlow.Application.Common.Errors.Abstractions;
+namespace EFlow.Application.Common.Errors;
 
-public record UnprocessableEntityError : ApplicationError
+public record InternalError : ApplicationError
 {
     public override string? Message { get; init; }
 

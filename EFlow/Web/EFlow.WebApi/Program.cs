@@ -115,7 +115,7 @@ app.UseRouting();
 
 await app.CreateRolesAsync();
 
-app.UseMessaging();
+await app.UseMessagingAsync();
 app.UseOutbox();
 
 app.UseAuthentication();

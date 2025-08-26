@@ -1,5 +1,4 @@
-﻿using System.Text.Json;
-using Confluent.Kafka;
+﻿using Confluent.Kafka;
 using MemoryPack;
 
 namespace EFlow.Common.Messaging.Serialization;

@@ -2,6 +2,6 @@
 
 /// <summary>
 /// Marker interface indicating that implementing types are recognized by various services
-/// (e.g. <c>OutboxProcessor</c>) for special handling, such as publishing to a message broker like Kafka.
+/// (e.g. <c>OutboxProcessor</c>) as Kafka message.
 /// </summary>
-public interface IMessage;
+public interface IKafkaMessage;
