@@ -29,7 +29,7 @@ public static class DependencyInjection
         services.Configure<KafkaTopicsSettings>(configuration.GetRequiredSection("KafkaSettings"));
 
         services.AddScoped(typeof(ICommitLogProducer<,>), typeof(CommitLogProducer<,>));
-        
+
         services.AddSingleton<ProducerConfig>(serviceProvider =>
         {
             var settings = serviceProvider.GetRequiredService<IOptions<KafkaSettings>>().Value;
@@ -49,7 +49,7 @@ public static class DependencyInjection
             return new AdminClientBuilder(new AdminClientConfig { BootstrapServers = settings.BootstrapServers })
                 .Build();
         });
-        
+
         services.AddScoped<ITopicNameResolver, TopicNameResolver>();
 
         return services;
@@ -73,7 +73,7 @@ public static class DependencyInjection
         await scope.ServiceProvider
             .GetRequiredService<TopicInitializer>()
             .EnsureTopicsCreatedAsync();
-        
+
         return app;
     }
 

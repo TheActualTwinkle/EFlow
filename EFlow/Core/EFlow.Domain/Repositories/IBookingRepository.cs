@@ -15,6 +15,6 @@ public interface IBookingRepository : IRepository
     public Task<IEnumerable<Booking>> GetBySlotIdAsync(Guid slotId, CancellationToken cancellationToken = new());
 
     public void Update(Booking booking);
-    
+
     public Task DeleteAsync(Guid id, CancellationToken cancellationToken = new());
 }

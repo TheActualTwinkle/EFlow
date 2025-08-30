@@ -9,7 +9,7 @@ public class JsonSerializer<T> : ISerializer<T>
     {
         if (data is byte[] bytes)
             return bytes;
-        
+
         return MemoryPackSerializer.Serialize(data);
     }
 }

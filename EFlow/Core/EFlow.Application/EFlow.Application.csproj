@@ -13,11 +13,11 @@
         <PackageReference Include="Mapster" Version="7.4.0"/>
         <PackageReference Include="Mapster.DependencyInjection" Version="1.0.1"/>
         <PackageReference Include="MediatR" Version="13.0.0"/>
-        <PackageReference Include="MemoryPack" Version="1.21.4" />
+        <PackageReference Include="MemoryPack" Version="1.21.4"/>
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\..\EFlow.Common\EFlow.Common.csproj" />
+        <ProjectReference Include="..\..\..\EFlow.Common\EFlow.Common.csproj"/>
         <ProjectReference Include="..\EFlow.Domain\EFlow.Domain.csproj"/>
     </ItemGroup>
 

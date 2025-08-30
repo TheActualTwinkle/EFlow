@@ -50,9 +50,9 @@ public class OutboxProcessor(
             }
 
         await outboxMessageRepository.MarkAsProcessedAsync(messages.Select(m => m.Id), cancellationToken);
-        
+
         await unitOfWork.CommitTransactionAsync(cancellationToken);
-        
+
         logger.LogInformation("Processed {MessageCount} outbox messages", messages.Count);
     }
 
@@ -69,7 +69,7 @@ public class OutboxProcessor(
             .DeleteProcessedAsync(beforeDate, cancellationToken);
 
         await unitOfWork.CommitTransactionAsync(cancellationToken);
-        
+
         logger.LogInformation("Deleted outbox messages older than {BeforeDate}", beforeDate);
     }
 }

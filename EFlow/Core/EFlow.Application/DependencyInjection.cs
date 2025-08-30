@@ -16,7 +16,7 @@ public static class DependencyInjection
         TypeAdapterConfig.GlobalSettings.Default.IgnoreNonMapped(true);
 
         services.AddSingleton(TypeAdapterConfig.GlobalSettings);
-        
+
         services.AddMediatR(cfg =>
         {
             cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly());

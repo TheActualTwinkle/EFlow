@@ -9,6 +9,6 @@ public record CreateSubjectCommand : IRequest<Result<Guid>>, ITransactionalReque
     public required string Name { get; init; }
 
     public required Guid TeacherId { get; init; }
-    
+
     public required ICollection<Guid> GroupIds { get; init; }
 }

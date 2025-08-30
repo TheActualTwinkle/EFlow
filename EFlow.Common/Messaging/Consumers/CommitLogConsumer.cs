@@ -8,7 +8,7 @@ namespace EFlow.Common.Messaging.Consumers;
 public class CommitLogConsumer<TKey, TValue> : ICommitLogConsumer<TKey, TValue>
 {
     private readonly IConsumer<TKey, TValue> _consumer;
-    
+
     private readonly ILogger<CommitLogConsumer<TKey, TValue>> _logger;
 
     public CommitLogConsumer(
@@ -35,7 +35,7 @@ public class CommitLogConsumer<TKey, TValue> : ICommitLogConsumer<TKey, TValue>
             NewThreadScheduler.Default.ScheduleLongRunning(_ =>
             {
                 _logger.LogInformation("Starting consumer for topic {Topic}", topic);
-                
+
                 _consumer.Subscribe(topic);
 
                 try
@@ -66,9 +66,9 @@ public class CommitLogConsumer<TKey, TValue> : ICommitLogConsumer<TKey, TValue>
                 finally
                 {
                     _consumer.Close();
-                    
+
                     observer.OnCompleted();
-                    
+
                     _logger.LogInformation("Consumer for topic {Topic} closed", topic);
                 }
             });

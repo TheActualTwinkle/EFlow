@@ -16,7 +16,7 @@ public static class DependencyInjection
     public static IServiceCollection AddPersistence(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddScoped<IUnitOfWorkFactory, UnitOfWorkFactory>();
-        
+
         services.AddScoped<IUnitOfWork, UnitOfWork>();
 
         var connectionString = configuration.GetConnectionString("Database");
@@ -37,7 +37,7 @@ public static class DependencyInjection
 
         return services;
     }
-    
+
     public static IServiceCollection AddJobScheduler(this IServiceCollection services, IConfiguration configuration)
     {
         var hangfireConnectionString = configuration.GetConnectionString("HangfireDb") ??

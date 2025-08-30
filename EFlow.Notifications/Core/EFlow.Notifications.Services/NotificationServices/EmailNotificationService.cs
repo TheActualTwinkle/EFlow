@@ -21,7 +21,7 @@ public class EmailNotificationService(
     public async Task StartAsync(CancellationToken cancellationToken)
     {
         await using var scope = serviceScopeFactory.CreateAsyncScope();
-        
+
         var consumerFactory = scope.ServiceProvider.GetRequiredService<ICommitLogConsumerFactory>();
 
         var consumer = consumerFactory.Create<Guid, SubmissionSlotCreatedMessage>(

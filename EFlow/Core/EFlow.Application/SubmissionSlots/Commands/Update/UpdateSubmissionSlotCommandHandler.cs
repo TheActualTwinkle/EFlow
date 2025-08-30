@@ -14,7 +14,7 @@ public class UpdateSubmissionSlotCommandHandler(IUnitOfWork unitOfWork)
     public async Task<Result> Handle(UpdateSubmissionSlotCommand request, CancellationToken cancellationToken)
     {
         var repository = unitOfWork.GetRepository<ISubmissionSlotRepository>();
-        
+
         var slot = await repository.GetByIdAsync(request.Id, cancellationToken);
 
         if (slot is null)
@@ -24,7 +24,7 @@ public class UpdateSubmissionSlotCommandHandler(IUnitOfWork unitOfWork)
                     .WithId(request.Id));
 
         request.Adapt(slot);
-        
+
         repository.Update(slot);
 
         return Result.Ok();

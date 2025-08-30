@@ -8,7 +8,7 @@ public record KafkaSettings
 public record KafkaTopicsSettings
 {
     public required Dictionary<string, TopicSettings> TopicsSettings { get; init; }
-    
+
     public record TopicSettings
     {
         public required short ReplicationFactor { get; init; }

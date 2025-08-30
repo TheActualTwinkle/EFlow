@@ -14,7 +14,7 @@ public class UpdateStudentCommandHandler(IUnitOfWork unitOfWork)
     public async Task<Result> Handle(UpdateStudentCommand request, CancellationToken cancellationToken)
     {
         var repository = unitOfWork.GetRepository<IStudentRepository>();
-        
+
         var student = await repository.GetByIdAsync(request.Id, cancellationToken);
 
         if (student is null)
@@ -24,7 +24,7 @@ public class UpdateStudentCommandHandler(IUnitOfWork unitOfWork)
                     .WithId(request.Id));
 
         request.Adapt(student);
-        
+
         repository.Update(student);
 
         return Result.Ok();

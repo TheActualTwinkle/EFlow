@@ -13,9 +13,9 @@ public record CreateSubmissionSlotCommand : IRequest<Result<Guid>>, ITransaction
     public required DateTime EndTime { get; init; }
 
     public required int MaxStudents { get; init; }
-    
+
     public required bool AllowAllGroups { get; init; }
-    
+
     public ICollection<Guid>? AllowedGroupIds { get; init; }
 
     public string? Location { get; init; }
