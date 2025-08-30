@@ -10,6 +10,7 @@ using EFlow.Messaging.Outbox.MessageProcessing;
 using EFlow.Messaging.Outbox.MessageProcessing.Factories;
 using EFlow.Messaging.Outbox.MessageProcessing.Factories.Interfaces;
 using EFlow.Messaging.Outbox.MessageProcessing.Interfaces;
+using EFlow.Messaging.TopicResolvering;
 using Hangfire;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
@@ -48,6 +49,8 @@ public static class DependencyInjection
             return new AdminClientBuilder(new AdminClientConfig { BootstrapServers = settings.BootstrapServers })
                 .Build();
         });
+        
+        services.AddScoped<ITopicNameResolver, TopicNameResolver>();
 
         return services;
     }

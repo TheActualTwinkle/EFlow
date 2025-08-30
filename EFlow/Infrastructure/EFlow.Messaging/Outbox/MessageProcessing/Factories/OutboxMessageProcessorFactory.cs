@@ -1,5 +1,4 @@
-﻿using EFlow.Common.Messaging.Producers;
-using EFlow.Messaging.Outbox.MessageProcessing.Factories.Interfaces;
+﻿using EFlow.Messaging.Outbox.MessageProcessing.Factories.Interfaces;
 using EFlow.Messaging.Outbox.MessageProcessing.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
 

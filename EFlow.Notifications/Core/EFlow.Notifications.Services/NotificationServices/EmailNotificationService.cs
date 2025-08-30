@@ -32,7 +32,7 @@ public class EmailNotificationService(
             });
 
         _subscription = consumer
-            .FromTopic(KafkaConstants.SubmissionSlotCreatedTopic)
+            .FromTopic(KafkaTopics.SubmissionSlotCreatedTopic)
             .DoAsync(async m => await SendAsync(JsonSerializer.Serialize(m), cancellationToken))
             .Subscribe();
     }

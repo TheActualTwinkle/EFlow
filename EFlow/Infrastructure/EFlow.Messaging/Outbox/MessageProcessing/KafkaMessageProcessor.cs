@@ -1,21 +1,25 @@
 ﻿using EFlow.Common.Messaging.Producers;
-using EFlow.Common.Messaging.Settings;
 using EFlow.Domain.Models;
 using EFlow.Messaging.Outbox.MessageProcessing.Interfaces;
+using EFlow.Messaging.TopicResolvering;
 
 namespace EFlow.Messaging.Outbox.MessageProcessing;
 
 /// <summary>
-/// Outbox message processor for Kafka messages.
-/// Processes <see cref="OutboxMessage"/> instances to be produced to Kafka.
+///     Outbox message processor for Kafka messages.
+///     <see cref="OutboxMessage" /> will be produced to Kafka.
 /// </summary>
-public class KafkaMessageProcessor(ICommitLogProducer<Guid, byte[]> producer) : IOutboxMessageProcessor
+public class KafkaMessageProcessor(ICommitLogProducer<Guid, byte[]> producer, ITopicNameResolver topicNameResolver) : IOutboxMessageProcessor
 {
     public async Task ProcessAsync(OutboxMessage message, CancellationToken cancellationToken = new())
     {
-        // TODO: Create TopicNameResolver to resolve topic names based on message type and other metadata.
+        var topicName = topicNameResolver.ResolveTopicName(message.Type);
+
+        if (topicName == null)
+            throw new InvalidOperationException($"No topic mapping found for message type {message.Type}");
+
         await producer.ProduceAsync(
-            KafkaConstants.SubmissionSlotCreatedTopic,
+            topicName,
             message.Id,
             message.Payload,
             cancellationToken);
