@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 
-namespace EFLow.Presentation.Controllers;
+namespace EFlow.Presentation.Controllers;
 
 [ApiController]
 [Route("api/auth")]

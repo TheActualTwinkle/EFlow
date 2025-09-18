@@ -3,12 +3,12 @@ using EFlow.Application.Bookings.Commands;
 using EFlow.Application.Bookings.Commands.Update;
 using EFlow.Application.Bookings.Queries;
 using EFlow.Domain.Models;
-using EFLow.Presentation.Extensions;
+using EFlow.Presentation.Extensions;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace EFLow.Presentation.Controllers;
+namespace EFlow.Presentation.Controllers;
 
 [ApiController]
 [Route("api/bookings")]

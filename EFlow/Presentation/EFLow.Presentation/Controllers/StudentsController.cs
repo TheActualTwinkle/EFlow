@@ -3,12 +3,12 @@ using EFlow.Application.Students.Commands;
 using EFlow.Application.Students.Commands.Update;
 using EFlow.Application.Students.Queries;
 using EFlow.Domain.Models;
-using EFLow.Presentation.Extensions;
+using EFlow.Presentation.Extensions;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace EFLow.Presentation.Controllers;
+namespace EFlow.Presentation.Controllers;
 
 [ApiController]
 [Route("api/students")]

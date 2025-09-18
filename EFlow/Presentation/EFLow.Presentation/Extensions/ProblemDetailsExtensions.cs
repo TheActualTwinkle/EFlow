@@ -2,7 +2,7 @@
 using FluentResults;
 using Microsoft.AspNetCore.Mvc;
 
-namespace EFLow.Presentation.Extensions;
+namespace EFlow.Presentation.Extensions;
 
 public static class ProblemDetailsExtensions
 {

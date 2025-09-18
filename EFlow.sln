@@ -4,7 +4,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "EFlow", "EFlow", "{140A259E
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Presentation", "Presentation", "{CBD35D59-9A66-42D5-8A63-BD64A26169D5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EFLow.Presentation", "EFlow\Presentation\EFLow.Presentation\EFLow.Presentation.csproj", "{1EF70C2A-286D-4B8A-978A-87A11429AEB9}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EFlow.Presentation", "EFlow\Presentation\EFlow.Presentation\EFlow.Presentation.csproj", "{1EF70C2A-286D-4B8A-978A-87A11429AEB9}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Core", "Core", "{39CDB305-6C8E-450D-8DB3-B9E62B3795D3}"
 EndProject

@@ -2,12 +2,12 @@
 using EFlow.Application.Teachers.Commands;
 using EFlow.Application.Teachers.Queries;
 using EFlow.Domain.Models;
-using EFLow.Presentation.Extensions;
+using EFlow.Presentation.Extensions;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace EFLow.Presentation.Controllers;
+namespace EFlow.Presentation.Controllers;
 
 [ApiController]
 [Route("api/teachers")]

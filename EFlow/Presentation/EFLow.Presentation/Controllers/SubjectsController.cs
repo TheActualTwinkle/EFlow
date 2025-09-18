@@ -2,12 +2,12 @@
 using EFlow.Application.Subjects.Commands.Update;
 using EFlow.Application.Subjects.Queries;
 using EFlow.Domain.Models;
-using EFLow.Presentation.Extensions;
+using EFlow.Presentation.Extensions;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace EFLow.Presentation.Controllers;
+namespace EFlow.Presentation.Controllers;
 
 [ApiController]
 [Route("api/subjects")]
