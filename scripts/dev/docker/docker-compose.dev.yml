@@ -1,6 +1,6 @@
 name: eflow-dev
 services:
-  database:
+  postgres:
     image: postgres:16
     environment:
       - PGPORT=${PGPORT}
@@ -17,20 +17,28 @@ services:
       timeout: 15s
       retries: 3
 
-  rabbitmq:
-    image: rabbitmq:management
-    hostname: ${RABBITMQ_HOST}
+  kafka:
+    image: apache/kafka:4.1.0
     environment:
-      - RABBITMQ_NODE_PORT=${RABBITMQ_PORT}
-      - RABBITMQ_DEFAULT_USER=${RABBITMQ_USER}
-      - RABBITMQ_DEFAULT_PASS=${RABBITMQ_PASSWORD}
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:${KAFKA_PORT:-9092}
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+      CLUSTER_ID: MkU3OEVBNTcwNTJENDM2Qk
     ports:
-      - "${RABBITMQ_PORT}:${RABBITMQ_PORT}"
-      - "15672:15672"
+      - "${KAFKA_PORT:-9092}:${KAFKA_PORT:-9092}"
     volumes:
-      - ./rabbitmq_data:/var/lib/rabbitmq 
+      - ./kafka_data:/var/lib/kafka/data
     healthcheck:
-      test: rabbitmq-diagnostics -q ping
+      test: ["CMD-SHELL", "kafka-topics.sh --bootstrap-server localhost:9092 --list"]
       interval: 15s
       timeout: 15s
       retries: 3
