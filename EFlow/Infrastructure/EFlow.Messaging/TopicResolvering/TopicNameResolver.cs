@@ -6,7 +6,7 @@ public class TopicNameResolver : ITopicNameResolver
 {
     private readonly Dictionary<string, string> _typeToTopicMapping = new()
     {
-        { typeof(SubmissionSlotCreatedMessage).AssemblyQualifiedName!, "submission-slot-created" }
+        { typeof(SubmissionSlotCreatedMessage).AssemblyQualifiedName!, "eflow-submission-slot-created" }
     };
 
     public string? ResolveTopicName(string assemblyQualifiedName) =>
