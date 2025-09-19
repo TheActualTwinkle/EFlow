@@ -6,11 +6,16 @@ using Microsoft.Extensions.Options;
 
 namespace EFlow.Common.Messaging.Init;
 
-public class TopicInitializer(IOptions<KafkaTopicsSettings> kafkaSettings, IAdminClient adminClient, ILogger<TopicInitializer> logger)
+public class TopicInitializer(
+    IOptions<KafkaTopicsSettings> kafkaSettings,
+    IAdminClient adminClient,
+    ILogger<TopicInitializer> logger)
 {
-    public async Task EnsureTopicsCreatedAsync()
+    private static readonly TimeSpan AdminClientRequestTimeout = TimeSpan.FromSeconds(10);
+
+    public async Task CreateMissingTopicsAsync()
     {
-        var metadata = adminClient.GetMetadata(TimeSpan.FromSeconds(10));
+        var metadata = adminClient.GetMetadata(AdminClientRequestTimeout);
         var existingTopics = metadata.Topics.Select(t => t.Topic).ToHashSet();
 
         var topicsToCreate = kafkaSettings.Value.TopicsSettings
@@ -36,5 +41,33 @@ public class TopicInitializer(IOptions<KafkaTopicsSettings> kafkaSettings, IAdmi
 
                 Environment.Exit(-1);
             }
+    }
+
+    public async Task WaitForTopicsCreatedAsync(CancellationToken cancellationToken = new())
+    {
+        var requiredTopics = kafkaSettings.Value.TopicsSettings.Keys.ToHashSet();
+
+        logger.LogInformation("Waiting for topics to be ready: {Topics}", string.Join(", ", requiredTopics));
+
+        while (!cancellationToken.IsCancellationRequested)
+        {
+            var metadata = adminClient.GetMetadata(AdminClientRequestTimeout);
+            var existingTopics = metadata.Topics.Select(t => t.Topic).ToHashSet();
+
+            logger.LogDebug("Existing topics: {Topics}", string.Join(", ", existingTopics));
+
+            if (requiredTopics.IsSubsetOf(existingTopics))
+            {
+                logger.LogInformation("All required topics are ready.");
+
+                return;
+            }
+
+            logger.LogWarning("Not all required topics are ready. Waiting for {Timeout}...", AdminClientRequestTimeout);
+
+            await Task.Delay(AdminClientRequestTimeout, cancellationToken);
+        }
+
+        throw new OperationCanceledException("Waiting for topics was canceled.", cancellationToken);
     }
 }

@@ -40,7 +40,7 @@ public static class DependencyInjection
             };
         });
 
-        services.AddScoped(typeof(ISerializer<>), typeof(JsonSerializer<>));
+        services.AddScoped(typeof(ISerializer<>), typeof(DefaultSerializer<>));
 
         services.AddSingleton<IAdminClient>(serviceProvider =>
         {
@@ -72,7 +72,7 @@ public static class DependencyInjection
 
         await scope.ServiceProvider
             .GetRequiredService<TopicInitializer>()
-            .EnsureTopicsCreatedAsync();
+            .CreateMissingTopicsAsync();
 
         return app;
     }

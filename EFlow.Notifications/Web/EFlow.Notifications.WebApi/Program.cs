@@ -30,4 +30,6 @@ app.UseHttpsRedirection();
 
 app.UseSerilogRequestLogging();
 
+await app.UseMessagingAsync();
+
 app.Run();
