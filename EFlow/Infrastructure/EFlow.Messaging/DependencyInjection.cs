@@ -4,6 +4,7 @@ using EFlow.Common.Messaging.Producers;
 using EFlow.Common.Messaging.Serialization;
 using EFlow.Common.Messaging.Settings;
 using EFlow.Common.Models.Markers;
+using EFlow.Common.Models.SubmissionSlot;
 using EFlow.Messaging.Outbox;
 using EFlow.Messaging.Outbox.Interfaces;
 using EFlow.Messaging.Outbox.MessageProcessing;
@@ -50,7 +51,7 @@ public static class DependencyInjection
                 .Build();
         });
 
-        services.AddScoped<ITopicNameResolver, TopicNameResolver>();
+        AddTopicResolving(services);
 
         return services;
     }
@@ -155,4 +156,14 @@ public static class DependencyInjection
 
         return services;
     }
+    
+    private static void AddTopicResolving(IServiceCollection services) =>
+        services.AddScoped<ITopicNameResolver>(_ =>
+        {
+            var resolver = new TopicNameResolver();
+            
+            resolver.AddMapping(typeof(SubmissionSlotCreatedMessage).AssemblyQualifiedName!, KafkaTopics.SubmissionSlotCreatedTopic);
+
+            return resolver;
+        });
 }
