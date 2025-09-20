@@ -1,4 +1,4 @@
-﻿namespace EFlow.Messaging.TopicResolvering;
+﻿namespace EFlow.Messaging.TopicResolving;
 
 public interface ITopicNameResolver
 {

@@ -1,7 +1,7 @@
 ﻿using EFlow.Common.Messaging.Producers;
 using EFlow.Domain.Models;
 using EFlow.Messaging.Outbox.MessageProcessing.Interfaces;
-using EFlow.Messaging.TopicResolvering;
+using EFlow.Messaging.TopicResolving;
 
 namespace EFlow.Messaging.Outbox.MessageProcessing;
 

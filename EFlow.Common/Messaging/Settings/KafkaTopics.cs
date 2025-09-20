@@ -2,6 +2,5 @@
 
 public static class KafkaTopics
 {
-    public static string SubmissionSlotCreatedTopic =>
-        "eflow-submission-slot-created";
+    public const string SubmissionSlotCreatedTopic = "eflow-submission-slot-created";
 }

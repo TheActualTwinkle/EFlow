@@ -10,7 +10,7 @@ using EFlow.Messaging.Outbox.MessageProcessing;
 using EFlow.Messaging.Outbox.MessageProcessing.Factories;
 using EFlow.Messaging.Outbox.MessageProcessing.Factories.Interfaces;
 using EFlow.Messaging.Outbox.MessageProcessing.Interfaces;
-using EFlow.Messaging.TopicResolvering;
+using EFlow.Messaging.TopicResolving;
 using Hangfire;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;

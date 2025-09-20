@@ -1,12 +1,13 @@
-﻿using EFlow.Common.Models.SubmissionSlot;
+﻿using EFlow.Common.Messaging.Settings;
+using EFlow.Common.Models.SubmissionSlot;
 
-namespace EFlow.Messaging.TopicResolvering;
+namespace EFlow.Messaging.TopicResolving;
 
 public class TopicNameResolver : ITopicNameResolver
 {
     private readonly Dictionary<string, string> _typeToTopicMapping = new()
     {
-        { typeof(SubmissionSlotCreatedMessage).AssemblyQualifiedName!, "eflow-submission-slot-created" }
+        { typeof(SubmissionSlotCreatedMessage).AssemblyQualifiedName!, KafkaTopics.SubmissionSlotCreatedTopic }
     };
 
     public string? ResolveTopicName(string assemblyQualifiedName) =>
