@@ -23,7 +23,8 @@ public class CommitLogConsumerFactory(IServiceProvider serviceProvider) : ICommi
             BootstrapServers = kafkaSettings.BootstrapServers,
             GroupId = consumerSettings.GroupId,
             AutoOffsetReset = consumerSettings.AutoOffsetReset,
-            AllowAutoCreateTopics = false
+            AllowAutoCreateTopics = false,
+            ReconnectBackoffMs = 1000
         };
 
         return new CommitLogConsumer<TKey, TValue>(

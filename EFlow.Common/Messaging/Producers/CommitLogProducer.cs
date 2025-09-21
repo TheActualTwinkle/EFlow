@@ -16,7 +16,6 @@ public class CommitLogProducer<TKey, TValue> : ICommitLogProducer<TKey, TValue>
             .SetKeySerializer(keySerializer)
             .SetValueSerializer(valueSerializer)
             .SetErrorHandler((_, e) => logger.LogError("Kafka Error: {reason}", e.Reason))
-            .SetLogHandler((_, m) => logger.LogInformation("Kafka Log: {reason}", m.Message))
             .Build();
 
     public async Task ProduceAsync(

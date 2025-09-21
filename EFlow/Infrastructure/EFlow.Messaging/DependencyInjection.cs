@@ -37,7 +37,11 @@ public static class DependencyInjection
 
             return new ProducerConfig
             {
-                BootstrapServers = settings.BootstrapServers
+                BootstrapServers = settings.BootstrapServers,
+                AllowAutoCreateTopics = false,
+                ReconnectBackoffMs = 1000,
+                MessageSendMaxRetries = settings.Retries,
+                MessageTimeoutMs = settings.MessageTimeoutMs
             };
         });
 

@@ -23,6 +23,8 @@ public class OutboxProcessor(
         if (messages.Count == 0)
             return;
 
+        var processedMessageIds = new List<Guid>();
+        
         foreach (var message in messages)
             try
             {
@@ -43,13 +45,22 @@ public class OutboxProcessor(
                 }
 
                 await messageProcessor.ProcessAsync(message, cancellationToken);
+                
+                processedMessageIds.Add(message.Id);
             }
-            catch (InvalidOperationException e)
+            catch (Exception e)
             {
                 logger.LogError(e, "Error processing outbox message with ID {MessageId}", message.Id);
             }
 
-        await outboxMessageRepository.MarkAsProcessedAsync(messages.Select(m => m.Id), cancellationToken);
+        if (processedMessageIds.Count == 0)
+            return;
+
+        await outboxMessageRepository.MarkAsProcessedAsync(
+            messages
+                .Select(m => m.Id)
+                .ExceptBy(processedMessageIds, m => m),
+            cancellationToken);
 
         await unitOfWork.CommitTransactionAsync(cancellationToken);
 

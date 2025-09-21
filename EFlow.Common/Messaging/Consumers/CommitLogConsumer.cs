@@ -22,8 +22,7 @@ public class CommitLogConsumer<TKey, TValue> : ICommitLogConsumer<TKey, TValue>
         _consumer = new ConsumerBuilder<TKey, TValue>(consumerConfig)
             .SetKeyDeserializer(keyDeserializer)
             .SetValueDeserializer(valueDeserializer)
-            .SetErrorHandler((_, e) => logger.LogError("Kafka Error: {reason}", e.Reason))
-            .SetLogHandler((_, m) => logger.LogInformation("Kafka Log: {message}", m.Message))
+            .SetErrorHandler((_, e) => _logger.LogError("Kafka Error: {reason}", e.Reason))
             .Build();
     }
 
