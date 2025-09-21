@@ -39,7 +39,7 @@ public class TopicInitializer(
             {
                 logger.LogCritical("Failed to create topics: {Message}.", e.Message);
 
-                Environment.Exit(-1);
+                throw;
             }
     }
 

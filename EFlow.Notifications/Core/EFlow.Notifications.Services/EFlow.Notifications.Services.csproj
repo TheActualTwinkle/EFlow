@@ -16,10 +16,4 @@
         <ProjectReference Include="..\..\..\EFlow.Common\EFlow.Common.csproj" />
     </ItemGroup>
 
-    <ItemGroup>
-        <Reference Include="Microsoft.Extensions.Hosting.Abstractions">
-            <HintPath>C:\Program Files\dotnet\shared\Microsoft.AspNetCore.App\8.0.2\Microsoft.Extensions.Hosting.Abstractions.dll</HintPath>
-        </Reference>
-    </ItemGroup>
-
 </Project>
