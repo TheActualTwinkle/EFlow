@@ -51,16 +51,12 @@ public class OutboxProcessor(
             catch (Exception e)
             {
                 logger.LogError(e, "Error processing outbox message with ID {MessageId}", message.Id);
+                
+                await outboxMessageRepository.AddErrorAsync(message.Id, e.ToString(), cancellationToken);
             }
 
-        if (processedMessageIds.Count == 0)
-            return;
-
-        await outboxMessageRepository.MarkAsProcessedAsync(
-            messages
-                .Select(m => m.Id)
-                .ExceptBy(processedMessageIds, m => m),
-            cancellationToken);
+        if (processedMessageIds.Count != 0)
+            await outboxMessageRepository.MarkAsProcessedAsync(processedMessageIds, cancellationToken);
 
         await unitOfWork.CommitTransactionAsync(cancellationToken);
 
