@@ -60,7 +60,7 @@ public class OutboxProcessor(
 
         await unitOfWork.CommitTransactionAsync(cancellationToken);
 
-        logger.LogInformation("Processed {MessageCount} outbox messages", messages.Count);
+        logger.LogInformation("Processed {MessageCount} outbox messages", processedMessageIds.Count);
     }
 
     public async Task DeleteProcessedAsync(TimeSpan deleteAfter, CancellationToken cancellationToken = new())
