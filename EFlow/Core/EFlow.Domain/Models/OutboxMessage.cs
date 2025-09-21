@@ -6,7 +6,7 @@ public record OutboxMessage : IEntity
 
     public required string Type { get; init; }
 
-    public required string Payload { get; init; }
+    public required byte[] Payload { get; init; }
 
     public required DateTime CreatedAt { get; init; }
 

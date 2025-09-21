@@ -22,7 +22,6 @@ public class OutboxMessageConfiguration : IEntityTypeConfiguration<OutboxMessage
             .IsRequired();
 
         builder.Property(o => o.Payload)
-            .HasColumnType("jsonb")
             .HasColumnName("payload")
             .IsRequired();
 

@@ -16,9 +16,11 @@ public sealed class UnitOfWork(
 {
     private readonly ConcurrentDictionary<Type, IRepository> _repositories = new();
 
-    private bool _disposed;
-
     private IDbContextTransaction? _currentTransaction;
+
+    private bool _isTransactionStarted;
+
+    private bool _disposed;
 
     ~UnitOfWork() =>
         Dispose(false);
@@ -29,27 +31,27 @@ public sealed class UnitOfWork(
 
         var type = typeof(T);
 
-        return (T)_repositories.GetOrAdd(
-            type, _ =>
-            {
-                var repo = (T)serviceProvider.GetRequiredService(type);
-
-                return repo;
-            });
+        return (T)_repositories.GetOrAdd(type, _ => (T)serviceProvider.GetRequiredService(type));
     }
 
-    public async Task BeginAsync(
+    public async Task BeginTransactionAsync(
         IsolationLevel isolationLevel = IsolationLevel.ReadCommitted,
-        CancellationToken cancellationToken = new())
+        CancellationToken cancellationToken = default)
     {
+        ObjectDisposedException.ThrowIf(_disposed, nameof(UnitOfWork));
+
         if (_currentTransaction is not null)
             throw new InvalidOperationException("Transaction already started");
 
         _currentTransaction = await context.Database.BeginTransactionAsync(isolationLevel, cancellationToken);
+
+        _isTransactionStarted = true;
     }
 
-    public async Task CommitAsync(CancellationToken cancellationToken = new())
+    public async Task CommitTransactionAsync(CancellationToken cancellationToken = default)
     {
+        ObjectDisposedException.ThrowIf(_disposed, nameof(UnitOfWork));
+
         if (_currentTransaction is null)
             throw new InvalidOperationException("No active transaction");
 
@@ -58,14 +60,22 @@ public sealed class UnitOfWork(
             await context.SaveChangesAsync(cancellationToken);
             await _currentTransaction.CommitAsync(cancellationToken);
         }
+        catch
+        {
+            await RollbackTransactionAsync(cancellationToken);
+
+            throw;
+        }
         finally
         {
             await DisposeTransactionAsync();
         }
     }
 
-    public async Task RollbackAsync(CancellationToken cancellationToken = new())
+    public async Task RollbackTransactionAsync(CancellationToken cancellationToken = default)
     {
+        ObjectDisposedException.ThrowIf(_disposed, nameof(UnitOfWork));
+
         if (_currentTransaction is null)
             return;
 
@@ -79,17 +89,22 @@ public sealed class UnitOfWork(
         }
     }
 
-    public async Task SaveChangesAsync(CancellationToken cancellationToken = new()) =>
+    public async Task SaveChangesAsync(CancellationToken cancellationToken = default)
+    {
+        ObjectDisposedException.ThrowIf(_disposed, nameof(UnitOfWork));
+
         await context.SaveChangesAsync(cancellationToken);
+    }
 
     private async Task DisposeTransactionAsync()
     {
         if (_currentTransaction is null)
             return;
 
-        await _currentTransaction.DisposeAsync().ConfigureAwait(false);
+        await _currentTransaction.DisposeAsync();
 
         _currentTransaction = null;
+        _isTransactionStarted = false;
     }
 
     #region Dispose
@@ -102,18 +117,18 @@ public sealed class UnitOfWork(
 
     public async ValueTask DisposeAsync()
     {
-        await DisposeAsyncCore();
-
-        Dispose(false);
+        await DisposeAsyncInternal();
         GC.SuppressFinalize(this);
     }
 
-    private async ValueTask DisposeAsyncCore()
+    private async ValueTask DisposeAsyncInternal()
     {
         if (_disposed)
             return;
 
-        await DisposeTransactionAsync();
+        if (_isTransactionStarted && _currentTransaction is not null)
+            await RollbackTransactionAsync();
+
         await context.DisposeAsync();
 
         _repositories.Clear();
@@ -128,7 +143,11 @@ public sealed class UnitOfWork(
 
         if (disposing)
         {
+            if (_isTransactionStarted && _currentTransaction is not null)
+                _currentTransaction.Rollback();
+
             _currentTransaction?.Dispose();
+
             context.Dispose();
 
             _repositories.Clear();

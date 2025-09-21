@@ -31,6 +31,11 @@ public class OutboxMessageRepository(ApplicationDbContext context) :
                 u => u.SetProperty(m => m.ProcessedAt, DateTime.UtcNow),
                 cancellationToken);
 
+    public async Task AddErrorAsync(Guid id, string error, CancellationToken cancellationToken = new()) =>
+        await Context.OutboxMessages
+            .Where(m => m.Id == id)
+            .ExecuteUpdateAsync(u => u.SetProperty(m => m.ErrorMessage, error), cancellationToken);
+
     public async Task DeleteProcessedAsync(DateTime beforeDate, CancellationToken cancellationToken = new()) =>
         await Context.OutboxMessages
             .Where(m => m.ProcessedAt < beforeDate)

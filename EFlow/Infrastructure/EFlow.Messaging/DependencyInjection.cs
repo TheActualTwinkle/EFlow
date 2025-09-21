@@ -1,10 +1,22 @@
-﻿using EFlow.Messaging.Outbox;
+﻿using Confluent.Kafka;
+using EFlow.Common.Messaging.Init;
+using EFlow.Common.Messaging.Producers;
+using EFlow.Common.Messaging.Serialization;
+using EFlow.Common.Messaging.Settings;
+using EFlow.Common.Models.Markers;
+using EFlow.Common.Models.SubmissionSlot;
+using EFlow.Messaging.Outbox;
 using EFlow.Messaging.Outbox.Interfaces;
+using EFlow.Messaging.Outbox.MessageProcessing;
+using EFlow.Messaging.Outbox.MessageProcessing.Factories;
+using EFlow.Messaging.Outbox.MessageProcessing.Factories.Interfaces;
+using EFlow.Messaging.Outbox.MessageProcessing.Interfaces;
+using EFlow.Messaging.TopicResolving;
 using Hangfire;
-using MassTransit;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 
 namespace EFlow.Messaging;
 
@@ -12,40 +24,90 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddMessaging(this IServiceCollection services, IConfiguration configuration)
     {
-        services.AddMassTransit(x =>
+        services.AddScoped<TopicInitializer>();
+
+        services.Configure<KafkaSettings>(configuration.GetRequiredSection("KafkaSettings"));
+        services.Configure<KafkaTopicsSettings>(configuration.GetRequiredSection("KafkaSettings"));
+
+        services.AddScoped(typeof(ICommitLogProducer<,>), typeof(CommitLogProducer<,>));
+
+        services.AddSingleton<ProducerConfig>(serviceProvider =>
         {
-            x.SetKebabCaseEndpointNameFormatter();
+            var settings = serviceProvider.GetRequiredService<IOptions<KafkaSettings>>().Value;
 
-            x.UsingRabbitMq((_, cfg) =>
+            return new ProducerConfig
             {
-                var configurationSection = configuration.GetRequiredSection("RabbitMqSettings");
-
-                var host = configurationSection["Host"] ??
-                           throw new InvalidOperationException("RabbitMqSettings:Host is not configured.");
-
-                var port = ushort.Parse(
-                    configurationSection["Port"] ??
-                    throw new InvalidOperationException("RabbitMqSettings:Port is not configured."));
-
-                var username = configurationSection["Username"] ??
-                               throw new InvalidOperationException("RabbitMqSettings:Username is not configured.");
-
-                var password = configurationSection["Password"] ??
-                               throw new InvalidOperationException("RabbitMqSettings:Password is not configured.");
-
-                cfg.Host(
-                    host, port, "/", h =>
-                    {
-                        h.Username(username);
-                        h.Password(password);
-                    });
-            });
+                BootstrapServers = settings.BootstrapServers,
+                AllowAutoCreateTopics = false,
+                ReconnectBackoffMs = 1000,
+                MessageSendMaxRetries = settings.Retries,
+                MessageTimeoutMs = settings.MessageTimeoutMs
+            };
         });
+
+        services.AddScoped(typeof(ISerializer<>), typeof(DefaultSerializer<>));
+
+        services.AddSingleton<IAdminClient>(serviceProvider =>
+        {
+            var settings = serviceProvider.GetRequiredService<IOptions<KafkaSettings>>().Value;
+
+            return new AdminClientBuilder(new AdminClientConfig { BootstrapServers = settings.BootstrapServers })
+                .Build();
+        });
+
+        AddTopicResolving(services);
 
         return services;
     }
-    
+
     public static IServiceCollection AddOutbox(this IServiceCollection services, IConfiguration configuration)
+    {
+        services.AddOutboxProcessor(configuration);
+
+        services.AddOutboxMessageProcessor<IKafkaMessage, KafkaMessageProcessor>();
+
+        services.AddScoped<IOutboxMessageProcessorFactory, OutboxMessageProcessorFactory>();
+
+        return services;
+    }
+
+    public static async Task<IApplicationBuilder> UseMessagingAsync(this WebApplication app)
+    {
+        using var scope = app.Services.CreateScope();
+
+        await scope.ServiceProvider
+            .GetRequiredService<TopicInitializer>()
+            .CreateMissingTopicsAsync();
+
+        return app;
+    }
+
+    public static IApplicationBuilder UseOutbox(this WebApplication app)
+    {
+        var settings = app.Services.GetRequiredService<OutboxProcessorSettings>();
+
+        var recurringJobManager = app.Services.GetRequiredService<IRecurringJobManager>();
+
+        recurringJobManager.AddOrUpdateDynamic<IOutboxProcessor>(
+            "ProcessOutboxMessages",
+            p => p.ProcessPendingAsync(settings.BatchSize, new CancellationTokenSource(TimeSpan.FromSeconds(30)).Token),
+            settings.ProcessIntervalCron,
+#pragma warning disable CS0618 // Type or member is obsolete
+            new DynamicRecurringJobOptions { QueueName = "eflow-outbox" });
+#pragma warning restore CS0618 // Type or member is obsolete
+
+        recurringJobManager.AddOrUpdateDynamic<IOutboxProcessor>(
+            "DeleteOutboxMessages",
+            p => p.DeleteProcessedAsync(settings.DeleteAfter, new CancellationTokenSource(TimeSpan.FromSeconds(30)).Token),
+            settings.DeleteIntervalCron,
+#pragma warning disable CS0618 // Type or member is obsolete
+            new DynamicRecurringJobOptions { QueueName = "eflow-outbox" });
+#pragma warning restore CS0618 // Type or member is obsolete
+
+        return app;
+    }
+
+    private static IServiceCollection AddOutboxProcessor(this IServiceCollection services, IConfiguration configuration)
     {
         var batchSize = configuration
             .GetRequiredSection("OutboxProcessorSettings")
@@ -81,28 +143,31 @@ public static class DependencyInjection
         return services;
     }
 
-    public static IApplicationBuilder UseOutbox(this WebApplication app)
+    private static IServiceCollection AddOutboxMessageProcessor<TMessage, TMessageProcessor>(this IServiceCollection services)
+        where TMessageProcessor : class, IOutboxMessageProcessor
     {
-        var settings = app.Services.GetRequiredService<OutboxProcessorSettings>();
+        var messageType = typeof(TMessage);
 
-        var recurringJobManager = app.Services.GetRequiredService<IRecurringJobManager>();
+        var assemblies = AppDomain.CurrentDomain.GetAssemblies();
 
-        recurringJobManager.AddOrUpdateDynamic<IOutboxProcessor>(
-            "ProcessOutboxMessages",
-            p => p.ProcessPendingAsync(settings.BatchSize, CancellationToken.None),
-            settings.ProcessIntervalCron,
-#pragma warning disable CS0618 // Type or member is obsolete
-            new DynamicRecurringJobOptions { QueueName = "eflow-outbox" });
-#pragma warning restore CS0618 // Type or member is obsolete
+        var messageTypes = assemblies
+            .SelectMany(a => a.GetTypes())
+            .Where(type => messageType.IsAssignableFrom(type) && !type.IsAbstract)
+            .ToList();
 
-        recurringJobManager.AddOrUpdateDynamic<IOutboxProcessor>(
-            "DeleteOutboxMessages",
-            p => p.DeleteProcessedAsync(settings.DeleteAfter, CancellationToken.None),
-            settings.DeleteIntervalCron,
-#pragma warning disable CS0618 // Type or member is obsolete
-            new DynamicRecurringJobOptions { QueueName = "eflow-outbox" });
-#pragma warning restore CS0618 // Type or member is obsolete
+        foreach (var type in messageTypes)
+            services.AddKeyedScoped<IOutboxMessageProcessor, TMessageProcessor>(type);
 
-        return app;
+        return services;
     }
+    
+    private static void AddTopicResolving(IServiceCollection services) =>
+        services.AddScoped<ITopicNameResolver>(_ =>
+        {
+            var resolver = new TopicNameResolver();
+            
+            resolver.AddMapping(typeof(SubmissionSlotCreatedMessage).AssemblyQualifiedName!, KafkaTopics.SubmissionSlotCreatedTopic);
+
+            return resolver;
+        });
 }

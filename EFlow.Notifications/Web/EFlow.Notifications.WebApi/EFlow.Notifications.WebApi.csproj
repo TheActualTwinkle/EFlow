@@ -14,7 +14,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\Infrastructure\EFlow.Notifications.Messaging\EFlow.Notifications.Messaging.csproj" />
+        <ProjectReference Include="..\..\Infrastructure\EFlow.Notifications.Messaging\EFlow.Notifications.Messaging.csproj"/>
     </ItemGroup>
 
 </Project>

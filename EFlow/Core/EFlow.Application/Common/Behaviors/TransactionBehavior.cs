@@ -19,13 +19,13 @@ public class TransactionBehavior<TRequest, TResponse>(
     {
         logger.LogInformation("Beginning transaction for {Request}", typeof(TRequest).Name);
 
-        await unitOfWork.BeginAsync(IsolationLevel.ReadCommitted, cancellationToken);
+        await unitOfWork.BeginTransactionAsync(IsolationLevel.ReadCommitted, cancellationToken);
 
         try
         {
             var response = await next(cancellationToken);
 
-            await unitOfWork.CommitAsync(cancellationToken);
+            await unitOfWork.CommitTransactionAsync(cancellationToken);
 
             logger.LogInformation("Transaction committed for {Request}", typeof(TRequest).Name);
 
@@ -37,13 +37,11 @@ public class TransactionBehavior<TRequest, TResponse>(
 
             try
             {
-                await unitOfWork.RollbackAsync(cancellationToken);
+                await unitOfWork.RollbackTransactionAsync(cancellationToken);
             }
             catch (Exception rollbackException)
             {
-                logger.LogError(rollbackException, "Error during transaction rollback for {Request}", typeof(TRequest).Name);
-
-                throw new AggregateException("Error during transaction rollback", e, rollbackException);
+                throw new AggregateException("Transaction rollback failed after initial transaction error", e, rollbackException);
             }
 
             logger.LogInformation("Transaction rolled back for {Request}", typeof(TRequest).Name);

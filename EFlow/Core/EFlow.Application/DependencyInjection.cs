@@ -3,7 +3,6 @@ using EFlow.Application.Common.Behaviors;
 using EFlow.Application.Common.Mapping;
 using FluentValidation;
 using Mapster;
-using MapsterMapper;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace EFlow.Application;
@@ -17,8 +16,6 @@ public static class DependencyInjection
         TypeAdapterConfig.GlobalSettings.Default.IgnoreNonMapped(true);
 
         services.AddSingleton(TypeAdapterConfig.GlobalSettings);
-
-        services.AddScoped<IMapper, ServiceMapper>();
 
         services.AddMediatR(cfg =>
         {

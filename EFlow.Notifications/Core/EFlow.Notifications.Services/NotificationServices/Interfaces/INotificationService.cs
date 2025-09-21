@@ -2,5 +2,5 @@
 
 public interface INotificationService
 {
-    public Task SendAsync(CancellationToken cancellationToken = new());
+    public Task SendAsync(string message, CancellationToken cancellationToken = new());
 }

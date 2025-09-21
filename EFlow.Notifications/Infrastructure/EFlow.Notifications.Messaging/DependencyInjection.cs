@@ -1,8 +1,12 @@
-﻿using EFlow.Notifications.Messaging.Consumers;
-using EFlow.Notifications.Messaging.Consumers.Settings;
-using MassTransit;
+﻿using Confluent.Kafka;
+using EFlow.Common.Messaging.Factories;
+using EFlow.Common.Messaging.Init;
+using EFlow.Common.Messaging.Serialization;
+using EFlow.Common.Messaging.Settings;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 
 namespace EFlow.Notifications.Messaging;
 
@@ -10,60 +14,34 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddMessaging(this IServiceCollection services, IConfiguration configuration)
     {
-        services.AddMassTransit(x =>
+        services.AddScoped<TopicInitializer>();
+        
+        services.Configure<KafkaSettings>(configuration.GetRequiredSection("KafkaSettings"));
+        services.Configure<KafkaTopicsSettings>(configuration.GetRequiredSection("KafkaSettings"));
+
+        services.AddScoped<ICommitLogConsumerFactory, CommitLogConsumerFactory>();
+        
+        services.AddSingleton<IAdminClient>(serviceProvider =>
         {
-            x.SetKebabCaseEndpointNameFormatter();
+            var settings = serviceProvider.GetRequiredService<IOptions<KafkaSettings>>().Value;
 
-            x.AddConsumer<SubmissionSlotCreatedConsumer>();
-
-            x.UsingRabbitMq((context, cfg) =>
-            {
-                var configurationSection = configuration.GetRequiredSection("RabbitMqSettings");
-
-                var host = configurationSection["Host"] ??
-                           throw new InvalidOperationException("RabbitMqSettings:Host is not configured.");
-
-                var port = ushort.Parse(
-                    configurationSection["Port"] ??
-                    throw new InvalidOperationException("RabbitMqSettings:Port is not configured."));
-
-                var username = configurationSection["Username"] ??
-                               throw new InvalidOperationException("RabbitMqSettings:Username is not configured.");
-
-                var password = configurationSection["Password"] ??
-                               throw new InvalidOperationException("RabbitMqSettings:Password is not configured.");
-
-                cfg.Host(
-                    host, port, "/", h =>
-                    {
-                        h.Username(username);
-                        h.Password(password);
-                    });
-
-                cfg.ReceiveEndpoint(
-                    "eflow-submission-slot-created",
-                    e => e.Consumer<SubmissionSlotCreatedConsumer>(context));
-            });
+            return new AdminClientBuilder(new AdminClientConfig { BootstrapServers = settings.BootstrapServers })
+                .Build();
         });
 
-        AddConsumerSettings(services, configuration);
+        services.AddScoped(typeof(IDeserializer<>), typeof(DefaultSerializer<>));
 
         return services;
     }
-
-    private static void AddConsumerSettings(IServiceCollection services, IConfiguration configuration)
+    
+    public static async Task<IApplicationBuilder> UseMessagingAsync(this WebApplication app)
     {
-        var defaultCancellationTimeoutString = configuration
-            .GetRequiredSection("ConsumersSettings")["DefaultCancellationTimeout"];
+        using var scope = app.Services.CreateScope();
 
-        if (string.IsNullOrEmpty(defaultCancellationTimeoutString))
-            throw new InvalidOperationException("DefaultCancellationTimeout is not configured in ConsumersSettings.");
+        await scope.ServiceProvider
+            .GetRequiredService<TopicInitializer>()
+            .WaitForTopicsCreatedAsync();
 
-        var defaultCancellationTimeout = TimeSpan.Parse(defaultCancellationTimeoutString);
-
-        services.AddSingleton<ConsumerSettings>(_ => new ConsumerSettings
-        {
-            DefaultCancellationTimeout = defaultCancellationTimeout
-        });
+        return app;
     }
 }

@@ -1,11 +1,11 @@
-﻿using System.Text.Json;
-using EFlow.Application.SubmissionSlots.Commands.Events;
+﻿using EFlow.Common.Models.SubmissionSlot;
 using EFlow.Domain;
 using EFlow.Domain.Models;
 using EFlow.Domain.Repositories;
 using FluentResults;
 using Mapster;
 using MediatR;
+using MemoryPack;
 
 namespace EFlow.Application.SubmissionSlots.Commands;
 
@@ -22,16 +22,18 @@ public class CreateSubmissionSlotCommandHandler(
             StartTime = request.StartTime,
             EndTime = request.EndTime,
             MaxStudents = request.MaxStudents,
+            AllowAllGroups = request.AllowAllGroups,
+            AllowedGroupIds = request.AllowedGroupIds,
             Location = request.Location
         };
 
         await unitOfWork
-            .GetRepository<ISubmissionSlotRepository>() 
+            .GetRepository<ISubmissionSlotRepository>()
             .CreateAsync(slot, cancellationToken);
-        
-        var createdEvent = new SubmissionSlotCreatedEvent
+
+        var createdEvent = new SubmissionSlotCreatedMessage
         {
-            SubmissionSlot = slot.Adapt<SubmissionSlotDto>()
+            SubmissionSlot = slot.Adapt<SubmissionSlotModel>()
         };
 
         var outboxMessage = new OutboxMessage
@@ -39,7 +41,7 @@ public class CreateSubmissionSlotCommandHandler(
             Id = Guid.NewGuid(),
             Type = createdEvent.GetType().AssemblyQualifiedName ??
                    throw new InvalidOperationException("Event type cannot be null"),
-            Payload = JsonSerializer.Serialize(createdEvent),
+            Payload = MemoryPackSerializer.Serialize(createdEvent),
             CreatedAt = DateTime.UtcNow
         };
 

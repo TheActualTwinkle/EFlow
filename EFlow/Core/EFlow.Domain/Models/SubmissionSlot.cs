@@ -12,8 +12,9 @@ public sealed class SubmissionSlot : IEntity
 
     public required int MaxStudents { get; init; }
     
-    public bool AllowAllGroups { get; init; }
+    public required bool AllowAllGroups { get; init; }
     
+    // [MemberNotNullWhen(false, nameof(AllowedGroupIds))] // TODO: Check if this works as expected in calling code
     public ICollection<Guid>? AllowedGroupIds { get; init; }
 
     public string? Location { get; init; }

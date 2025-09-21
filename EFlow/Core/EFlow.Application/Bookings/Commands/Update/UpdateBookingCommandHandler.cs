@@ -1,4 +1,5 @@
-﻿using EFlow.Application.Common.Errors.Abstractions;
+﻿using EFlow.Application.Common.Errors;
+using EFlow.Application.Common.Errors.Abstractions;
 using EFlow.Domain;
 using EFlow.Domain.Repositories;
 using FluentResults;
@@ -13,7 +14,7 @@ public class UpdateBookingCommandHandler(IUnitOfWork unitOfWork)
     public async Task<Result> Handle(UpdateBookingCommand request, CancellationToken cancellationToken)
     {
         var repository = unitOfWork.GetRepository<IBookingRepository>();
-        
+
         var booking = await repository.GetByIdAsync(request.Id, cancellationToken);
 
         if (booking is null)
@@ -23,7 +24,7 @@ public class UpdateBookingCommandHandler(IUnitOfWork unitOfWork)
                     .WithId(request.Id));
 
         request.Adapt(booking);
-        
+
         repository.Update(booking);
 
         return Result.Ok();

@@ -15,8 +15,8 @@ builder.Host.UseSerilog((_, configuration) => configuration
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddNotificationServices();
 builder.Services.AddMessaging(builder.Configuration);
+builder.Services.AddNotificationServices();
 
 var app = builder.Build();
 
@@ -29,5 +29,7 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.UseSerilogRequestLogging();
+
+await app.UseMessagingAsync();
 
 app.Run();

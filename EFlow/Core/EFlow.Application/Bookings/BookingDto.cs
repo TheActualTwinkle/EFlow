@@ -12,8 +12,8 @@ public record BookingDto
     public required Guid SlotId { get; init; }
 
     public required DateTime CreatedAt { get; init; }
-    
+
     public StudentDto? Student { get; init; }
-    
+
     public SubmissionSlotDto? SubmissionSlot { get; init; }
 }

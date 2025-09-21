@@ -1,5 +1,4 @@
 ﻿using EFlow.Domain.Models;
-using EFlow.Persistence.EntityTypeConfiguration;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;

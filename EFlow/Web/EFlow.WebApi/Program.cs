@@ -1,7 +1,7 @@
 using EFlow.Application;
 using EFlow.Messaging;
 using EFlow.Persistence;
-using EFLow.Presentation;
+using EFlow.Presentation;
 using EFlow.Presentation.Middleware;
 using EFlow.WebApi;
 using EFlow.WebApi.Extensions;
@@ -115,6 +115,7 @@ app.UseRouting();
 
 await app.CreateRolesAsync();
 
+await app.UseMessagingAsync();
 app.UseOutbox();
 
 app.UseAuthentication();
