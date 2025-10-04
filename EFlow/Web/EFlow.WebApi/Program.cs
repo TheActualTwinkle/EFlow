@@ -68,7 +68,9 @@ builder.Services.AddSwaggerGen(c =>
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddProblemDetails();
 
-builder.Services.AddHealthChecks();
+builder.Services
+    .AddHealthChecks()
+    .AddHangfire(o => { o.MaximumJobsFailed = 1; }, "hangfire");
 
 builder.Services
     .AddControllers()
