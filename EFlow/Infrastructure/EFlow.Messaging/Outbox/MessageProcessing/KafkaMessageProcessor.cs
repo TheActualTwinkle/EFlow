@@ -15,7 +15,7 @@ public class KafkaMessageProcessor(ICommitLogProducer<Guid, byte[]> producer, IT
     {
         var topicName = topicNameResolver.ResolveTopicName(message.Type);
 
-        if (topicName == null)
+        if (topicName is null)
             throw new InvalidOperationException($"No topic mapping found for message type {message.Type}");
 
         await producer.ProduceAsync(
