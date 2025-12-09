@@ -9,7 +9,6 @@ WORKDIR /src
 COPY ["EFlow/Web/EFlow.WebApi/EFlow.WebApi.csproj", "EFlow/Web/EFlow.WebApi/"]
 COPY ["EFlow/Infrastructure/EFlow.Persistence/EFlow.Persistence.csproj", "EFlow/Infrastructure/EFlow.Persistence/"]
 COPY ["EFlow/Core/EFlow.Domain/EFlow.Domain.csproj", "EFlow/Core/EFlow.Domain/"]
-COPY ["EFlow/Presentation/EFlow.Presentation/EFlow.Presentation.csproj", "EFlow/Presentation/EFlow.Presentation/"]
 COPY ["EFlow/Core/EFlow.Application/EFlow.Application.csproj", "EFlow/Core/EFlow.Application/"]
 COPY ["EFlow.Common/EFlow.Common.csproj", "EFlow.Common/"]
 COPY ["EFlow/Infrastructure/EFlow.Messaging/EFlow.Messaging.csproj", "EFlow/Infrastructure/EFlow.Messaging/"]

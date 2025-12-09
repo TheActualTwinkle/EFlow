@@ -1,15 +1,13 @@
 using EFlow.Application;
 using EFlow.Messaging;
 using EFlow.Persistence;
-using EFlow.Presentation;
-using EFlow.Presentation.Middleware;
 using EFlow.WebApi;
 using EFlow.WebApi.Extensions;
+using EFlow.WebApi.Middleware;
 using Hangfire;
 using HealthChecks.UI.Client;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
-using Microsoft.OpenApi.Any;
-using Microsoft.OpenApi.Models;
+using Scalar.AspNetCore;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -26,44 +24,16 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy(
         "AllowAll",
-        policyBuilder =>
-        {
-            policyBuilder
-                .AllowAnyOrigin()
-                .AllowAnyMethod()
-                .AllowAnyHeader();
-        });
+        policyBuilder => policyBuilder
+            .AllowAnyOrigin()
+            .AllowAnyMethod()
+            .AllowAnyHeader());
 });
 
 builder.Services.ConfigureIdentity(builder.Configuration);
 
 builder.Services.AddEndpointsApiExplorer();
-
-builder.Services.AddSwaggerGen(c =>
-{
-    var assembly = typeof(AssemblyMarker).Assembly;
-
-    var xmlPath = Path.Combine(
-        Path.GetDirectoryName(assembly.Location)!,
-        $"{assembly.GetName().Name}.xml");
-
-    c.IncludeXmlComments(xmlPath);
-
-    c.SupportNonNullableReferenceTypes();
-
-    c.MapType<TimeSpan>(() => new OpenApiSchema
-    {
-        Type = "string",
-        Example = new OpenApiString("00:00:00")
-    });
-
-    c.MapType<DateOnly>(() => new OpenApiSchema
-    {
-        Type = "string",
-        Format = "date",
-        Example = new OpenApiString("1999-03-25")
-    });
-});
+builder.Services.AddOpenApi();
 
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddProblemDetails();
@@ -72,9 +42,7 @@ builder.Services
     .AddHealthChecks()
     .AddHangfire(o => { o.MaximumJobsFailed = 1; }, "hangfire");
 
-builder.Services
-    .AddControllers()
-    .AddApplicationPart(typeof(AssemblyMarker).Assembly);
+builder.Services.AddControllers();
 
 builder.Services.AddApplication();
 builder.Services.AddPersistence(builder.Configuration);
@@ -88,8 +56,8 @@ await app.ApplyDbMigrations();
 
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
+    app.MapOpenApi();
+    app.MapScalarApiReference();
 
     app.UseHangfireDashboard(
         "/hangfire", new DashboardOptions

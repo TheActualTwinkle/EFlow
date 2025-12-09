@@ -2,12 +2,12 @@
 using EFlow.Application.SubmissionSlots.Commands.Update;
 using EFlow.Application.SubmissionSlots.Queries;
 using EFlow.Domain.Models;
-using EFlow.Presentation.Extensions;
+using EFlow.WebApi.Extensions;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace EFlow.Presentation.Controllers;
+namespace EFlow.WebApi.Controllers;
 
 [ApiController]
 [Route("api/submission-slots")]

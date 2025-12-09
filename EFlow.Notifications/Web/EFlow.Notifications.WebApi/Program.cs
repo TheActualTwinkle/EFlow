@@ -1,5 +1,6 @@
 using EFlow.Notifications.Messaging;
 using EFlow.Notifications.Services;
+using Scalar.AspNetCore;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -13,7 +14,7 @@ builder.Host.UseSerilog((_, configuration) => configuration
     .ReadFrom.Configuration(builder.Configuration));
 
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddOpenApi();
 
 builder.Services.AddMessaging(builder.Configuration);
 builder.Services.AddNotificationServices();
@@ -22,8 +23,8 @@ var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
+    app.MapOpenApi();
+    app.MapScalarApiReference();
 }
 
 app.UseHttpsRedirection();
