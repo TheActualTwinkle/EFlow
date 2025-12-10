@@ -44,7 +44,7 @@ public class CommitLogConsumer<TKey, TValue> : ICommitLogConsumer<TKey, TValue>
                         {
                             var result = _consumer.Consume(cts.Token);
 
-                            if (result?.Message == null)
+                            if (result?.Message is null)
                                 continue;
 
                             _consumer.Commit(result);

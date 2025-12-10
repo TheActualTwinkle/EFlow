@@ -1,7 +1,4 @@
-﻿using EFlow.Common.Messaging.Settings;
-using EFlow.Common.Models.SubmissionSlot;
-
-namespace EFlow.Messaging.TopicResolving;
+﻿namespace EFlow.Messaging.TopicResolving;
 
 public class TopicNameResolver : ITopicNameResolver
 {

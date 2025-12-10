@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 
-namespace EFlow.Presentation.Controllers;
+namespace EFlow.WebApi.Controllers;
 
 [ApiController]
 [Route("api/auth")]
@@ -46,7 +46,7 @@ public class AuthController(
     {
         var user = await userManager.FindByNameAsync(request.Username);
 
-        if (user == null)
+        if (user is null)
             return Unauthorized("Invalid credentials");
 
         var result = await signInManager.CheckPasswordSignInAsync(user, request.Password, false);
@@ -76,12 +76,12 @@ public class AuthController(
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-        if (userId == null)
+        if (userId is null)
             return Unauthorized("User is not authenticated");
 
         var user = await userManager.FindByIdAsync(userId);
 
-        if (user == null)
+        if (user is null)
             return NotFound("User not found");
 
         var roles = await userManager.GetRolesAsync(user);

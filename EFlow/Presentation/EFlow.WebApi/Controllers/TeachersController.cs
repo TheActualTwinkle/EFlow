@@ -1,35 +1,34 @@
 ﻿using System.Security.Claims;
-using EFlow.Application.Students.Commands;
-using EFlow.Application.Students.Commands.Update;
-using EFlow.Application.Students.Queries;
+using EFlow.Application.Teachers.Commands;
+using EFlow.Application.Teachers.Queries;
 using EFlow.Domain.Models;
-using EFlow.Presentation.Extensions;
+using EFlow.WebApi.Extensions;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace EFlow.Presentation.Controllers;
+namespace EFlow.WebApi.Controllers;
 
 [ApiController]
-[Route("api/students")]
-public class StudentsController(ISender sender) : ControllerBase
+[Route("api/teachers")]
+public class TeachersController(ISender sender) : ControllerBase
 {
     [HttpPost]
     [Authorize(Roles = Identity.Roles.Admin)]
-    public async Task<IActionResult> CreateStudent([FromBody] CreateStudentCommand command, CancellationToken cancellationToken)
+    public async Task<IActionResult> CreateTeacher([FromBody] CreateTeacherCommand command, CancellationToken cancellationToken)
     {
         var result = await sender.Send(command, cancellationToken);
 
         return result.IsFailed ?
             result.Errors[0].ToProblemDetails() :
-            CreatedAtAction(nameof(GetStudent), new { id = result.Value }, null);
+            CreatedAtAction(nameof(GetTeacher), new { id = result.Value }, null);
     }
 
     [HttpGet("{id:guid}")]
     [Authorize]
-    public async Task<IActionResult> GetStudent(Guid id, CancellationToken cancellationToken)
+    public async Task<IActionResult> GetTeacher(Guid id, CancellationToken cancellationToken)
     {
-        var result = await sender.Send(new GetStudentByIdQuery { Id = id }, cancellationToken);
+        var result = await sender.Send(new GetTeacherByIdQuery { Id = id }, cancellationToken);
 
         return result.IsFailed ?
             result.Errors[0].ToProblemDetails() :
@@ -38,9 +37,9 @@ public class StudentsController(ISender sender) : ControllerBase
 
     [HttpGet]
     [Authorize]
-    public async Task<IActionResult> GetAllStudents(CancellationToken cancellationToken)
+    public async Task<IActionResult> GetAllTeachers(CancellationToken cancellationToken)
     {
-        var result = await sender.Send(new GetAllStudentsQuery(), cancellationToken);
+        var result = await sender.Send(new GetAllTeachersQuery(), cancellationToken);
 
         return result.IsFailed ?
             result.Errors[0].ToProblemDetails() :
@@ -48,17 +47,17 @@ public class StudentsController(ISender sender) : ControllerBase
     }
 
     [HttpPatch("{id:guid}")]
-    [Authorize(Roles = $"{Identity.Roles.Admin},{Identity.Roles.Student}")]
-    public async Task<IActionResult> UpdateStudent(
+    [Authorize(Roles = $"{Identity.Roles.Admin},{Identity.Roles.Teacher}")]
+    public async Task<IActionResult> UpdateTeacher(
         Guid id,
-        [FromBody] UpdateStudentCommand command,
+        [FromBody] UpdateTeacherCommand command,
         CancellationToken cancellationToken)
     {
-        if (User.IsInRole(Identity.Roles.Student))
+        if (User.IsInRole(Identity.Roles.Teacher))
         {
-            var studentId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var teacherId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
-            if (studentId != id.ToString())
+            if (teacherId != id.ToString())
                 return Problem(
                     title: "Forbidden",
                     detail: "You can only update your own profile.",
@@ -75,9 +74,9 @@ public class StudentsController(ISender sender) : ControllerBase
 
     [HttpDelete("{id:guid}")]
     [Authorize(Roles = Identity.Roles.Admin)]
-    public async Task<IActionResult> DeleteStudent(Guid id, CancellationToken cancellationToken)
+    public async Task<IActionResult> DeleteTeacher(Guid id, CancellationToken cancellationToken)
     {
-        var result = await sender.Send(new DeleteStudentCommand { Id = id }, cancellationToken);
+        var result = await sender.Send(new DeleteTeacherCommand { Id = id }, cancellationToken);
 
         return result.IsFailed ?
             result.Errors[0].ToProblemDetails() :
