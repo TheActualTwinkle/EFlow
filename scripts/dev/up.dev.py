@@ -7,7 +7,7 @@ def main():
     
     cmd = [
         "docker",
-	"compose",
+        "compose",
         "--env-file", ".env",
         "-f", "docker-compose.dev.yml",
         "up", "-d", "--build",

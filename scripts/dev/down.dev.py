@@ -8,11 +8,11 @@ def main():
     os.chdir(docker_dir)
     
     cmd = [
-	"docker",
-	"compose",
-        "--env-file", ".env",
-        "-f", "docker-compose.dev.yml",
-        "down"
+    "docker",
+    "compose",
+    "--env-file", ".env",
+	"-f", "docker-compose.dev.yml",
+	"down"
     ]
     
     subprocess.run(cmd, check=True)

@@ -16,13 +16,13 @@ public class BookingsController(ISender sender) : ControllerBase
 {
     [HttpPost]
     [Authorize(Roles = $"{Identity.Roles.Admin},{Identity.Roles.Student}")]
-    public async Task<IActionResult> CreateBooking([FromBody] CreateBookingRecordCommand recordCommand, CancellationToken cancellationToken)
+    public async Task<IActionResult> CreateBooking([FromBody] CreateBookingRecordCommand command, CancellationToken cancellationToken)
     {
         if (User.IsInRole(Identity.Roles.Student))
         {
             var studentId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
-            if (studentId != recordCommand.StudentId.ToString())
+            if (studentId != command.StudentId.ToString())
                 return Problem(
                     title: "Forbidden",
                     detail: "You can only create bookings for yourself",
@@ -30,7 +30,7 @@ public class BookingsController(ISender sender) : ControllerBase
                 );
         }
 
-        var result = await sender.Send(recordCommand, cancellationToken);
+        var result = await sender.Send(command, cancellationToken);
 
         return result.IsFailed ?
             result.Errors[0].ToProblemDetails() :
@@ -97,10 +97,10 @@ public class BookingsController(ISender sender) : ControllerBase
     [Authorize(Roles = Identity.Roles.Admin)]
     public async Task<IActionResult> UpdateBooking(
         Guid id,
-        [FromBody] UpdateBookingRecordCommand recordCommand,
+        [FromBody] UpdateBookingRecordCommand command,
         CancellationToken cancellationToken)
     {
-        var result = await sender.Send(recordCommand with { Id = id }, cancellationToken);
+        var result = await sender.Send(command with { Id = id }, cancellationToken);
 
         return result.IsFailed ?
             result.Errors[0].ToProblemDetails() :
