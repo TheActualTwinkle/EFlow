@@ -13,8 +13,4 @@
         <ProjectReference Include="..\..\Core\EFlow.Notifications.Services\EFlow.Notifications.Services.csproj"/>
     </ItemGroup>
 
-    <ItemGroup>
-        <FrameworkReference Include="Microsoft.AspNetCore.App"/>
-    </ItemGroup>
-
 </Project>

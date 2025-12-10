@@ -33,15 +33,4 @@ public static class DependencyInjection
 
         return services;
     }
-    
-    public static async Task<IApplicationBuilder> UseMessagingAsync(this WebApplication app)
-    {
-        using var scope = app.Services.CreateScope();
-
-        await scope.ServiceProvider
-            .GetRequiredService<TopicInitializer>()
-            .WaitForTopicsCreatedAsync();
-
-        return app;
-    }
 }

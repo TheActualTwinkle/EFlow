@@ -1,3 +1,4 @@
+using EFlow.Common.Messaging.Init;
 using EFlow.Notifications.Messaging;
 using EFlow.Notifications.Services;
 using Scalar.AspNetCore;
@@ -31,6 +32,9 @@ app.UseHttpsRedirection();
 
 app.UseSerilogRequestLogging();
 
-await app.UseMessagingAsync();
 
-app.Run();
+await app.Services
+    .GetRequiredService<TopicInitializer>()
+    .WaitForTopicsCreatedAsync();
+
+await app.RunAsync();
