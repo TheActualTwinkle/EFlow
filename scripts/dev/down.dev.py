@@ -8,7 +8,8 @@ def main():
     os.chdir(docker_dir)
     
     cmd = [
-        "docker-compose",
+	"docker",
+	"compose",
         "--env-file", ".env",
         "-f", "docker-compose.dev.yml",
         "down"

@@ -1,4 +1,20 @@
 <Solution>
+  <Folder Name="/EFlow.Booking/" />
+  <Folder Name="/EFlow.Booking/Core/">
+    <Project Path="EFlow.Booking/Core/EFlow.Booking.Application/EFlow.Booking.Application.csproj" />
+    <Project Path="EFlow.Booking/Core/EFlow.Booking.Domain/EFlow.Booking.Domain.csproj" />
+  </Folder>
+  <Folder Name="/EFlow.Booking/Infrastructure/">
+    <Project Path="EFlow.Booking/Infrastructure/EFlow.Booking.Messaging/EFlow.Booking.Messaging.csproj" />
+    <Project Path="EFlow.Booking/Infrastructure/EFlow.Booking.Persistence/EFlow.Booking.Persistence.csproj" />
+  </Folder>
+  <Folder Name="/EFlow.Booking/Presentation/">
+    <Project Path="EFlow.Booking/Presentation/EFlow.Booking.WebApi/EFlow.Booking.WebApi.csproj" />
+  </Folder>
+  <Folder Name="/EFlow.Booking/Tests/">
+    <Project Path="EFlow.Booking/Tests/EFlow.Booking.ArchitectureTests/EFlow.Booking.ArchitectureTests.csproj" />
+    <Project Path="EFlow.Booking/Tests/EFlow.Booking.UnitTests/EFlow.Booking.UnitTests.csproj" />
+  </Folder>
   <Folder Name="/Eflow.Common/">
     <Project Path="EFlow.Common/EFlow.Common.csproj" />
   </Folder>
@@ -11,21 +27,5 @@
   </Folder>
   <Folder Name="/EFlow.Notifications/Presentation/">
     <Project Path="EFlow.Notifications/Web/EFlow.Notifications.WebApi/EFlow.Notifications.WebApi.csproj" />
-  </Folder>
-  <Folder Name="/EFlow/" />
-  <Folder Name="/EFlow/Core/">
-    <Project Path="EFlow/Core/EFlow.Application/EFlow.Application.csproj" />
-    <Project Path="EFlow/Core/EFlow.Domain/EFlow.Domain.csproj" />
-  </Folder>
-  <Folder Name="/EFlow/Infrastructure/">
-    <Project Path="EFlow/Infrastructure/EFlow.Messaging/EFlow.Messaging.csproj" />
-    <Project Path="EFlow/Infrastructure/EFlow.Persistence/EFlow.Persistence.csproj" />
-  </Folder>
-  <Folder Name="/EFlow/Presentation/">
-    <Project Path="EFlow/Presentation/EFlow.WebApi/EFlow.WebApi.csproj" />
-  </Folder>
-  <Folder Name="/EFlow/Tests/">
-    <Project Path="EFlow/Tests/EFlow.ArchitectureTests/EFlow.ArchitectureTests.csproj" />
-    <Project Path="EFlow/Tests/EFlow.UnitTests/EFlow.UnitTests.csproj" />
   </Folder>
 </Solution>

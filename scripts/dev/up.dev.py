@@ -6,7 +6,8 @@ def main():
     os.chdir(os.path.join(os.path.dirname(__file__), "docker"))
     
     cmd = [
-        "docker-compose",
+        "docker",
+	"compose",
         "--env-file", ".env",
         "-f", "docker-compose.dev.yml",
         "up", "-d", "--build",

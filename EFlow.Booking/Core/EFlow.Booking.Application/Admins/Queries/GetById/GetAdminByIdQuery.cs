@@ -1,0 +1,9 @@
+﻿using FluentResults;
+using MediatR;
+
+namespace EFlow.Booking.Application.Admins.Queries;
+
+public record GetAdminByIdQuery : IRequest<Result<AdminDto>>
+{
+    public required Guid Id { get; init; }
+}

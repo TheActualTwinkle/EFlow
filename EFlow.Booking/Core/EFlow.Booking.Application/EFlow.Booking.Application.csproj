@@ -1,0 +1,18 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <ItemGroup>
+        <PackageReference Include="FluentResults" />
+        <PackageReference Include="FluentValidation" />
+        <PackageReference Include="FluentValidation.DependencyInjectionExtensions" />
+        <PackageReference Include="Mapster" />
+        <PackageReference Include="Mapster.DependencyInjection" />
+        <PackageReference Include="MediatR" />
+        <PackageReference Include="MemoryPack" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\..\EFlow.Common\EFlow.Common.csproj"/>
+        <ProjectReference Include="..\EFlow.Booking.Domain\EFlow.Booking.Domain.csproj" />
+    </ItemGroup>
+
+</Project>
