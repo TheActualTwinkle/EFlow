@@ -1,4 +1,5 @@
 ﻿using Confluent.Kafka;
+using EFlow.Booking.IntegrationEvents;
 using EFlow.Booking.Messaging.Outbox;
 using EFlow.Booking.Messaging.Outbox.Interfaces;
 using EFlow.Booking.Messaging.Outbox.MessageProcessing;
@@ -6,12 +7,11 @@ using EFlow.Booking.Messaging.Outbox.MessageProcessing.Factories;
 using EFlow.Booking.Messaging.Outbox.MessageProcessing.Factories.Interfaces;
 using EFlow.Booking.Messaging.Outbox.MessageProcessing.Interfaces;
 using EFlow.Booking.Messaging.TopicResolving;
+using EFlow.Common.Markers;
 using EFlow.Common.Messaging.Init;
 using EFlow.Common.Messaging.Producers;
 using EFlow.Common.Messaging.Serialization;
 using EFlow.Common.Messaging.Settings;
-using EFlow.Common.Markers;
-using EFlow.Booking.IntegrationEvents;
 using Hangfire;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
@@ -160,12 +160,12 @@ public static class DependencyInjection
 
         return services;
     }
-    
+
     private static void AddTopicResolving(IServiceCollection services) =>
         services.AddScoped<ITopicNameResolver>(_ =>
         {
             var resolver = new TopicNameResolver();
-            
+
             resolver.AddMapping(typeof(SubmissionSlotCreatedIntegrationEvent).AssemblyQualifiedName!, KafkaTopics.SubmissionSlotCreatedTopic);
 
             return resolver;

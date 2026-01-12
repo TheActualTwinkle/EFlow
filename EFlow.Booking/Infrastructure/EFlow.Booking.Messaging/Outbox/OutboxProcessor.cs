@@ -24,7 +24,7 @@ public class OutboxProcessor(
             return;
 
         var processedMessageIds = new List<Guid>();
-        
+
         foreach (var message in messages)
             try
             {
@@ -45,13 +45,13 @@ public class OutboxProcessor(
                 }
 
                 await messageProcessor.ProcessAsync(message, cancellationToken);
-                
+
                 processedMessageIds.Add(message.Id);
             }
             catch (Exception e)
             {
                 logger.LogError(e, "Error processing outbox message with ID {MessageId}", message.Id);
-                
+
                 await outboxMessageRepository.AddErrorAsync(message.Id, e.ToString(), cancellationToken);
             }
 

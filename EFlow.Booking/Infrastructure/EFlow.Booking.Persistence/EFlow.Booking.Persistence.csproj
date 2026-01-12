@@ -1,16 +1,16 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <ItemGroup>
-        <PackageReference Include="Hangfire" />
-        <PackageReference Include="Hangfire.Core" />
-        <PackageReference Include="Hangfire.DynamicJobs" />
-        <PackageReference Include="Hangfire.PostgreSql" />
-        <PackageReference Include="Microsoft.EntityFrameworkCore" />
-        <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
+        <PackageReference Include="Hangfire"/>
+        <PackageReference Include="Hangfire.Core"/>
+        <PackageReference Include="Hangfire.DynamicJobs"/>
+        <PackageReference Include="Hangfire.PostgreSql"/>
+        <PackageReference Include="Microsoft.EntityFrameworkCore"/>
+        <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL"/>
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\Core\EFlow.Booking.Domain\EFlow.Booking.Domain.csproj" />
+        <ProjectReference Include="..\..\Core\EFlow.Booking.Domain\EFlow.Booking.Domain.csproj"/>
     </ItemGroup>
 
 </Project>

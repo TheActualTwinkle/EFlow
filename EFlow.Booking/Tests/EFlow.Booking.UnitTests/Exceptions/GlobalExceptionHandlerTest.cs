@@ -48,11 +48,12 @@ public class GlobalExceptionHandlerTest
         var responseStream = new MemoryStream();
         context.Response.Body = responseStream;
 
-        var exception = new ValidationException(new List<ValidationFailure>
-        {
-            new("Field1", "Field1 is required"),
-            new("Field2", "Field2 must be a number")
-        });
+        var exception = new ValidationException(
+            new List<ValidationFailure>
+            {
+                new("Field1", "Field1 is required"),
+                new("Field2", "Field2 must be a number")
+            });
 
         // Act
         var result = await handler.TryHandleAsync(context, exception, CancellationToken.None);

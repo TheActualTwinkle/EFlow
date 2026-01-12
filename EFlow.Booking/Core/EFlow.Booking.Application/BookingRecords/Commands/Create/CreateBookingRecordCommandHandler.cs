@@ -1,4 +1,5 @@
 ﻿using EFlow.Booking.Domain;
+using EFlow.Booking.Domain.Models;
 using EFlow.Booking.Domain.Repositories;
 using FluentResults;
 using MediatR;
@@ -11,7 +12,7 @@ public class CreateBookingRecordCommandHandler(
 {
     public async Task<Result<Guid>> Handle(CreateBookingRecordCommand request, CancellationToken cancellationToken)
     {
-        var booking = new Domain.Models.BookingRecord
+        var booking = new BookingRecord
         {
             Id = Guid.NewGuid(),
             StudentId = request.StudentId,

@@ -1,9 +1,9 @@
 ﻿using System.Text.Json;
 using Confluent.Kafka;
+using EFlow.Booking.IntegrationEvents;
 using EFlow.Common.Extensions;
 using EFlow.Common.Messaging.Factories;
 using EFlow.Common.Messaging.Settings;
-using EFlow.Booking.IntegrationEvents;
 using EFlow.Notifications.Services.NotificationServices.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;

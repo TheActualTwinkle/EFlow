@@ -1,20 +1,20 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <ItemGroup>
-        <PackageReference Include="Hangfire" />
-        <PackageReference Include="Hangfire.Core" />
-        <PackageReference Include="Hangfire.DynamicJobs" />
-        <PackageReference Include="Hangfire.PostgreSql" />
-        <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" />
-        <PackageReference Include="Microsoft.Extensions.Configuration.Binder" />
-        <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
-        <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" />
+        <PackageReference Include="Hangfire"/>
+        <PackageReference Include="Hangfire.Core"/>
+        <PackageReference Include="Hangfire.DynamicJobs"/>
+        <PackageReference Include="Hangfire.PostgreSql"/>
+        <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions"/>
+        <PackageReference Include="Microsoft.Extensions.Configuration.Binder"/>
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions"/>
+        <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions"/>
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\..\EFlow.Shared\EFlow.Common.Messaging\EFlow.Common.Messaging.csproj" />
-        <ProjectReference Include="..\..\Core\EFlow.Booking.Domain\EFlow.Booking.Domain.csproj" />
-        <ProjectReference Include="..\..\Core\EFlow.Booking.IntegrationEvents\EFlow.Booking.IntegrationEvents.csproj" />
+        <ProjectReference Include="..\..\..\EFlow.Shared\EFlow.Common.Messaging\EFlow.Common.Messaging.csproj"/>
+        <ProjectReference Include="..\..\Core\EFlow.Booking.Domain\EFlow.Booking.Domain.csproj"/>
+        <ProjectReference Include="..\..\Core\EFlow.Booking.IntegrationEvents\EFlow.Booking.IntegrationEvents.csproj"/>
     </ItemGroup>
 
 </Project>

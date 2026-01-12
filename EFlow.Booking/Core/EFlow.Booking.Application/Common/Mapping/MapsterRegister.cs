@@ -11,7 +11,6 @@ using EFlow.Booking.Application.SubmissionSlots;
 using EFlow.Booking.Application.SubmissionSlots.Commands.Update;
 using EFlow.Booking.Application.Teachers;
 using EFlow.Booking.Application.Teachers.Commands;
-using EFlow.Booking.IntegrationEvents;
 using EFlow.Booking.Domain.Models;
 using Mapster;
 

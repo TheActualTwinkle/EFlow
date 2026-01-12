@@ -9,7 +9,7 @@ public interface IOutboxMessageRepository : IRepository
     public Task<IReadOnlyList<OutboxMessage>> GetUnprocessedAsync(int batchSize, CancellationToken cancellationToken = new());
 
     public Task MarkAsProcessedAsync(IEnumerable<Guid> ids, CancellationToken cancellationToken = new());
-    
+
     public Task AddErrorAsync(Guid id, string error, CancellationToken cancellationToken = new());
 
     public Task DeleteProcessedAsync(DateTime beforeDate, CancellationToken cancellationToken = new());

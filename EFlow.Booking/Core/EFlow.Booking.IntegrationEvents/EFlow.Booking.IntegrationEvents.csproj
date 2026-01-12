@@ -7,7 +7,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\..\EFlow.Shared\EFlow.Common\EFlow.Common.csproj" />
+        <ProjectReference Include="..\..\..\EFlow.Shared\EFlow.Common\EFlow.Common.csproj"/>
     </ItemGroup>
 
 </Project>

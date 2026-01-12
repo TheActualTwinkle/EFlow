@@ -3,7 +3,9 @@
 public record KafkaSettings
 {
     public required string BootstrapServers { get; init; }
+
     public int Retries { get; init; } = 3;
+
     public int MessageTimeoutMs { get; init; } = 2000;
 }
 

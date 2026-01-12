@@ -32,7 +32,6 @@ app.UseHttpsRedirection();
 
 app.UseSerilogRequestLogging();
 
-
 await app.Services
     .GetRequiredService<TopicInitializer>()
     .WaitForTopicsCreatedAsync();

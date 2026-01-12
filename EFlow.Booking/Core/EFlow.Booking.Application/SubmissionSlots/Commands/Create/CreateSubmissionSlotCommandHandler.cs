@@ -1,9 +1,8 @@
-﻿using EFlow.Booking.IntegrationEvents;
-using EFlow.Booking.Domain;
+﻿using EFlow.Booking.Domain;
 using EFlow.Booking.Domain.Models;
 using EFlow.Booking.Domain.Repositories;
+using EFlow.Booking.IntegrationEvents;
 using FluentResults;
-using Mapster;
 using MediatR;
 using MemoryPack;
 

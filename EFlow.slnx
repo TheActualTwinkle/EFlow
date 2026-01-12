@@ -1,37 +1,38 @@
 <Solution>
-  <Folder Name="/EFlow.Booking/" />
-  <Folder Name="/EFlow.Booking/Core/">
-    <Project Path="EFlow.Booking/Core/EFlow.Booking.Application/EFlow.Booking.Application.csproj" />
-    <Project Path="EFlow.Booking/Core/EFlow.Booking.Domain/EFlow.Booking.Domain.csproj" />
-    <Project Path="EFlow.Booking/Core/EFlow.Booking.IntegrationEvents/EFlow.Booking.IntegrationEvents.csproj" />
-  </Folder>
-  <Folder Name="/EFlow.Booking/Infrastructure/">
-    <Project Path="EFlow.Booking/Infrastructure/EFlow.Booking.Messaging/EFlow.Booking.Messaging.csproj" />
-    <Project Path="EFlow.Booking/Infrastructure/EFlow.Booking.Persistence/EFlow.Booking.Persistence.csproj" />
-  </Folder>
-  <Folder Name="/EFlow.Booking/Presentation/">
-    <Project Path="EFlow.Booking/Presentation/EFlow.Booking.WebApi/EFlow.Booking.WebApi.csproj" />
-  </Folder>
-  <Folder Name="/EFlow.Booking/Tests/">
-    <Project Path="EFlow.Booking/Tests/EFlow.Booking.ArchitectureTests/EFlow.Booking.ArchitectureTests.csproj" />
-    <Project Path="EFlow.Booking/Tests/EFlow.Booking.UnitTests/EFlow.Booking.UnitTests.csproj" />
-  </Folder>
-  <Folder Name="/EFlow.Notifications/" />
-  <Folder Name="/EFlow.Notifications/Core/">
-    <Project Path="EFlow.Notifications/Core/EFlow.Notifications.Services/EFlow.Notifications.Services.csproj" />
-  </Folder>
-  <Folder Name="/EFlow.Notifications/Infrastructure/">
-    <Project Path="EFlow.Notifications/Infrastructure/EFlow.Notifications.Messaging/EFlow.Notifications.Messaging.csproj" />
-  </Folder>
-  <Folder Name="/EFlow.Notifications/Presentation/">
-    <Project Path="EFlow.Notifications/Web/EFlow.Notifications.WebApi/EFlow.Notifications.WebApi.csproj" />
-  </Folder>
-  <Folder Name="/Eflow.Shared/">
-    <Project Path="EFlow.Shared/EFlow.Common.Messaging/EFlow.Common.Messaging.csproj" />
-    <Project Path="EFlow.Shared/EFlow.Common/EFlow.Common.csproj" />
-  </Folder>
-  <Folder Name="/_Solution Items/">
-    <File Path="Directory.Build.props" />
-    <File Path="Directory.Packages.props" />
-  </Folder>
+    <Folder Name="/EFlow.Booking/"/>
+    <Folder Name="/EFlow.Booking/Core/">
+        <Project Path="EFlow.Booking/Core/EFlow.Booking.Application/EFlow.Booking.Application.csproj"/>
+        <Project Path="EFlow.Booking/Core/EFlow.Booking.Domain/EFlow.Booking.Domain.csproj"/>
+        <Project Path="EFlow.Booking/Core/EFlow.Booking.IntegrationEvents/EFlow.Booking.IntegrationEvents.csproj"/>
+    </Folder>
+    <Folder Name="/EFlow.Booking/Infrastructure/">
+        <Project Path="EFlow.Booking/Infrastructure/EFlow.Booking.Messaging/EFlow.Booking.Messaging.csproj"/>
+        <Project Path="EFlow.Booking/Infrastructure/EFlow.Booking.Persistence/EFlow.Booking.Persistence.csproj"/>
+    </Folder>
+    <Folder Name="/EFlow.Booking/Presentation/">
+        <Project Path="EFlow.Booking/Presentation/EFlow.Booking.WebApi/EFlow.Booking.WebApi.csproj"/>
+    </Folder>
+    <Folder Name="/EFlow.Booking/Tests/">
+        <Project Path="EFlow.Booking/Tests/EFlow.Booking.ArchitectureTests/EFlow.Booking.ArchitectureTests.csproj"/>
+        <Project Path="EFlow.Booking/Tests/EFlow.Booking.UnitTests/EFlow.Booking.UnitTests.csproj"/>
+    </Folder>
+    <Folder Name="/EFlow.Notifications/"/>
+    <Folder Name="/EFlow.Notifications/Core/">
+        <Project Path="EFlow.Notifications/Core/EFlow.Notifications.Services/EFlow.Notifications.Services.csproj"/>
+    </Folder>
+    <Folder Name="/EFlow.Notifications/Infrastructure/">
+        <Project
+                Path="EFlow.Notifications/Infrastructure/EFlow.Notifications.Messaging/EFlow.Notifications.Messaging.csproj"/>
+    </Folder>
+    <Folder Name="/EFlow.Notifications/Presentation/">
+        <Project Path="EFlow.Notifications/Web/EFlow.Notifications.WebApi/EFlow.Notifications.WebApi.csproj"/>
+    </Folder>
+    <Folder Name="/Eflow.Shared/">
+        <Project Path="EFlow.Shared/EFlow.Common.Messaging/EFlow.Common.Messaging.csproj"/>
+        <Project Path="EFlow.Shared/EFlow.Common/EFlow.Common.csproj"/>
+    </Folder>
+    <Folder Name="/_Solution Items/">
+        <File Path="Directory.Build.props"/>
+        <File Path="Directory.Packages.props"/>
+    </Folder>
 </Solution>

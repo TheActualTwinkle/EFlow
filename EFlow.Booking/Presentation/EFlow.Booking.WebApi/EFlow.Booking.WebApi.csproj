@@ -19,15 +19,15 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\Core\EFlow.Booking.Application\EFlow.Booking.Application.csproj" />
-        <ProjectReference Include="..\..\Infrastructure\EFlow.Booking.Persistence\EFlow.Booking.Persistence.csproj" />
-        <ProjectReference Include="..\..\Infrastructure\EFlow.Booking.Messaging\EFlow.Booking.Messaging.csproj" />
+        <ProjectReference Include="..\..\Core\EFlow.Booking.Application\EFlow.Booking.Application.csproj"/>
+        <ProjectReference Include="..\..\Infrastructure\EFlow.Booking.Persistence\EFlow.Booking.Persistence.csproj"/>
+        <ProjectReference Include="..\..\Infrastructure\EFlow.Booking.Messaging\EFlow.Booking.Messaging.csproj"/>
     </ItemGroup>
 
     <ItemGroup>
-      <Content Include="..\..\..\.dockerignore">
-        <Link>.dockerignore</Link>
-      </Content>
+        <Content Include="..\..\..\.dockerignore">
+            <Link>.dockerignore</Link>
+        </Content>
     </ItemGroup>
 
 </Project>
