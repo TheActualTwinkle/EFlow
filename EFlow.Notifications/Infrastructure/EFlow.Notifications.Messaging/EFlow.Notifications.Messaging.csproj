@@ -9,7 +9,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\..\EFlow.Common\EFlow.Common.csproj"/>
         <ProjectReference Include="..\..\Core\EFlow.Notifications.Services\EFlow.Notifications.Services.csproj"/>
     </ItemGroup>
 

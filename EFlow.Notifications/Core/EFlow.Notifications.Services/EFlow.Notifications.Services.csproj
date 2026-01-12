@@ -8,8 +8,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\..\..\EFlow.Booking\Core\EFlow.Booking.IntegrationEvents\EFlow.Booking.IntegrationEvents.csproj" />
-        <ProjectReference Include="..\..\..\EFlow.Common.Messaging\EFlow.Common.Messaging.csproj" />
-        <ProjectReference Include="..\..\..\EFlow.Common\EFlow.Common.csproj" />
+        <ProjectReference Include="..\..\..\EFlow.Shared\EFlow.Common.Messaging\EFlow.Common.Messaging.csproj" />
     </ItemGroup>
 
 </Project>
