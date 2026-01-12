@@ -13,6 +13,7 @@
     <ItemGroup>
         <ProjectReference Include="..\..\..\EFlow.Common\EFlow.Common.csproj"/>
         <ProjectReference Include="..\EFlow.Booking.Domain\EFlow.Booking.Domain.csproj" />
+        <ProjectReference Include="..\EFlow.Booking.IntegrationEvents\EFlow.Booking.IntegrationEvents.csproj" />
     </ItemGroup>
 
 </Project>

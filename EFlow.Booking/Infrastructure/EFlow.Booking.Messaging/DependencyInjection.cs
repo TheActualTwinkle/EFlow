@@ -10,8 +10,8 @@ using EFlow.Common.Messaging.Init;
 using EFlow.Common.Messaging.Producers;
 using EFlow.Common.Messaging.Serialization;
 using EFlow.Common.Messaging.Settings;
-using EFlow.Common.Models.Markers;
-using EFlow.Common.Models.SubmissionSlot;
+using EFlow.Common.Markers;
+using EFlow.Booking.IntegrationEvents;
 using Hangfire;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
@@ -166,7 +166,7 @@ public static class DependencyInjection
         {
             var resolver = new TopicNameResolver();
             
-            resolver.AddMapping(typeof(SubmissionSlotCreatedMessage).AssemblyQualifiedName!, KafkaTopics.SubmissionSlotCreatedTopic);
+            resolver.AddMapping(typeof(SubmissionSlotCreatedIntegrationEvent).AssemblyQualifiedName!, KafkaTopics.SubmissionSlotCreatedTopic);
 
             return resolver;
         });

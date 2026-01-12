@@ -3,6 +3,7 @@
   <Folder Name="/EFlow.Booking/Core/">
     <Project Path="EFlow.Booking/Core/EFlow.Booking.Application/EFlow.Booking.Application.csproj" />
     <Project Path="EFlow.Booking/Core/EFlow.Booking.Domain/EFlow.Booking.Domain.csproj" />
+    <Project Path="EFlow.Booking/Core/EFlow.Booking.IntegrationEvents/EFlow.Booking.IntegrationEvents.csproj" />
   </Folder>
   <Folder Name="/EFlow.Booking/Infrastructure/">
     <Project Path="EFlow.Booking/Infrastructure/EFlow.Booking.Messaging/EFlow.Booking.Messaging.csproj" />
@@ -16,6 +17,7 @@
     <Project Path="EFlow.Booking/Tests/EFlow.Booking.UnitTests/EFlow.Booking.UnitTests.csproj" />
   </Folder>
   <Folder Name="/Eflow.Common/">
+    <Project Path="EFlow.Common.Messaging/EFlow.Common.Messaging.csproj" />
     <Project Path="EFlow.Common/EFlow.Common.csproj" />
   </Folder>
   <Folder Name="/EFlow.Notifications/" />

@@ -11,7 +11,7 @@ using EFlow.Booking.Application.SubmissionSlots;
 using EFlow.Booking.Application.SubmissionSlots.Commands.Update;
 using EFlow.Booking.Application.Teachers;
 using EFlow.Booking.Application.Teachers.Commands;
-using EFlow.Common.Models.SubmissionSlot;
+using EFlow.Booking.IntegrationEvents;
 using EFlow.Booking.Domain.Models;
 using Mapster;
 
@@ -118,14 +118,6 @@ public class MapsterRegister : IRegister
             .Map(dest => dest.Location, src => src.Location)
             .Ignore(dest => dest.Id)
             .IgnoreNullValues(true);
-
-        config.NewConfig<SubmissionSlot, SubmissionSlotModel>()
-            .Map(dest => dest.Id, src => src.Id)
-            .Map(dest => dest.SubjectId, src => src.SubjectId)
-            .Map(dest => dest.StartTime, src => src.StartTime)
-            .Map(dest => dest.EndTime, src => src.EndTime)
-            .Map(dest => dest.MaxStudents, src => src.MaxStudents)
-            .Map(dest => dest.Location, src => src.Location);
     }
 
     private void MapBooking(TypeAdapterConfig config)

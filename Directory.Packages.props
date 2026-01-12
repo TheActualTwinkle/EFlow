@@ -1,5 +1,6 @@
 ﻿<Project>
   <ItemGroup>
+    <PackageVersion Include="MemoryPack.Core" Version="1.21.4" />
     <PackageVersion Include="Scalar.AspNetCore" Version="2.11.2" />
     <PackageVersion Include="System.Reactive" Version="6.0.1" />
     <PackageVersion Include="MemoryPack" Version="1.21.4" />

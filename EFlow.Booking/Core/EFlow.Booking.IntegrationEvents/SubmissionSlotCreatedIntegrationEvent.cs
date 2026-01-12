@@ -1,9 +1,10 @@
-﻿using MemoryPack;
+﻿using EFlow.Common.Markers;
+using MemoryPack;
 
-namespace EFlow.Common.Models.SubmissionSlot;
+namespace EFlow.Booking.IntegrationEvents;
 
 [MemoryPackable]
-public partial record SubmissionSlotModel
+public partial record SubmissionSlotCreatedIntegrationEvent : IKafkaMessage
 {
     public required Guid Id { get; init; }
 

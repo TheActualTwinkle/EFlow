@@ -3,7 +3,7 @@ using Confluent.Kafka;
 using EFlow.Common.Extensions;
 using EFlow.Common.Messaging.Factories;
 using EFlow.Common.Messaging.Settings;
-using EFlow.Common.Models.SubmissionSlot;
+using EFlow.Booking.IntegrationEvents;
 using EFlow.Notifications.Services.NotificationServices.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -24,7 +24,7 @@ public class EmailNotificationService(
 
         var consumerFactory = scope.ServiceProvider.GetRequiredService<ICommitLogConsumerFactory>();
 
-        var consumer = consumerFactory.Create<Guid, SubmissionSlotCreatedMessage>(
+        var consumer = consumerFactory.Create<Guid, SubmissionSlotCreatedIntegrationEvent>(
             new KafkaConsumerSettings
             {
                 GroupId = "email-notification-service",

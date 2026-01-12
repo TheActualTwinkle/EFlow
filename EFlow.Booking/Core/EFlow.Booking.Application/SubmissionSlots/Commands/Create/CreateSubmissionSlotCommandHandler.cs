@@ -1,4 +1,4 @@
-﻿using EFlow.Common.Models.SubmissionSlot;
+﻿using EFlow.Booking.IntegrationEvents;
 using EFlow.Booking.Domain;
 using EFlow.Booking.Domain.Models;
 using EFlow.Booking.Domain.Repositories;
@@ -9,9 +9,7 @@ using MemoryPack;
 
 namespace EFlow.Booking.Application.SubmissionSlots.Commands;
 
-public class CreateSubmissionSlotCommandHandler(
-    IUnitOfWork unitOfWork)
-    : IRequestHandler<CreateSubmissionSlotCommand, Result<Guid>>
+public class CreateSubmissionSlotCommandHandler(IUnitOfWork unitOfWork) : IRequestHandler<CreateSubmissionSlotCommand, Result<Guid>>
 {
     public async Task<Result<Guid>> Handle(CreateSubmissionSlotCommand request, CancellationToken cancellationToken)
     {
@@ -31,9 +29,14 @@ public class CreateSubmissionSlotCommandHandler(
             .GetRepository<ISubmissionSlotRepository>()
             .CreateAsync(slot, cancellationToken);
 
-        var createdEvent = new SubmissionSlotCreatedMessage
+        var createdEvent = new SubmissionSlotCreatedIntegrationEvent
         {
-            SubmissionSlot = slot.Adapt<SubmissionSlotModel>()
+            Id = slot.Id,
+            SubjectId = slot.SubjectId,
+            StartTime = slot.StartTime,
+            EndTime = slot.EndTime,
+            MaxStudents = slot.MaxStudents,
+            Location = slot.Location
         };
 
         var outboxMessage = new OutboxMessage
