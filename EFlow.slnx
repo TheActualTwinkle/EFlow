@@ -28,4 +28,8 @@
   <Folder Name="/EFlow.Notifications/Presentation/">
     <Project Path="EFlow.Notifications/Web/EFlow.Notifications.WebApi/EFlow.Notifications.WebApi.csproj" />
   </Folder>
+  <Folder Name="/_Solution Items/">
+    <File Path="Directory.Build.props" />
+    <File Path="Directory.Packages.props" />
+  </Folder>
 </Solution>
