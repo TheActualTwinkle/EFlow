@@ -1,4 +1,4 @@
-﻿using EFlow.Booking.Domain.Models;
+﻿using EFlow.Common.Domain.Entities;
 
 namespace EFlow.Booking.Messaging.Outbox.MessageProcessing.Interfaces;
 

@@ -1,6 +1,6 @@
-﻿using EFlow.Booking.Domain.Models;
-using EFlow.Booking.Domain.Repositories;
-using EFlow.Booking.Persistence.DatabaseContext;
+﻿using EFlow.Booking.Persistence.DatabaseContext;
+using EFlow.Common.Domain.Entities;
+using EFlow.Common.Domain.Repositories;
 using Microsoft.EntityFrameworkCore;
 
 namespace EFlow.Booking.Persistence.Repositories;
@@ -12,7 +12,7 @@ public class OutboxMessageRepository(ApplicationDbContext context) :
         await CreateInternalAsync(message, cancellationToken);
 
     public async Task<IReadOnlyList<OutboxMessage>> GetUnprocessedAsync(int batchSize, CancellationToken cancellationToken = new()) =>
-        await Context.OutboxMessages
+        await context.OutboxMessages
             .FromSqlRaw(
                 """
                     SELECT * FROM "outbox_messages"
@@ -25,19 +25,19 @@ public class OutboxMessageRepository(ApplicationDbContext context) :
             .ToListAsync(cancellationToken);
 
     public async Task MarkAsProcessedAsync(IEnumerable<Guid> ids, CancellationToken cancellationToken = new()) =>
-        await Context.OutboxMessages
+        await context.OutboxMessages
             .Where(m => ids.Contains(m.Id))
             .ExecuteUpdateAsync(
                 u => u.SetProperty(m => m.ProcessedAt, DateTime.UtcNow),
                 cancellationToken);
 
     public async Task AddErrorAsync(Guid id, string error, CancellationToken cancellationToken = new()) =>
-        await Context.OutboxMessages
+        await context.OutboxMessages
             .Where(m => m.Id == id)
             .ExecuteUpdateAsync(u => u.SetProperty(m => m.ErrorMessage, error), cancellationToken);
 
     public async Task DeleteProcessedAsync(DateTime beforeDate, CancellationToken cancellationToken = new()) =>
-        await Context.OutboxMessages
+        await context.OutboxMessages
             .Where(m => m.ProcessedAt < beforeDate)
             .ExecuteDeleteAsync(cancellationToken);
 }

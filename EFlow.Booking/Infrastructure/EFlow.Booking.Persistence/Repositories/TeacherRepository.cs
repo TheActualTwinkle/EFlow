@@ -1,5 +1,5 @@
-﻿using EFlow.Booking.Domain.Models;
-using EFlow.Booking.Domain.Repositories;
+﻿using EFlow.Common.Domain.Models;
+using EFlow.Common.Domain;
 using EFlow.Booking.Persistence.DatabaseContext;
 
 namespace EFlow.Booking.Persistence.Repositories;

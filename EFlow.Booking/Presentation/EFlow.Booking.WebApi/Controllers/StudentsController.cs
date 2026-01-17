@@ -2,7 +2,7 @@
 using EFlow.Booking.Application.Students.Commands;
 using EFlow.Booking.Application.Students.Commands.Update;
 using EFlow.Booking.Application.Students.Queries;
-using EFlow.Booking.Domain.Models;
+using EFlow.Common.Domain.Models;
 using EFlow.Booking.WebApi.Extensions;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;

@@ -71,17 +71,6 @@ public static class DependencyInjection
         return services;
     }
 
-    public static async Task<IApplicationBuilder> UseMessagingAsync(this WebApplication app)
-    {
-        using var scope = app.Services.CreateScope();
-
-        await scope.ServiceProvider
-            .GetRequiredService<TopicInitializer>()
-            .CreateMissingTopicsAsync();
-
-        return app;
-    }
-
     public static IApplicationBuilder UseOutbox(this WebApplication app)
     {
         var settings = app.Services.GetRequiredService<OutboxProcessorSettings>();

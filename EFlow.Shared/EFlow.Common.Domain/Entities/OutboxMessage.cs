@@ -1,4 +1,4 @@
-﻿namespace EFlow.Booking.Domain.Models;
+﻿namespace EFlow.Common.Domain.Entities;
 
 public record OutboxMessage : IEntity
 {

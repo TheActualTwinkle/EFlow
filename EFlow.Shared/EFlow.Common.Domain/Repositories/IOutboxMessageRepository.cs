@@ -1,6 +1,6 @@
-﻿using EFlow.Booking.Domain.Models;
+﻿using EFlow.Common.Domain.Entities;
 
-namespace EFlow.Booking.Domain.Repositories;
+namespace EFlow.Common.Domain.Repositories;
 
 public interface IOutboxMessageRepository : IRepository
 {

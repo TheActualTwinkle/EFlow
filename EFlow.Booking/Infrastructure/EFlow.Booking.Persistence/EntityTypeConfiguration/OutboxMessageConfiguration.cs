@@ -1,4 +1,4 @@
-﻿using EFlow.Booking.Domain.Models;
+﻿using EFlow.Common.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 

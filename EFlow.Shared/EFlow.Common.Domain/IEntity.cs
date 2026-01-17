@@ -1,4 +1,4 @@
-﻿namespace EFlow.Booking.Domain;
+﻿namespace EFlow.Common.Domain;
 
 public interface IEntity
 {

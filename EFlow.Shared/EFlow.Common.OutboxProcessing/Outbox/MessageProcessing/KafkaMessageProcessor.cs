@@ -1,6 +1,6 @@
-﻿using EFlow.Booking.Domain.Models;
-using EFlow.Booking.Messaging.Outbox.MessageProcessing.Interfaces;
+﻿using EFlow.Booking.Messaging.Outbox.MessageProcessing.Interfaces;
 using EFlow.Booking.Messaging.TopicResolving;
+using EFlow.Common.Domain.Entities;
 using EFlow.Common.Messaging.Producers;
 
 namespace EFlow.Booking.Messaging.Outbox.MessageProcessing;

@@ -1,0 +1,7 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <ProjectReference Include="..\EFlow.Common.Domain\EFlow.Common.Domain.csproj" />
+    <ProjectReference Include="..\EFlow.Common.Infrastructure\EFlow.Common.Infrastructure.csproj" />
+    <ProjectReference Include="..\EFlow.Common.Messaging\EFlow.Common.Messaging.csproj" />
+  </ItemGroup>
+</Project>

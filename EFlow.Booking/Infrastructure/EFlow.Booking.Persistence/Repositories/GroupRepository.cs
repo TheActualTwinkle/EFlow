@@ -1,5 +1,5 @@
-﻿using EFlow.Booking.Domain.Models;
-using EFlow.Booking.Domain.Repositories;
+﻿using EFlow.Common.Domain.Models;
+using EFlow.Common.Domain;
 using EFlow.Booking.Persistence.DatabaseContext;
 using Microsoft.EntityFrameworkCore;
 
@@ -12,12 +12,12 @@ public class GroupRepository(ApplicationDbContext context) :
         await CreateInternalAsync(group, cancellationToken);
 
     public async Task<IEnumerable<Group>> GetAllAsync(CancellationToken cancellationToken = new()) =>
-        await Context.Groups
+        await context.Groups
             .Include(s => s.Students)
             .ToListAsync(cancellationToken);
 
     public async Task<Group?> GetByIdAsync(Guid id, CancellationToken cancellationToken = new()) =>
-        await Context.Groups
+        await context.Groups
             .Include(s => s.Students)
             .FirstOrDefaultAsync(s => s.Id == id, cancellationToken);
 

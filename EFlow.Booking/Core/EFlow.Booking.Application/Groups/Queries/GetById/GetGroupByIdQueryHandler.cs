@@ -1,7 +1,7 @@
 ﻿using EFlow.Booking.Application.Common.Errors;
 using EFlow.Booking.Application.Common.Errors.Abstractions;
-using EFlow.Booking.Domain;
-using EFlow.Booking.Domain.Repositories;
+using EFlow.Common.Domain;
+using EFlow.Common.Infrastructure;
 using FluentResults;
 using Mapster;
 using MediatR;

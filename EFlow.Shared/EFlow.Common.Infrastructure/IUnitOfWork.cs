@@ -1,9 +1,9 @@
 ﻿using System.Data;
-using EFlow.Booking.Domain.Repositories;
+using EFlow.Common.Domain;
 
-namespace EFlow.Booking.Domain;
+namespace EFlow.Common.Infrastructure;
 
-public interface IUnitOfWork : IDisposable, IAsyncDisposable
+public interface IUnitOfWork : IAsyncDisposable
 {
     public T GetRepository<T>() where T : IRepository;
 

@@ -4,6 +4,7 @@ using EFlow.Booking.Persistence;
 using EFlow.Booking.WebApi;
 using EFlow.Booking.WebApi.Extensions;
 using EFlow.Booking.WebApi.Middleware;
+using EFlow.Common.Messaging.Init;
 using Hangfire;
 using HealthChecks.UI.Client;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
@@ -85,7 +86,11 @@ app.UseRouting();
 
 await app.CreateRolesAsync();
 
-await app.UseMessagingAsync();
+using var scope = app.Services.CreateScope();
+await scope.ServiceProvider
+    .GetRequiredService<TopicInitializer>()
+    .CreateMissingTopicsAsync();
+
 app.UseOutbox();
 
 app.UseAuthentication();

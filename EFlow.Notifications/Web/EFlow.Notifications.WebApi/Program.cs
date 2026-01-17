@@ -32,8 +32,9 @@ app.UseHttpsRedirection();
 
 app.UseSerilogRequestLogging();
 
-await app.Services
-    .GetRequiredService<TopicInitializer>()
-    .WaitForTopicsCreatedAsync();
+using var scope = app.Services.CreateScope();
+await scope.ServiceProvider
+        .GetRequiredService<TopicInitializer>()
+        .CreateMissingTopicsAsync();
 
 await app.RunAsync();

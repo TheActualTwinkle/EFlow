@@ -1,5 +1,5 @@
-﻿using EFlow.Booking.Domain.Models;
-using EFlow.Booking.Domain.Repositories;
+﻿using EFlow.Common.Domain.Models;
+using EFlow.Common.Domain;
 using EFlow.Booking.Persistence.DatabaseContext;
 using Microsoft.EntityFrameworkCore;
 
@@ -12,12 +12,12 @@ public class AdminRepository(ApplicationDbContext context) :
         await CreateInternalAsync(admin, cancellationToken);
 
     public async Task<IEnumerable<Admin>> GetAllAsync(CancellationToken cancellationToken = new()) =>
-        await Context.Admins
+        await context.Admins
             .Include(a => a.Identity)
             .ToListAsync(cancellationToken);
 
     public async Task<Admin?> GetByIdAsync(Guid id, CancellationToken cancellationToken = new()) =>
-        await Context.Admins
+        await context.Admins
             .Include(a => a.Identity)
             .FirstOrDefaultAsync(a => a.Id == id, cancellationToken);
 

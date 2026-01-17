@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
 
-namespace EFlow.Booking.Domain.Models;
+namespace EFlow.Common.Domain.Models;
 
 public sealed class Identity : IdentityUser<Guid>
 {

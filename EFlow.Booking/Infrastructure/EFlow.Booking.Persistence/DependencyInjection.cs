@@ -1,8 +1,8 @@
-﻿using EFlow.Booking.Domain;
-using EFlow.Booking.Domain.Repositories;
+﻿using EFlow.Common.Domain;
 using EFlow.Booking.Persistence.DatabaseContext;
 using EFlow.Booking.Persistence.Repositories;
-using EFlow.Booking.Persistence.UnitOfWorkContext;
+using EFlow.Common.Domain.Repositories;
+using EFlow.Common.Infrastructure;
 using Hangfire;
 using Hangfire.PostgreSql;
 using Microsoft.EntityFrameworkCore;
@@ -25,6 +25,8 @@ public static class DependencyInjection
             options.UseNpgsql(
                 connectionString,
                 builder => builder.MigrationsAssembly(typeof(ApplicationDbContext).Assembly.FullName)));
+        
+        services.AddScoped<DbContext>(sp => sp.GetRequiredService<ApplicationDbContext>());
 
         services.AddScoped<IAdminRepository, AdminRepository>();
         services.AddScoped<ITeacherRepository, TeacherRepository>();

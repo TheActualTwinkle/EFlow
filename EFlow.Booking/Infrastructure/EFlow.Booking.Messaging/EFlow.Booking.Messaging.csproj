@@ -13,7 +13,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\..\..\EFlow.Shared\EFlow.Common.Messaging\EFlow.Common.Messaging.csproj"/>
-        <ProjectReference Include="..\..\Core\EFlow.Booking.Domain\EFlow.Booking.Domain.csproj"/>
+        <ProjectReference Include="..\..\..\EFlow.Shared\EFlow.Common.OutboxProcessing\EFlow.Common.OutboxProcessing.csproj" />
         <ProjectReference Include="..\..\Core\EFlow.Booking.IntegrationEvents\EFlow.Booking.IntegrationEvents.csproj"/>
     </ItemGroup>
 

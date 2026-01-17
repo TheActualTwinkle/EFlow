@@ -1,8 +1,7 @@
 ﻿using System.Data;
-using EFlow.Booking.Domain;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace EFlow.Booking.Persistence.UnitOfWorkContext;
+namespace EFlow.Common.Infrastructure;
 
 public class UnitOfWorkFactory(IServiceProvider serviceProvider) : IUnitOfWorkFactory
 {

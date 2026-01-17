@@ -1,4 +1,5 @@
-﻿using EFlow.Booking.Domain.Models;
+﻿using EFlow.Common.Domain.Entities;
+using EFlow.Common.Domain.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -23,9 +24,6 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public required DbSet<BookingRecord> BookingRecords { get; init; }
 
     public required DbSet<OutboxMessage> OutboxMessages { get; init; }
-
-    public DbSet<TEntity> SetEntity<TEntity>() where TEntity : class =>
-        Set<TEntity>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

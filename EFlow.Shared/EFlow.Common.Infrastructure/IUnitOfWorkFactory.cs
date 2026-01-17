@@ -1,6 +1,6 @@
 ﻿using System.Data;
 
-namespace EFlow.Booking.Domain;
+namespace EFlow.Common.Infrastructure;
 
 public interface IUnitOfWorkFactory
 {

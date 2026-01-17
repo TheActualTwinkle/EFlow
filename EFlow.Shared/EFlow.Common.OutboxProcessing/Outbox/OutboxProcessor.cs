@@ -1,7 +1,7 @@
-﻿using EFlow.Booking.Domain;
-using EFlow.Booking.Domain.Repositories;
-using EFlow.Booking.Messaging.Outbox.Interfaces;
+﻿using EFlow.Booking.Messaging.Outbox.Interfaces;
 using EFlow.Booking.Messaging.Outbox.MessageProcessing.Factories.Interfaces;
+using EFlow.Common.Domain.Repositories;
+using EFlow.Common.Infrastructure;
 using Microsoft.Extensions.Logging;
 
 namespace EFlow.Booking.Messaging.Outbox;

@@ -1,5 +1,5 @@
-﻿using EFlow.Booking.Domain;
-using EFlow.Booking.Domain.Repositories;
+﻿using EFlow.Common.Domain;
+using EFlow.Common.Infrastructure;
 using FluentResults;
 using MediatR;
 

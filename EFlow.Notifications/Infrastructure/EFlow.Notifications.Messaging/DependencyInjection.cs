@@ -3,6 +3,7 @@ using EFlow.Common.Messaging.Factories;
 using EFlow.Common.Messaging.Init;
 using EFlow.Common.Messaging.Serialization;
 using EFlow.Common.Messaging.Settings;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -24,8 +25,7 @@ public static class DependencyInjection
         {
             var settings = serviceProvider.GetRequiredService<IOptions<KafkaSettings>>().Value;
 
-            return new AdminClientBuilder(new AdminClientConfig { BootstrapServers = settings.BootstrapServers })
-                .Build();
+            return new AdminClientBuilder(new AdminClientConfig { BootstrapServers = settings.BootstrapServers }).Build();
         });
 
         services.AddScoped(typeof(IDeserializer<>), typeof(DefaultSerializer<>));

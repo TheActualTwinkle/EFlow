@@ -1,5 +1,5 @@
-﻿using EFlow.Booking.Domain.Models;
-using EFlow.Booking.Domain.Repositories;
+﻿using EFlow.Common.Domain.Models;
+using EFlow.Common.Domain;
 using EFlow.Booking.Persistence.DatabaseContext;
 using Microsoft.EntityFrameworkCore;
 
@@ -12,17 +12,17 @@ public class SubjectRepository(ApplicationDbContext context) :
         await CreateInternalAsync(subject, cancellationToken);
 
     public async Task<IEnumerable<Subject>> GetAllAsync(CancellationToken cancellationToken = new()) =>
-        await Context.Subjects
+        await context.Subjects
             .Include(s => s.Teacher)
             .ToListAsync(cancellationToken);
 
     public async Task<Subject?> GetByIdAsync(Guid id, CancellationToken cancellationToken = new()) =>
-        await Context.Subjects
+        await context.Subjects
             .Include(s => s.Teacher)
             .FirstOrDefaultAsync(s => s.Id == id, cancellationToken);
 
     public async Task<IEnumerable<Subject>> GetByTeacherIdAsync(Guid teacherId, CancellationToken cancellationToken = new()) =>
-        await Context.Subjects
+        await context.Subjects
             .Where(s => s.TeacherId == teacherId)
             .Include(s => s.Teacher)
             .ToListAsync(cancellationToken);

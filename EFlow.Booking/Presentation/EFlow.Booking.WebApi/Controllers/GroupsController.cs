@@ -1,7 +1,7 @@
 ﻿using EFlow.Booking.Application.Groups.Commands;
 using EFlow.Booking.Application.Groups.Commands.Update;
 using EFlow.Booking.Application.Groups.Queries;
-using EFlow.Booking.Domain.Models;
+using EFlow.Common.Domain.Models;
 using EFlow.Booking.WebApi.Extensions;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;

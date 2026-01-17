@@ -1,5 +1,5 @@
 ﻿using System.Text;
-using EFlow.Booking.Domain.Models;
+using EFlow.Common.Domain.Models;
 using EFlow.Booking.Persistence.DatabaseContext;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;

@@ -1,7 +1,7 @@
 ﻿using System.Security.Claims;
 using EFlow.Booking.Application.Teachers.Commands;
 using EFlow.Booking.Application.Teachers.Queries;
-using EFlow.Booking.Domain.Models;
+using EFlow.Common.Domain.Models;
 using EFlow.Booking.WebApi.Extensions;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;

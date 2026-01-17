@@ -1,16 +1,14 @@
 ﻿using System.Collections.Concurrent;
 using System.Data;
-using EFlow.Booking.Domain;
-using EFlow.Booking.Domain.Repositories;
-using EFlow.Booking.Persistence.DatabaseContext;
+using EFlow.Common.Domain;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace EFlow.Booking.Persistence.UnitOfWorkContext;
+namespace EFlow.Common.Infrastructure;
 
 public sealed class UnitOfWork(
-    ApplicationDbContext context,
+    DbContext context,
     IServiceProvider serviceProvider)
     : IUnitOfWork
 {
@@ -21,9 +19,6 @@ public sealed class UnitOfWork(
     private bool _isTransactionStarted;
 
     private bool _disposed;
-
-    ~UnitOfWork() =>
-        Dispose(false);
 
     public T GetRepository<T>() where T : IRepository
     {
@@ -96,32 +91,7 @@ public sealed class UnitOfWork(
         await context.SaveChangesAsync(cancellationToken);
     }
 
-    private async Task DisposeTransactionAsync()
-    {
-        if (_currentTransaction is null)
-            return;
-
-        await _currentTransaction.DisposeAsync();
-
-        _currentTransaction = null;
-        _isTransactionStarted = false;
-    }
-
-    #region Dispose
-
-    public void Dispose()
-    {
-        Dispose(true);
-        GC.SuppressFinalize(this);
-    }
-
     public async ValueTask DisposeAsync()
-    {
-        await DisposeAsyncInternal();
-        GC.SuppressFinalize(this);
-    }
-
-    private async ValueTask DisposeAsyncInternal()
     {
         if (_disposed)
             return;
@@ -136,25 +106,14 @@ public sealed class UnitOfWork(
         _disposed = true;
     }
 
-    private void Dispose(bool disposing)
+    private async Task DisposeTransactionAsync()
     {
-        if (_disposed)
+        if (_currentTransaction is null)
             return;
 
-        if (disposing)
-        {
-            if (_isTransactionStarted && _currentTransaction is not null)
-                _currentTransaction.Rollback();
+        await _currentTransaction.DisposeAsync();
 
-            _currentTransaction?.Dispose();
-
-            context.Dispose();
-
-            _repositories.Clear();
-        }
-
-        _disposed = true;
+        _currentTransaction = null;
+        _isTransactionStarted = false;
     }
-
-    #endregion
 }

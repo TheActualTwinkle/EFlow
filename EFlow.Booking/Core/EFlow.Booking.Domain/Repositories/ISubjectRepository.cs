@@ -1,6 +1,6 @@
-﻿using EFlow.Booking.Domain.Models;
+﻿using EFlow.Common.Domain.Models;
 
-namespace EFlow.Booking.Domain.Repositories;
+namespace EFlow.Common.Domain;
 
 public interface ISubjectRepository : IRepository
 {
