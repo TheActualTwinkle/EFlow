@@ -16,9 +16,6 @@
 # Mono auto generated files
 mono_crash.*
 
-pgdata/
-kafka_data/
-
 # Build results
 [Dd]ebug/
 [Dd]ebugPublic/
@@ -375,4 +372,9 @@ FodyWeavers.xsd
 .containers/
 *.env
 
-!/scripts/debug/docker/debug.env
+!/scripts/
+!/scripts/**/*
+
+scripts/**/volumes/
+scripts/*/volumes/
+volumes/
