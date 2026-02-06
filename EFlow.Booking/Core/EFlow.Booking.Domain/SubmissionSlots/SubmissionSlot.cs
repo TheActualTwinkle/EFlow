@@ -1,6 +1,12 @@
-﻿namespace EFlow.Common.Domain.Models;
+﻿using System.Diagnostics.CodeAnalysis;
+using EFlow.Booking.Domain.Admins;
+using EFlow.Booking.Domain.Groups;
+using EFlow.Booking.Subjects;
+using EFlow.Common.Domain;
 
-public sealed class SubmissionSlot : IEntity
+namespace EFlow.Booking.Domain.SubmissionSlots;
+
+public sealed class SubmissionSlot : Entity
 {
     public required Guid Id { get; init; }
 
@@ -11,10 +17,10 @@ public sealed class SubmissionSlot : IEntity
     public required DateTime EndTime { get; init; }
 
     public required int MaxStudents { get; init; }
-    
+
+    [MemberNotNullWhen(false, nameof(AllowedGroupIds))]
     public required bool AllowAllGroups { get; init; }
     
-    // [MemberNotNullWhen(false, nameof(AllowedGroupIds))] // TODO: Check if this works as expected in calling code
     public ICollection<Guid>? AllowedGroupIds { get; init; }
 
     public string? Location { get; init; }

@@ -1,6 +1,9 @@
-﻿namespace EFlow.Common.Domain.Models;
+﻿using EFlow.Booking.Domain;
+using EFlow.Booking.Domain.Groups;
 
-public sealed class Student : IEntity
+namespace EFlow.Common.Domain.Students;
+
+public sealed class Student : Entity
 {
     public required Guid Id { get; init; }
 

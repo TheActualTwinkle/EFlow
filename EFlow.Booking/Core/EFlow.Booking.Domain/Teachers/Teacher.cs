@@ -1,6 +1,8 @@
-﻿namespace EFlow.Common.Domain.Models;
+﻿using EFlow.Common.Domain;
 
-public sealed class Teacher : IEntity
+namespace EFlow.Booking.Domain.Teachers;
+
+public sealed class Teacher : Entity
 {
     public required Guid Id { get; init; }
 

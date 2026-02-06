@@ -1,7 +1,7 @@
 ﻿using EFlow.Booking.Application.Common.Errors.Abstractions;
 using EFlow.Booking.Application.Common.Errors.Identity;
-using EFlow.Common.Domain.Models;
-using EFlow.Common.Domain;
+using EFlow.Booking.Domain.Models;
+using EFlow.Booking.Domain;
 using EFlow.Common.Infrastructure;
 using FluentResults;
 using MediatR;

@@ -1,7 +1,7 @@
-﻿using EFlow.Common.Domain;
+﻿using EFlow.Booking.Domain;
 using EFlow.Booking.Persistence.DatabaseContext;
 using EFlow.Booking.Persistence.Repositories;
-using EFlow.Common.Domain.Repositories;
+using EFlow.Booking.Domain.Repositories;
 using EFlow.Common.Infrastructure;
 using Hangfire;
 using Hangfire.PostgreSql;

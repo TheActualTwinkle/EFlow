@@ -1,6 +1,7 @@
-﻿using EFlow.Common.Domain.Models;
+﻿using EFlow.Common.Domain;
+using EFlow.Common.Domain.Students;
 
-namespace EFlow.Common.Domain;
+namespace EFlow.Booking.Domain.Students;
 
 public interface IStudentRepository : IRepository
 {

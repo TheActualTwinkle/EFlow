@@ -15,7 +15,7 @@ public class DomainTests
     public void Domain_ShouldNotHaveProjectDependencies()
     {
         // Arrange
-        var domainAssembly = typeof(IEntity).Assembly;
+        var domainAssembly = typeof(Entity).Assembly;
 
         var solutionDirectory = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "../../../../../.."));
         var csprojFiles = GetCsprojFilesExcludingDirectories(solutionDirectory);

@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 namespace EFlow.Booking.Persistence.Repositories;
 
 public abstract class RepositoryBase<TEntity>(DbContext context)
-    where TEntity : class, IEntity
+    where TEntity : Entity
 {
     protected async Task CreateInternalAsync(TEntity entity, CancellationToken cancellationToken = new()) =>
         await context.Set<TEntity>().AddAsync(entity, cancellationToken);
