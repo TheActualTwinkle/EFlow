@@ -1,30 +1,37 @@
 ﻿using EFlow.Booking.Domain.Admins.Events;
+using EFlow.Booking.Domain.Common.BusinessRules;
 using EFlow.Common.Domain;
 
 namespace EFlow.Booking.Domain.Admins;
 
 public sealed class Admin : Entity, IAggreagateRoot
 {
-    public Guid Id { get; private set; }
+    public AdminId Id { get; private set; }
 
     public DateTime CreatedAt { get; private set; }
 
-    public Identity? Identity { get; init; }
+    public Identity? Identity { get; private set; }
 
-    private Admin(DateTime createdAt)
+    private Admin(DateTime createdAt, DateTime utcNow)
     {
-        var id = Guid.CreateVersion7();
+        ThrowIfRuleBroken(new CreationTimeMustBeInPast(utcNow, createdAt));
         
-        Id = id;
+        Id = new AdminId(Guid.CreateVersion7());
         CreatedAt = createdAt;
         
         AddDomainEvent(new AdminCreatedDomainEvent
         {
-            AdminId = id, 
+            AdminId = Id,
             CreatedAt = createdAt
         });
     }
     
-    public static Admin Create(DateTime createdAt) =>
-        new(createdAt);
+    public static Admin Create(DateTime createdAt, DateTime utcNow) =>
+        new(createdAt, utcNow);
+
+    public void Delete() =>
+        AddDomainEvent(new AdminDeletedDomainEvent
+        {
+            AdminId = Id
+        });
 }

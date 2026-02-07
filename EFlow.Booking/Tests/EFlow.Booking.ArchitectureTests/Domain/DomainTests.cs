@@ -9,7 +9,7 @@ public class DomainTests
     private const string DomainNamespace = "EFlow.Booking.Domain";
     private const string TestNamespace = "EFlow.Booking.ArchitectureTests";
 
-    private static readonly string[] DirectoryExclusions = ["scripts"];
+    private static readonly string[] IgnoredDirectories = ["scripts"];
 
     [Fact]
     public void Domain_ShouldNotHaveProjectDependencies()
@@ -45,7 +45,7 @@ public class DomainTests
             var currentDirectory = stack.Pop();
             var directoryName = Path.GetFileName(currentDirectory);
 
-            if (DirectoryExclusions.Any(excludedDirectory => string.Equals(directoryName, excludedDirectory, StringComparison.OrdinalIgnoreCase)))
+            if (IgnoredDirectories.Any(excludedDirectory => string.Equals(directoryName, excludedDirectory, StringComparison.OrdinalIgnoreCase)))
                 continue;
 
             foreach (var file in Directory.GetFiles(currentDirectory, "*.csproj"))
