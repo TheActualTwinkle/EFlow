@@ -8,9 +8,4 @@
       <ProjectReference Include="..\..\..\EFlow.Shared\EFlow.Common.Infrastructure\EFlow.Common.Infrastructure.csproj" />
     </ItemGroup>
 
-    <ItemGroup>
-      <Folder Include="Teachers\Events\" />
-      <Folder Include="Teachers\Rules\" />
-    </ItemGroup>
-
 </Project>

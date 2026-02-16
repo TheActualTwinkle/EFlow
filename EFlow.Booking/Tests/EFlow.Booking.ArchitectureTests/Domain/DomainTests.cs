@@ -59,4 +59,7 @@ public class DomainTests
     // TODO: Domain events should be sealed
     // TODO: Domain events should has 'DomainEvent' suffix
     // TODO: Entities should have private parameterless constructor
+    // TODO: Entities should be sealed
+    // TODO: IBusinessRule implementations should be sealed
+    // TODO: IBusinessRule implementations should have internal constructors
 }

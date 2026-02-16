@@ -12,7 +12,7 @@ public abstract class Entity
     protected void AddDomainEvent(IDomainEvent domainEvent) =>
         _domainEvents.Add(domainEvent);
 
-    protected void ThrowIfRuleBroken(IBusinessRule rule)
+    protected static void ThrowIfBroken(IBusinessRule rule)
     {
         if (rule.IsBroken())
             throw new BusinessRuleValidationException(rule);

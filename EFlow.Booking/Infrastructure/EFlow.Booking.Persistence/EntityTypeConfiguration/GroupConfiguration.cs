@@ -18,7 +18,7 @@ public class GroupConfiguration : IEntityTypeConfiguration<Group>
 
         builder.Property(g => g.Name)
             .HasColumnName("name")
-            .HasMaxLength(127)
+            .HasMaxLength(64)
             .IsRequired();
     }
 }

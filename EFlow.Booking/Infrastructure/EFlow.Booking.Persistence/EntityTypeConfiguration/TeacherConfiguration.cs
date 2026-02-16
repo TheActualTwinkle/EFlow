@@ -18,7 +18,7 @@ public class TeacherConfiguration : IEntityTypeConfiguration<Teacher>
 
         builder.Property(t => t.FirstName)
             .HasColumnName("first_name")
-            .HasMaxLength(31)
+            .HasMaxLength(31) // TODO: взять из IBussinessRule
             .IsRequired();
 
         builder.Property(t => t.MiddleName)
