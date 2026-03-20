@@ -14,7 +14,7 @@ public sealed class CreationTimeMustBeInPastRule : IBusinessRule
     }
 
     public string Message =>
-        "Admin creation time must be in the past.";
+        "Creation time must be in the past.";
 
     public bool IsBroken() =>
         _createdAt > _utcNow;

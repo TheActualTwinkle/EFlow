@@ -6,7 +6,7 @@ namespace EFlow.Booking.Domain.Admins;
 
 public sealed class Admin : Entity, IAggreagateRoot
 {
-    internal AdminId Id { get; private set; }
+    internal AdminId Id { get; }
 
     internal DateTime CreatedAt { get; private set; }
 
@@ -18,16 +18,20 @@ public sealed class Admin : Entity, IAggreagateRoot
 
         Id = new AdminId(Guid.CreateVersion7());
         CreatedAt = createdAt;
-
-        AddDomainEvent(new AdminCreatedDomainEvent
-        {
-            AdminId = Id,
-            CreatedAt = createdAt
-        });
     }
 
-    public static Admin Create(DateTime createdAt, DateTime utcNow) =>
-        new(createdAt, utcNow);
+    public static Admin Create(DateTime createdAt, DateTime utcNow)
+    {
+        var admin = new Admin(createdAt, utcNow);
+
+        admin.AddDomainEvent(new AdminCreatedDomainEvent
+        {
+            AdminId = admin.Id,
+            CreatedAt = admin.CreatedAt
+        });
+        
+        return admin;
+    }
 
     public void Delete() =>
         AddDomainEvent(new AdminDeletedDomainEvent

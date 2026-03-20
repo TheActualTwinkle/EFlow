@@ -49,13 +49,6 @@ public sealed class Teacher : Entity, IAggreagateRoot
         MiddleName = trimmedMiddleName;
         BirthDate = birthDate;
         CreatedAt = createdAt;
-
-        AddDomainEvent(
-            new TeacherCreatedDomainEvent
-            {
-                TeacherId = Id,
-                CreatedAt = createdAt
-            });
     }
 
     public static Teacher Create(
@@ -64,8 +57,25 @@ public sealed class Teacher : Entity, IAggreagateRoot
         string? middleName,
         DateOnly birthDate,
         DateTime createdAt,
-        DateTime now) =>
-        new(firstName, lastName, middleName, birthDate, createdAt, now);
+        DateTime now)
+    {
+        var teacher = new Teacher(
+            firstName,
+            lastName,
+            middleName,
+            birthDate,
+            createdAt,
+            now);
+
+        teacher.AddDomainEvent(
+            new TeacherCreatedDomainEvent
+            {
+                TeacherId = teacher.Id,
+                CreatedAt = teacher.CreatedAt
+            });
+        
+        return teacher;
+    }
 
     public TeacherId Delete()
     {
@@ -78,46 +88,19 @@ public sealed class Teacher : Entity, IAggreagateRoot
         return Id;
     }
 
-    public void Update(
-        TeacherUpdatePatch patch,
-        DateTime utcNow)
-    {
-        if (patch.NewFirstName is not null)
-        {
-            var trimmedFirstName = patch.NewFirstName.Trim();
-            ThrowIfBroken(new TeacherFirstNameMustBeProperLengthRule(trimmedFirstName));
-
-            FirstName = trimmedFirstName;
-        }
-        
-        if (patch.NewLastName is not null)
-        {
-            var trimmedLastName = patch.NewLastName.Trim();
-            ThrowIfBroken(new TeacherLastNameMustBeProperLengthRule(trimmedLastName));
-
-            LastName = trimmedLastName;
-        }
-        
-        if (patch.NewMiddleName is not null)
-        {
-            var trimmedMiddleName = patch.NewMiddleName.Trim();
-            ThrowIfBroken(new TeacherMiddleNameMustBeProperLengthRule(trimmedMiddleName));
-
-            MiddleName = trimmedMiddleName;
-        }
-        
-        if (patch.NewBirthDate is not null)
-        {
-            ThrowIfBroken(new TeacherBirthDateMustBeInPastRule(patch.NewBirthDate.Value, DateOnly.FromDateTime(utcNow)));
-
-            BirthDate = patch.NewBirthDate.Value;
-        }
-
-        AddDomainEvent(
-            new TeacherUpdatedDomainEvent
-            {
-                TeacherId = Id,
-                UpdatedAt = utcNow
-            });
-    }
+    // public void Update(
+    //     TeacherUpdatePatch patch,
+    //     DateTime utcNow)
+    // {
+    //     var updatedTeacher = patch.ApplyTo(this).Entity;
+    //     
+    //     // TODO.
+    //     
+    //     AddDomainEvent(
+    //         new TeacherUpdatedDomainEvent
+    //         {
+    //             TeacherId = updatedTeacher.Id,
+    //             UpdatedAt = utcNow
+    //         });
+    // }
 }

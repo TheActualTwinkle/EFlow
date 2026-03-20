@@ -1,30 +1,16 @@
+using FluentPatcher;
+using FluentPatcher.Attributes;
+
 namespace EFlow.Booking.Domain.Teachers;
 
+[PatchFor(typeof(Teacher))]
 public sealed record TeacherUpdatePatch
 {
-    public TeacherUpdatePatch(
-        string? newFirstName = null,
-        string? newLastName = null,
-        string? newMiddleName = null,
-        DateOnly? newBirthDate = null)
-    {
-        if (newFirstName is null &&
-            newLastName is null &&
-            newMiddleName is null &&
-            newBirthDate is null)
-            throw new ArgumentException("At least one property must be provided to update teacher.");
+    public Patchable<string> FirstName { get; }
 
-        NewFirstName = newFirstName;
-        NewLastName = newLastName;
-        NewMiddleName = newMiddleName;
-        NewBirthDate = newBirthDate;
-    }
+    public Patchable<string> LastName { get; }
 
-    public string? NewFirstName { get; }
+    public Patchable<string?> MiddleName { get; }
 
-    public string? NewLastName { get; }
-
-    public string? NewMiddleName { get; }
-
-    public DateOnly? NewBirthDate { get; }
+    public Patchable<DateOnly> BirthDate { get; }
 }
