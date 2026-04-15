@@ -8,7 +8,7 @@ public sealed class StudentMustNotBeAddedTwiceRule : IBusinessRule
     private readonly IEnumerable<Student> ExistingStudents;
     private readonly Student AddedStudent;
 
-    public StudentMustNotBeAddedTwiceRule(IEnumerable<Student> existingStudents, Student addedStudent)
+    internal StudentMustNotBeAddedTwiceRule(IEnumerable<Student> existingStudents, Student addedStudent)
     {
         ExistingStudents = existingStudents;
         AddedStudent = addedStudent;

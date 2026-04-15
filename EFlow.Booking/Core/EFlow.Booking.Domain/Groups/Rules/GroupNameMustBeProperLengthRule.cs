@@ -9,7 +9,7 @@ public sealed class GroupNameMustBeProperLengthRule : IBusinessRule
 
     private readonly string _name;
 
-    public GroupNameMustBeProperLengthRule(string name) =>
+    internal GroupNameMustBeProperLengthRule(string name) =>
         _name = name;
 
     public string Message =>

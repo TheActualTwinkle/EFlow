@@ -8,7 +8,7 @@ public sealed class StudentCannotBeMovedToSameGroupRule : IBusinessRule
     private readonly GroupId _newGroupId;
     private readonly GroupId _currentGroupId;
 
-    public StudentCannotBeMovedToSameGroupRule(GroupId newGroupId, GroupId currentGroupId)
+    internal StudentCannotBeMovedToSameGroupRule(GroupId newGroupId, GroupId currentGroupId)
     {
         _newGroupId = newGroupId;
         _currentGroupId = currentGroupId;

@@ -1,20 +1,18 @@
-﻿using EFlow.Booking.Domain.SubmissionSlots;
+﻿using EFlow.Booking.Domain.Students;
+using EFlow.Booking.Domain.SubmissionSlots;
 using EFlow.Common.Domain;
-using EFlow.Common.Domain.Students;
 
 namespace EFlow.Booking.Domain.BookingRecords;
 
 public sealed class BookingRecord : Entity
 {
-    public required Guid Id { get; init; }
+    internal BookingRecordId Id { get; private set; }
 
-    public required Guid StudentId { get; init; }
+    internal StudentId StudentId { get; private set; }
 
-    public required Guid SlotId { get; init; }
+    internal SubmissionSlotId SlotId { get; private set; }
 
-    public required DateTime CreatedAt { get; init; }
-
-    public Student? Student { get; init; }
-
-    public SubmissionSlot? SubmissionSlot { get; init; }
+    internal DateTime CreatedAt { get; private set; }
+    
+    
 }

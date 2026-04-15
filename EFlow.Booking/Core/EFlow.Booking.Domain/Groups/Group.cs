@@ -15,7 +15,7 @@ public sealed class Group : Entity, IAggreagateRoot
 
     internal ICollection<Student> Students { get; private set; } = [];
 
-    internal ICollection<Subject> Subjects { get; private set; } = [];
+    internal ICollection<Subject> Subjects { get; private set; } = []; // TODO: Check private set usage.
 
     private Group(string name)
     {

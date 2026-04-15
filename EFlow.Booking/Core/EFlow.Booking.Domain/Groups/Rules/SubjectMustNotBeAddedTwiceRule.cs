@@ -8,7 +8,7 @@ public sealed class SubjectMustNotBeAddedTwiceRule : IBusinessRule
     private readonly IEnumerable<Subject> ExistingSubjects;
     private readonly Subject AddedSubject;
 
-    public SubjectMustNotBeAddedTwiceRule(IEnumerable<Subject> existingSubjects, Subject addedSubject)
+    internal SubjectMustNotBeAddedTwiceRule(IEnumerable<Subject> existingSubjects, Subject addedSubject)
     {
         ExistingSubjects = existingSubjects;
         AddedSubject = addedSubject;

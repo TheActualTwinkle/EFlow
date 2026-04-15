@@ -19,8 +19,6 @@ public sealed class Teacher : Entity, IAggreagateRoot
 
     internal DateTime CreatedAt { get; private set; }
 
-    internal Identity? Identity { get; private set; }
-
     private Teacher(
         string firstName,
         string lastName,

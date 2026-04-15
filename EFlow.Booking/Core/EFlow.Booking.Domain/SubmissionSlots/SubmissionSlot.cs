@@ -1,6 +1,6 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using EFlow.Booking.Domain.Admins;
-using EFlow.Booking.Domain.Groups;
+﻿using EFlow.Booking.Domain.Groups;
+using EFlow.Booking.Domain.SubmissionSlots.Events;
+using EFlow.Booking.Domain.SubmissionSlots.Rules;
 using EFlow.Booking.Subjects;
 using EFlow.Common.Domain;
 
@@ -8,24 +8,73 @@ namespace EFlow.Booking.Domain.SubmissionSlots;
 
 public sealed class SubmissionSlot : Entity
 {
-    public required Guid Id { get; init; }
+    internal SubmissionSlotId Id { get; private set; }
 
-    public required Guid SubjectId { get; init; }
+    internal SubjectId SubjectId { get; private set; }
 
-    public required DateTime StartTime { get; init; }
+    internal DateTime StartTime { get; private set; }
 
-    public required DateTime EndTime { get; init; }
+    internal DateTime EndTime { get; private set; }
 
-    public required int MaxStudents { get; init; }
+    internal int MaxStudents { get; private set; }
 
-    [MemberNotNullWhen(false, nameof(AllowedGroupIds))]
-    public required bool AllowAllGroups { get; init; }
+    internal bool AllowAllGroups { get; private set; }
+
+    internal ICollection<GroupId> AllowedGroupIds { get; private set; }
+
+    internal string? Location { get; private set; }
     
-    public ICollection<Guid>? AllowedGroupIds { get; init; }
-
-    public string? Location { get; init; }
-
-    public Subject? Subject { get; init; }
+    private SubmissionSlot(
+        SubjectId subjectId,
+        DateTime startTime,
+        DateTime endTime,
+        int maxStudents,
+        bool allowAllGroups,
+        ICollection<GroupId>? allowedGroupIds = null,
+        string? location = null)
+    {
+        allowedGroupIds ??= []; 
+        
+        ThrowIfBroken(new StartTimeMustBeBeforeEndTimeRule(startTime, endTime));
+        
+        ThrowIfBroken(new MaxStudentsMustBePositiveRule(maxStudents));
+        
+        ThrowIfBroken(new AllowedGroupIdsMustNotBeEmptyWhenAllowAllGroupsIsFalseRule(allowAllGroups, allowedGroupIds));
+        
+        ThrowIfBroken(new AllowedGroupIdsMustBeEmptyWhenAllowAllGroupsIsTrueRule(allowAllGroups, allowedGroupIds));
+        
+        ThrowIfBroken(new AllowedGroupIdsMustNotContainDuplicatesRule(allowedGroupIds));
+        
+        Id = new SubmissionSlotId(Guid.CreateVersion7());
+        SubjectId = subjectId;
+        StartTime = startTime;
+        EndTime = endTime;
+        MaxStudents = maxStudents;
+        AllowAllGroups = allowAllGroups;
+        AllowedGroupIds = allowedGroupIds;
+        Location = location;
+    }
     
-    public ICollection<Group>? AllowedGroups { get; init; }
+    public static SubmissionSlot Create(
+        SubjectId subjectId,
+        DateTime startTime,
+        DateTime endTime,
+        int maxStudents,
+        bool allowAllGroups,
+        DateTime nowUtc,
+        ICollection<GroupId>? allowedGroupIds = null,
+        string? location = null)
+    {
+        var slot = new SubmissionSlot(subjectId, startTime, endTime, maxStudents, allowAllGroups, allowedGroupIds, location);
+        
+        slot.AddDomainEvent(new SubmissionSlotCreatedDomainEvent
+        {
+            SlotId = slot.Id,
+            CreatedAt = nowUtc
+        });
+        
+        return slot;
+    }
+    
+    // TODO:
 }
