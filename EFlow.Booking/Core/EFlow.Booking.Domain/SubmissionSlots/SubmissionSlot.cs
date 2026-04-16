@@ -1,4 +1,6 @@
-﻿using EFlow.Booking.Domain.Groups;
+﻿using EFlow.Booking.Domain.BookingRecords;
+using EFlow.Booking.Domain.Groups;
+using EFlow.Booking.Domain.Students;
 using EFlow.Booking.Domain.SubmissionSlots.Events;
 using EFlow.Booking.Domain.SubmissionSlots.Rules;
 using EFlow.Booking.Subjects;
@@ -75,6 +77,33 @@ public sealed class SubmissionSlot : Entity
         
         return slot;
     }
+
+    public SubmissionSlotId Delete()
+    {
+        AddDomainEvent(new SubmissionSlotDeletedDomainEvent
+        {
+            SlotId = Id,
+        });
+
+        return Id;
+    }
+
+    // public void Update(SubmissionSlotPatch patch, DateTime utcNow)
+    // {
+    //     var updatedSlot = patch.ApplyTo(this).Entity;
+    //     
+    //     // TODO
+    //     
+    //     AddDomainEvent(new SubmissionSlotUpdatedDomainEvent
+    //     {
+    //         SlotId = Id,
+    //         UpdatedAt = utcNow
+    //     });
+    // }
     
-    // TODO:
+    public BookingRecord BookToSlot(StudentId studentId, DateTime nowUtc) =>
+        BookingRecord.Create(studentId, Id, nowUtc, nowUtc);
+
+    public void CancelBooking(BookingRecord bookingRecordId) =>
+        bookingRecordId.Delete();
 }

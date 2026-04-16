@@ -1,10 +1,12 @@
-﻿using EFlow.Booking.Domain.Students;
+﻿using EFlow.Booking.Domain.BookingRecords.Events;
+using EFlow.Booking.Domain.Common.BusinessRules;
+using EFlow.Booking.Domain.Students;
 using EFlow.Booking.Domain.SubmissionSlots;
 using EFlow.Common.Domain;
 
 namespace EFlow.Booking.Domain.BookingRecords;
 
-public sealed class BookingRecord : Entity
+public sealed class BookingRecord : Entity, IAggreagateRoot
 {
     internal BookingRecordId Id { get; private set; }
 
@@ -14,5 +16,44 @@ public sealed class BookingRecord : Entity
 
     internal DateTime CreatedAt { get; private set; }
     
+    private BookingRecord(
+        StudentId studentId,
+        SubmissionSlotId slotId,
+        DateTime createdAt,
+        DateTime utcNow)
+    {
+        ThrowIfBroken(new CreationTimeMustBeInPastRule(createdAt, utcNow));
+        
+        Id = new BookingRecordId(Guid.CreateVersion7());
+        StudentId = studentId;
+        SlotId = slotId;
+        CreatedAt = createdAt;
+    }
     
+    internal static BookingRecord Create(
+        StudentId studentId,
+        SubmissionSlotId slotId,
+        DateTime createdAt,
+        DateTime utcNow)
+    {
+        var bookingRecord = new BookingRecord(studentId, slotId, createdAt, utcNow);
+        
+        bookingRecord.AddDomainEvent(new BookingRecordCreatedDomainEvent
+        {
+            BookingRecordId = bookingRecord.Id,
+            CreatedAt = createdAt
+        });
+        
+        return bookingRecord;
+    }
+
+    internal BookingRecordId Delete()
+    {
+        AddDomainEvent(new BookingRecordDeletedDomainEvent
+        {
+            BookingRecordId = Id,
+        });
+
+        return Id;
+    }
 }
