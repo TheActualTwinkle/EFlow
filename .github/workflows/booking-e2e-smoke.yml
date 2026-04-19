@@ -1,4 +1,4 @@
-name: booking-smoke
+name: booking-e2e-smoke
 
 on:
   pull_request:
