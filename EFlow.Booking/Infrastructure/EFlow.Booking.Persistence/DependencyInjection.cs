@@ -42,6 +42,8 @@ public static class DependencyInjection
         services.AddScoped<ISubmissionSlotRepository, SubmissionSlotRepository>();
         services.AddScoped<IBookingRecordRepository, BookingRecordRepository>();
         services.AddScoped<IOutboxMessageRepository, OutboxMessageRepository>();
+        
+        services.AddScoped<IDomainEventDispatcher, DomainEventDispatcher>();
 
         return services;
     }

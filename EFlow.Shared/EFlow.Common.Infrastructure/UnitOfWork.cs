@@ -1,6 +1,5 @@
 ﻿using System.Data;
 using EFlow.Common.Domain;
-using EFlow.Common.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.DependencyInjection;
@@ -9,7 +8,8 @@ namespace EFlow.Common.Infrastructure;
 
 public sealed class UnitOfWork(
     DbContext context,
-    IServiceProvider serviceProvider)
+    IServiceProvider serviceProvider,
+    IDomainEventDispatcher domainEventsDispatcher)
     : IUnitOfWork
 {
     private IDbContextTransaction? _currentTransaction;
@@ -29,7 +29,7 @@ public sealed class UnitOfWork(
 
     public async Task BeginTransactionAsync(
         IsolationLevel isolationLevel = IsolationLevel.ReadCommitted,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = new())
     {
         ObjectDisposedException.ThrowIf(_disposed, nameof(UnitOfWork));
 
@@ -41,7 +41,7 @@ public sealed class UnitOfWork(
         _isTransactionStarted = true;
     }
 
-    public async Task CommitTransactionAsync(CancellationToken cancellationToken = default)
+    public async Task CommitTransactionAsync(CancellationToken cancellationToken = new())
     {
         ObjectDisposedException.ThrowIf(_disposed, nameof(UnitOfWork));
 
@@ -50,15 +50,9 @@ public sealed class UnitOfWork(
 
         try
         {
-            var outboxMessages = CollectOutboxMessages();
-
+            await domainEventsDispatcher.DispatchEventsAsync();
+            
             await context.SaveChangesAsync(cancellationToken);
-
-            if (outboxMessages.Count != 0)
-            {
-                await context.Set<OutboxMessage>().AddRangeAsync(outboxMessages, cancellationToken);
-                await context.SaveChangesAsync(cancellationToken);
-            }
 
             await _currentTransaction.CommitAsync(cancellationToken);
         }
@@ -74,7 +68,7 @@ public sealed class UnitOfWork(
         }
     }
 
-    public async Task RollbackTransactionAsync(CancellationToken cancellationToken = default)
+    public async Task RollbackTransactionAsync(CancellationToken cancellationToken = new())
     {
         ObjectDisposedException.ThrowIf(_disposed, nameof(UnitOfWork));
 
@@ -89,19 +83,6 @@ public sealed class UnitOfWork(
         {
             await DisposeTransactionAsync();
         }
-    }
-
-    private IReadOnlyCollection<OutboxMessage> CollectOutboxMessages()
-    {
-        var domainEvents = context.ChangeTracker
-            .Entries<Entity>()
-            .SelectMany(entry => entry.Entity.DequeueDomainEvents())
-            .ToList();
-
-        if (domainEvents.Count == 0)
-            return [];
-
-        return [];
     }
 
     public async ValueTask DisposeAsync()
