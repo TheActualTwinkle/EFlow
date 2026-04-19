@@ -1,5 +1,7 @@
-﻿using EFlow.Booking.Persistence.DatabaseContext;
+﻿using System.Net.Sockets;
+using EFlow.Booking.Persistence.DatabaseContext;
 using Microsoft.EntityFrameworkCore;
+using Npgsql;
 using Serilog;
 
 namespace EFlow.Booking.WebApi.Extensions;
@@ -8,19 +10,47 @@ public static class StartupExtensions
 {
     public static async Task ApplyDbMigrations(this WebApplication webApplication)
     {
-        try
-        {
-            using var scope = webApplication.Services.CreateScope();
+        const int maxAttempts = 10;
+        var delay = TimeSpan.FromSeconds(2);
 
-            var databaseContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        for (var attempt = 1; attempt <= maxAttempts; attempt++)
+            try
+            {
+                using var scope = webApplication.Services.CreateScope();
 
-            await databaseContext.Database.MigrateAsync();
-        }
-        catch (Exception e)
-        {
-            Log.Fatal("Error on DB migration: {message}", e.Message);
+                var databaseContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
-            throw;
-        }
+                await databaseContext.Database.MigrateAsync();
+
+                Log.Information("Database migrations applied successfully");
+
+                return;
+            }
+            catch (Exception e) when (
+                e is NpgsqlException or SocketException ||
+                e.InnerException is NpgsqlException or SocketException)
+            {
+                if (attempt == maxAttempts)
+                {
+                    Log.Error(e, "Error on DB migration after {Attempts} attempts", maxAttempts);
+
+                    throw;
+                }
+
+                Log.Warning(
+                    e,
+                    "Transient DB migration error on attempt {Attempt}/{MaxAttempts}. Retrying in {DelaySeconds}s",
+                    attempt,
+                    maxAttempts,
+                    delay.TotalSeconds);
+
+                await Task.Delay(delay);
+            }
+            catch (Exception e)
+            {
+                Log.Fatal(e, "Error on DB migration: {Message}", e.Message);
+
+                throw;
+            }
     }
 }

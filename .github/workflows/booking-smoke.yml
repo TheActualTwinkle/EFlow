@@ -1,0 +1,26 @@
+name: booking-smoke
+
+on:
+  pull_request:
+    branches:
+      - main
+      - release/**
+      - feature/**
+  push:
+    branches:
+      - main
+      - release/**
+      - feature/**
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run Booking smoke scenarios
+        run: |
+          bash scripts/smoke/run_booking_smoke.sh --base-url http://localhost:8081 --wait-seconds 180

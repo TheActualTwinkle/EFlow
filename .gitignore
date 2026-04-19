@@ -378,3 +378,4 @@ FodyWeavers.xsd
 scripts/**/.volumes/
 scripts/*/.volumes/
 .volumes/
+docker/data
