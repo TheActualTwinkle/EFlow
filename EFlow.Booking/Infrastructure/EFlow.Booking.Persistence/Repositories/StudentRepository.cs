@@ -1,7 +1,7 @@
-﻿using EFlow.Booking.Domain.Students;
+﻿using EFlow.Booking.Domain.Domain.Students;
+using EFlow.Booking.Domain.Students;
 using EFlow.Booking.Domain.Groups;
 using EFlow.Booking.Persistence.DatabaseContext;
-using EFlow.Common.Domain.Students;
 using Microsoft.EntityFrameworkCore;
 
 namespace EFlow.Booking.Persistence.Repositories;

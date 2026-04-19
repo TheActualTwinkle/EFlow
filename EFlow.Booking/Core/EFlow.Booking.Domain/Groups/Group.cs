@@ -1,9 +1,9 @@
-﻿using EFlow.Booking.Domain.Groups.Events;
+﻿using EFlow.Booking.Domain.Domain.Students;
+using EFlow.Booking.Domain.Groups.Events;
 using EFlow.Booking.Domain.Groups.Rules;
 using EFlow.Booking.Domain.Students;
 using EFlow.Booking.Domain.Subjects;
 using EFlow.Common.Domain;
-using EFlow.Common.Domain.Students;
 
 namespace EFlow.Booking.Domain.Groups;
 

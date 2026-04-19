@@ -1,6 +1,6 @@
-﻿using EFlow.Booking.Domain.Groups;
+﻿using EFlow.Booking.Domain.Domain.Students;
+using EFlow.Booking.Domain.Groups;
 using EFlow.Booking.Domain.Students;
-using EFlow.Common.Domain.Students;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 

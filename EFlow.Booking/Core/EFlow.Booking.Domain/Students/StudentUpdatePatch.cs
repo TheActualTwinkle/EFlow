@@ -1,4 +1,4 @@
-using EFlow.Common.Domain.Students;
+using EFlow.Booking.Domain.Domain.Students;
 using FluentPatcher;
 using FluentPatcher.Attributes;
 

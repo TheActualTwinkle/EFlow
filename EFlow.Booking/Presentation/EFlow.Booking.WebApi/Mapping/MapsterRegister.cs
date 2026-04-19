@@ -7,11 +7,11 @@ using EFlow.Booking.Application.SubmissionSlots;
 using EFlow.Booking.Application.Teachers;
 using EFlow.Booking.Domain.Admins;
 using EFlow.Booking.Domain.BookingRecords;
+using EFlow.Booking.Domain.Domain.Students;
 using EFlow.Booking.Domain.Groups;
 using EFlow.Booking.Domain.SubmissionSlots;
 using EFlow.Booking.Domain.Teachers;
 using EFlow.Booking.Domain.Subjects;
-using EFlow.Common.Domain.Students;
 using Mapster;
 
 namespace EFlow.Booking.WebApi.Mapping;

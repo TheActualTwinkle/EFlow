@@ -3,7 +3,7 @@ set -e
 
 ROOT_DIR="$(cd "$(dirname "$0")/../.." && pwd)"
 COMPOSE_FILE="$ROOT_DIR/docker/docker-compose.prod.yml"
-ENV_FILE="$ROOT_DIR/docker/prod.env"
+ENV_FILE="${ENV_FILE:-$ROOT_DIR/docker/prod.env}"
 
 cd "$ROOT_DIR"
 

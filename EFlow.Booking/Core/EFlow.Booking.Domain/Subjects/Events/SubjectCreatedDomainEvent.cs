@@ -4,7 +4,7 @@ using EFlow.Common.Domain;
 
 namespace EFlow.Booking.Domain.Subjects.Events;
 
-public class SubjectCreatedDomainEvent : DomainEvent
+public sealed class SubjectCreatedDomainEvent : DomainEvent
 {
     public required SubjectId SubjectId { get; init; }
     

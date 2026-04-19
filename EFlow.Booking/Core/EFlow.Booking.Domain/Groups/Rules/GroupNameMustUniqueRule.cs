@@ -7,7 +7,7 @@ public sealed class GroupNameMustUniqueRule : IBusinessRule
     private readonly string _name;
     private readonly IEnumerable<string> _existingGroupNames;
 
-    public GroupNameMustUniqueRule(string name, IEnumerable<string> existingGroupNames)
+    internal GroupNameMustUniqueRule(string name, IEnumerable<string> existingGroupNames)
     {
         _name = name;
         _existingGroupNames = existingGroupNames;

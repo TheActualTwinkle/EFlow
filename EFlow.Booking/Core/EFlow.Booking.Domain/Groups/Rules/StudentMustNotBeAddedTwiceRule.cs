@@ -1,5 +1,5 @@
+using EFlow.Booking.Domain.Domain.Students;
 using EFlow.Common.Domain;
-using EFlow.Common.Domain.Students;
 
 namespace EFlow.Booking.Domain.Groups.Rules;
 

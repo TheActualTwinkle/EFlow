@@ -2,7 +2,7 @@ using EFlow.Common.Domain;
 
 namespace EFlow.Booking.Domain.Students.Rules;
 
-public class StudentBirthDateMustBeInPastRule : IBusinessRule
+public sealed class StudentBirthDateMustBeInPastRule : IBusinessRule
 {
     private readonly DateOnly _birthDate;
     private readonly DateOnly _utcNow;
