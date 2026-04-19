@@ -158,13 +158,11 @@ public class DomainTests
             string.Join("\n", invalidRules));
     }
 
-    private static IEnumerable<Type> GetTypesImplementing<TBaseType>()
-    {
-        return typeof(Identity)
+    private static IEnumerable<Type> GetTypesImplementing<TBaseType>() =>
+        typeof(Identity)
             .Assembly
             .GetTypes()
             .Where(type =>
                 type is { IsClass: true, IsAbstract: false }
                 && type.IsAssignableTo(typeof(TBaseType)));
-    }
 }
