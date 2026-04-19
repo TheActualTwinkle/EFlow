@@ -7,7 +7,7 @@ namespace EFlow.Booking.Domain.Teachers;
 
 public sealed class Teacher : Entity, IAggreagateRoot
 {
-    internal TeacherId Id { get; }
+    public TeacherId Id { get; }
 
     internal string FirstName { get; private set; }
 
@@ -19,6 +19,8 @@ public sealed class Teacher : Entity, IAggreagateRoot
 
     internal DateTime CreatedAt { get; private set; }
 
+    private Teacher() { }
+    
     private Teacher(
         string firstName,
         string lastName,

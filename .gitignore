@@ -375,6 +375,6 @@ FodyWeavers.xsd
 !/scripts/
 !/scripts/**/*
 
-scripts/**/volumes/
-scripts/*/volumes/
-volumes/
+scripts/**/.volumes/
+scripts/*/.volumes/
+.volumes/

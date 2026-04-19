@@ -1,58 +1,34 @@
-﻿using EFlow.Common.Domain.Models;
-using EFlow.Common.Domain;
-using EFlow.Booking.IntegrationEvents;
-using EFlow.Common.Domain.Entities;
-using EFlow.Common.Domain.Repositories;
+﻿using EFlow.Booking.Domain.Groups;
+using EFlow.Booking.Domain.SubmissionSlots;
+using EFlow.Booking.Domain.Subjects;
 using EFlow.Common.Infrastructure;
 using FluentResults;
 using MediatR;
-using MemoryPack;
 
 namespace EFlow.Booking.Application.SubmissionSlots.Commands;
 
-public class CreateSubmissionSlotCommandHandler(IUnitOfWork unitOfWork) : IRequestHandler<CreateSubmissionSlotCommand, Result<Guid>>
+public class CreateSubmissionSlotCommandHandler(IUnitOfWork unitOfWork, ISystemClock systemClock) : IRequestHandler<CreateSubmissionSlotCommand, Result<Guid>>
 {
     public async Task<Result<Guid>> Handle(CreateSubmissionSlotCommand request, CancellationToken cancellationToken)
     {
-        var slot = new SubmissionSlot
-        {
-            Id = Guid.NewGuid(),
-            SubjectId = request.SubjectId,
-            StartTime = request.StartTime,
-            EndTime = request.EndTime,
-            MaxStudents = request.MaxStudents,
-            AllowAllGroups = request.AllowAllGroups,
-            AllowedGroupIds = request.AllowedGroupIds,
-            Location = request.Location
-        };
+        var allowedGroupIds = request.AllowedGroupIds?
+            .Select(id => new GroupId(id))
+            .ToArray();
+
+        var slot = SubmissionSlot.Create(
+            new SubjectId(request.SubjectId),
+            request.StartTime,
+            request.EndTime,
+            request.MaxStudents,
+            request.AllowAllGroups,
+            systemClock.UtcNow,
+            allowedGroupIds,
+            request.Location);
 
         await unitOfWork
             .GetRepository<ISubmissionSlotRepository>()
             .CreateAsync(slot, cancellationToken);
 
-        var createdEvent = new SubmissionSlotCreatedIntegrationEvent
-        {
-            Id = slot.Id,
-            SubjectId = slot.SubjectId,
-            StartTime = slot.StartTime,
-            EndTime = slot.EndTime,
-            MaxStudents = slot.MaxStudents,
-            Location = slot.Location
-        };
-
-        var outboxMessage = new OutboxMessage
-        {
-            Id = Guid.NewGuid(),
-            Type = createdEvent.GetType().AssemblyQualifiedName ??
-                   throw new InvalidOperationException("Event type cannot be null"),
-            Payload = MemoryPackSerializer.Serialize(createdEvent),
-            CreatedAt = DateTime.UtcNow
-        };
-
-        await unitOfWork
-            .GetRepository<IOutboxMessageRepository>()
-            .CreateAsync(outboxMessage, cancellationToken);
-
-        return Result.Ok(slot.Id);
+        return Result.Ok(slot.Id.Value);
     }
 }

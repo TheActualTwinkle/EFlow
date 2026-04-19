@@ -2,8 +2,6 @@
 using EFlow.Booking.Application.Common.Errors.Identity;
 using EFlow.Booking.Domain;
 using EFlow.Booking.Domain.Admins;
-using EFlow.Common.Domain.Models;
-using EFlow.Common.Domain;
 using EFlow.Common.Infrastructure;
 using FluentResults;
 using MediatR;
@@ -13,7 +11,8 @@ namespace EFlow.Booking.Application.Admins.Commands;
 
 public class CreateAdminCommandHandler(
     IUnitOfWork unitOfWork,
-    UserManager<Identity> userManager)
+    UserManager<Identity> userManager,
+    ISystemClock systemClock)
     : IRequestHandler<CreateAdminCommand, Result<Guid>>
 {
     public async Task<Result<Guid>> Handle(CreateAdminCommand request, CancellationToken cancellationToken)
@@ -35,16 +34,14 @@ public class CreateAdminCommandHandler(
                     .WithMessage("Failed to add user to role")
                     .WithIdentityErrors(addToRoleResult.Errors));
 
-        var admin = new Admin
-        {
-            Id = identity.Id,
-            CreatedAt = DateTime.UtcNow
-        };
+        var nowUtc = systemClock.UtcNow;
+        
+        var admin = Admin.Create(nowUtc, nowUtc);
 
         await unitOfWork
             .GetRepository<IAdminRepository>()
             .CreateAsync(admin, cancellationToken);
 
-        return Result.Ok(identity.Id);
+        return Result.Ok(admin.Id.Value);
     }
 }

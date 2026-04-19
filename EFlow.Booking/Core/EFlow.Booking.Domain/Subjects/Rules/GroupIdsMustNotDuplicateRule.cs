@@ -1,7 +1,7 @@
 using EFlow.Booking.Domain.Groups;
 using EFlow.Common.Domain;
 
-namespace EFlow.Booking.Subjects.Rules;
+namespace EFlow.Booking.Domain.Subjects.Rules;
 
 /// <inheritdoc />
 public sealed class GroupIdsMustNotDuplicateRule : IBusinessRule

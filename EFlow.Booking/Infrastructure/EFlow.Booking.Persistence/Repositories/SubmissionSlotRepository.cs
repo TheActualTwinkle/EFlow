@@ -1,5 +1,4 @@
-﻿using EFlow.Common.Domain.Models;
-using EFlow.Common.Domain;
+﻿using EFlow.Booking.Domain.SubmissionSlots;
 using EFlow.Booking.Persistence.DatabaseContext;
 using Microsoft.EntityFrameworkCore;
 
@@ -15,11 +14,11 @@ public class SubmissionSlotRepository(ApplicationDbContext context) :
         await GetAllInternalAsync(cancellationToken);
 
     public async Task<SubmissionSlot?> GetByIdAsync(Guid id, CancellationToken cancellationToken = new()) =>
-        await GetByIdInternalAsync(id, cancellationToken);
+        await context.SubmissionSlots.FirstOrDefaultAsync(s => s.Id.Value == id, cancellationToken);
 
     public async Task<IEnumerable<SubmissionSlot>> GetBySubjectIdAsync(Guid subjectId, CancellationToken cancellationToken = new()) =>
         await context.SubmissionSlots
-            .Where(s => s.SubjectId == subjectId)
+            .Where(s => s.SubjectId.Value == subjectId)
             .ToListAsync(cancellationToken);
 
     public async Task<IEnumerable<SubmissionSlot>> GetAvailableSlotsAsync(DateTime fromDate, CancellationToken cancellationToken = new()) =>
@@ -30,6 +29,6 @@ public class SubmissionSlotRepository(ApplicationDbContext context) :
     public void Update(SubmissionSlot slot) =>
         UpdateInternal(slot);
 
-    public Task DeleteAsync(Guid id, CancellationToken cancellationToken = new()) =>
-        DeleteInternalAsync(id, cancellationToken);
+    public Task DeleteAsync(SubmissionSlot submissionSlot) =>
+        DeleteInternalAsync(submissionSlot);
 }

@@ -1,6 +1,6 @@
 ﻿using EFlow.Common.Domain;
 
-namespace EFlow.Booking.Subjects;
+namespace EFlow.Booking.Domain.Subjects;
 
 public interface ISubjectRepository : IRepository
 {
@@ -14,5 +14,5 @@ public interface ISubjectRepository : IRepository
 
     public void Update(Subject subject);
 
-    public Task DeleteAsync(Guid id, CancellationToken cancellationToken = new());
+    public Task DeleteAsync(Subject subject);
 }

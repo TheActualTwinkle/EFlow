@@ -2,7 +2,8 @@
 using EFlow.Booking.Application.Students.Commands;
 using EFlow.Booking.Application.Students.Commands.Update;
 using EFlow.Booking.Application.Students.Queries;
-using EFlow.Common.Domain.Models;
+using EFlow.Booking.Domain;
+using EFlow.Booking.WebApi.Contracts.Students;
 using EFlow.Booking.WebApi.Extensions;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -16,8 +17,19 @@ public class StudentsController(ISender sender) : ControllerBase
 {
     [HttpPost]
     [Authorize(Roles = Identity.Roles.Admin)]
-    public async Task<IActionResult> CreateStudent([FromBody] CreateStudentCommand command, CancellationToken cancellationToken)
+    public async Task<IActionResult> CreateStudent([FromBody] CreateStudentRequest request, CancellationToken cancellationToken)
     {
+        var command = new CreateStudentCommand
+        {
+            UserName = request.UserName,
+            Password = request.Password,
+            GroupId = request.GroupId,
+            FirstName = request.FirstName,
+            MiddleName = request.MiddleName,
+            LastName = request.LastName,
+            BirthDate = request.BirthDate
+        };
+
         var result = await sender.Send(command, cancellationToken);
 
         return result.IsFailed ?
@@ -51,7 +63,7 @@ public class StudentsController(ISender sender) : ControllerBase
     [Authorize(Roles = $"{Identity.Roles.Admin},{Identity.Roles.Student}")]
     public async Task<IActionResult> UpdateStudent(
         Guid id,
-        [FromBody] UpdateStudentCommand command,
+        [FromBody] UpdateStudentRequest request,
         CancellationToken cancellationToken)
     {
         if (User.IsInRole(Identity.Roles.Student))
@@ -66,7 +78,17 @@ public class StudentsController(ISender sender) : ControllerBase
                 );
         }
 
-        var result = await sender.Send(command with { Id = id }, cancellationToken);
+        var command = new UpdateStudentCommand
+        {
+            Id = id,
+            GroupId = request.GroupId,
+            FirstName = request.FirstName,
+            LastName = request.LastName,
+            MiddleName = request.MiddleName,
+            BirthDate = request.BirthDate
+        };
+
+        var result = await sender.Send(command, cancellationToken);
 
         return result.IsFailed ?
             result.Errors[0].ToProblemDetails() :

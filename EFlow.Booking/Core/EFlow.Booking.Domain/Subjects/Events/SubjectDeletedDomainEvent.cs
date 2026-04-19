@@ -1,6 +1,6 @@
 using EFlow.Common.Domain;
 
-namespace EFlow.Booking.Subjects.Events;
+namespace EFlow.Booking.Domain.Subjects.Events;
 
 public sealed class SubjectDeletedDomainEvent : DomainEvent
 {

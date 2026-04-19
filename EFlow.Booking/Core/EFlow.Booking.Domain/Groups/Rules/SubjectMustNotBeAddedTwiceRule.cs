@@ -1,4 +1,4 @@
-using EFlow.Booking.Subjects;
+using EFlow.Booking.Domain.Subjects;
 using EFlow.Common.Domain;
 
 namespace EFlow.Booking.Domain.Groups.Rules;

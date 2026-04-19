@@ -1,7 +1,8 @@
 ﻿using EFlow.Booking.Application.SubmissionSlots.Commands;
 using EFlow.Booking.Application.SubmissionSlots.Commands.Update;
 using EFlow.Booking.Application.SubmissionSlots.Queries;
-using EFlow.Common.Domain.Models;
+using EFlow.Booking.Domain;
+using EFlow.Booking.WebApi.Contracts.SubmissionSlots;
 using EFlow.Booking.WebApi.Extensions;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -15,8 +16,19 @@ public class SubmissionSlotsController(ISender sender) : ControllerBase
 {
     [HttpPost]
     [Authorize(Roles = Identity.Roles.Admin)]
-    public async Task<IActionResult> CreateSlot([FromBody] CreateSubmissionSlotCommand command, CancellationToken cancellationToken)
+    public async Task<IActionResult> CreateSlot([FromBody] CreateSubmissionSlotRequest request, CancellationToken cancellationToken)
     {
+        var command = new CreateSubmissionSlotCommand
+        {
+            SubjectId = request.SubjectId,
+            StartTime = request.StartTime,
+            EndTime = request.EndTime,
+            MaxStudents = request.MaxStudents,
+            AllowAllGroups = request.AllowAllGroups,
+            AllowedGroupIds = request.AllowedGroupIds,
+            Location = request.Location
+        };
+
         var result = await sender.Send(command, cancellationToken);
 
         return result.IsFailed ?
@@ -59,12 +71,9 @@ public class SubmissionSlotsController(ISender sender) : ControllerBase
 
     [HttpGet("available")]
     [Authorize]
-    public async Task<IActionResult> GetAvailableSlots([FromQuery] DateTime fromDate, CancellationToken cancellationToken)
+    public async Task<IActionResult> GetAvailableSlots([FromQuery] GetAvailableSubmissionSlotsRequest request, CancellationToken cancellationToken)
     {
-        if (fromDate.Kind != DateTimeKind.Utc)
-            fromDate = DateTime.SpecifyKind(fromDate, DateTimeKind.Utc);
-
-        var result = await sender.Send(new GetAvailableSubmissionSlotsQuery { FromDate = fromDate }, cancellationToken);
+        var result = await sender.Send(new GetAvailableSubmissionSlotsQuery { FromDate = request.FromDate }, cancellationToken);
 
         return result.IsFailed ?
             result.Errors[0].ToProblemDetails() :
@@ -75,10 +84,20 @@ public class SubmissionSlotsController(ISender sender) : ControllerBase
     [Authorize(Roles = Identity.Roles.Admin)]
     public async Task<IActionResult> UpdateSlot(
         Guid id,
-        [FromBody] UpdateSubmissionSlotCommand command,
+        [FromBody] UpdateSubmissionSlotRequest request,
         CancellationToken cancellationToken)
     {
-        var result = await sender.Send(command with { Id = id }, cancellationToken);
+        var command = new UpdateSubmissionSlotCommand
+        {
+            Id = id,
+            SubjectId = request.SubjectId,
+            StartTime = request.StartTime,
+            EndTime = request.EndTime,
+            MaxStudents = request.MaxStudents,
+            Location = request.Location
+        };
+
+        var result = await sender.Send(command, cancellationToken);
 
         return result.IsFailed ?
             result.Errors[0].ToProblemDetails() :

@@ -1,6 +1,6 @@
 ﻿<Project>
   <ItemGroup>
-    <PackageVersion Include="FluentPatcher" Version="0.1.4" />
+    <PackageVersion Include="FluentPatcher" Version="0.1.5" />
     <PackageVersion Include="MemoryPack.Core" Version="1.21.4" />
     <PackageVersion Include="Scalar.AspNetCore" Version="2.11.2" />
     <PackageVersion Include="System.Reactive" Version="6.0.1" />
@@ -43,5 +43,7 @@
     <PackageVersion Include="AspNetCore.HealthChecks.UI.Client" Version="9.0.0" />
     <PackageVersion Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.0" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Tools" Version="10.0.0" />
+    <PackageVersion Include="Microsoft.CodeAnalysis.Common" Version="5.0.0" />
+    <PackageVersion Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="5.0.0" />
   </ItemGroup>
 </Project>

@@ -12,5 +12,5 @@ public interface IGroupRepository : IRepository
 
     public void Update(Group group);
 
-    public Task DeleteAsync(Guid id, CancellationToken cancellationToken = new());
+    public Task DeleteAsync(Group group);
 }

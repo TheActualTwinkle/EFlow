@@ -1,9 +1,8 @@
 ﻿using EFlow.Booking.Application.Common.Errors;
 using EFlow.Booking.Application.Common.Errors.Abstractions;
-using EFlow.Booking.Domain;
+using EFlow.Booking.Domain.Subjects;
 using EFlow.Common.Infrastructure;
 using FluentResults;
-using Mapster;
 using MediatR;
 
 namespace EFlow.Booking.Application.Subjects.Commands.Update;
@@ -23,7 +22,7 @@ public class UpdateSubjectCommandHandler(IUnitOfWork unitOfWork)
                     .WithMessage("Subject not found")
                     .WithId(request.Id));
 
-        request.Adapt(subject);
+        // TODO: Update Domain Model
 
         repository.Update(subject);
 

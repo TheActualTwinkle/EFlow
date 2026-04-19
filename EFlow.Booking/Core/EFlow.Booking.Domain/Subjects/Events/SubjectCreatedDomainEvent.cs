@@ -2,7 +2,7 @@ using EFlow.Booking.Domain.Groups;
 using EFlow.Booking.Domain.Teachers;
 using EFlow.Common.Domain;
 
-namespace EFlow.Booking.Subjects.Events;
+namespace EFlow.Booking.Domain.Subjects.Events;
 
 public class SubjectCreatedDomainEvent : DomainEvent
 {

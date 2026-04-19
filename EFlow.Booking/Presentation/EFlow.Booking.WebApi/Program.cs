@@ -33,6 +33,8 @@ builder.Services.AddCors(options =>
 
 builder.Services.ConfigureIdentity(builder.Configuration);
 
+builder.Services.AddMapping();
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddOpenApi();
 

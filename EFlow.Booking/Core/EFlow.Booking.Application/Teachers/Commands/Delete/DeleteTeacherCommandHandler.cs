@@ -1,7 +1,7 @@
 ﻿using EFlow.Booking.Application.Common.Errors.Abstractions;
 using EFlow.Booking.Application.Common.Errors.Identity;
-using EFlow.Booking.Domain.Models;
 using EFlow.Booking.Domain;
+using EFlow.Booking.Domain.Teachers;
 using EFlow.Common.Infrastructure;
 using FluentResults;
 using MediatR;
@@ -13,6 +13,8 @@ public class DeleteTeacherCommandHandler(IUnitOfWork unitOfWork, UserManager<Ide
 {
     public async Task<Result> Handle(DeleteTeacherCommand request, CancellationToken cancellationToken)
     {
+        var repository = unitOfWork.GetRepository<ITeacherRepository>();
+        
         var identity = await userManager.FindByIdAsync(request.Id.ToString());
 
         if (identity is null)
@@ -23,12 +25,17 @@ public class DeleteTeacherCommandHandler(IUnitOfWork unitOfWork, UserManager<Ide
         if (!result.Succeeded)
             return Result.Fail(
                 new IdentityInternalError()
-                    .WithMessage("Failed to delete user")
+                    .WithMessage("Failed to delete teacher")
                     .WithIdentityErrors(result.Errors));
 
-        await unitOfWork
-            .GetRepository<ITeacherRepository>()
-            .DeleteAsync(request.Id, cancellationToken);
+        var teacher = await repository.GetByIdAsync(request.Id, cancellationToken);
+
+        if (teacher is null)
+            return Result.Ok();
+
+        teacher.Delete();
+
+        await repository.DeleteAsync(teacher);
 
         return Result.Ok();
     }

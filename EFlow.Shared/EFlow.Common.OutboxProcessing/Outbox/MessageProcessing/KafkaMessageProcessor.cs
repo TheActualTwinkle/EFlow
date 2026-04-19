@@ -6,8 +6,8 @@ using EFlow.Common.Messaging.Producers;
 namespace EFlow.Booking.Messaging.Outbox.MessageProcessing;
 
 /// <summary>
-///     Outbox message processor for Kafka messages.
-///     <see cref="OutboxMessage" /> will be produced to Kafka.
+/// Outbox message processor for Kafka messages.
+/// <see cref="OutboxMessage" /> will be produced to Kafka.
 /// </summary>
 public class KafkaMessageProcessor(ICommitLogProducer<Guid, byte[]> producer, ITopicNameResolver topicNameResolver) : IOutboxMessageProcessor
 {

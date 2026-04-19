@@ -8,13 +8,15 @@ namespace EFlow.Booking.Domain.BookingRecords;
 
 public sealed class BookingRecord : Entity, IAggreagateRoot
 {
-    internal BookingRecordId Id { get; private set; }
+    public BookingRecordId Id { get; private set; }
 
     internal StudentId StudentId { get; private set; }
 
     internal SubmissionSlotId SlotId { get; private set; }
 
     internal DateTime CreatedAt { get; private set; }
+    
+    private BookingRecord() { }
     
     private BookingRecord(
         StudentId studentId,
@@ -29,6 +31,8 @@ public sealed class BookingRecord : Entity, IAggreagateRoot
         SlotId = slotId;
         CreatedAt = createdAt;
     }
+    public SubmissionSlotId GetSlotId() => 
+        SlotId;
     
     internal static BookingRecord Create(
         StudentId studentId,

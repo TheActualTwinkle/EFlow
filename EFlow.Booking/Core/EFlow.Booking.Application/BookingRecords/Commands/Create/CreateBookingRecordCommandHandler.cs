@@ -1,5 +1,8 @@
-﻿using EFlow.Booking.Domain.Models;
-using EFlow.Booking.Domain;
+﻿using EFlow.Booking.Application.Common.Errors;
+using EFlow.Booking.Application.Common.Errors.Abstractions;
+using EFlow.Booking.Domain.BookingRecords;
+using EFlow.Booking.Domain.Students;
+using EFlow.Booking.Domain.SubmissionSlots;
 using EFlow.Common.Infrastructure;
 using FluentResults;
 using MediatR;
@@ -7,23 +10,36 @@ using MediatR;
 namespace EFlow.Booking.Application.BookingRecords.Commands;
 
 public class CreateBookingRecordCommandHandler(
-    IUnitOfWork unitOfWork)
+    IUnitOfWork unitOfWork,
+    ISystemClock systemClock)
     : IRequestHandler<CreateBookingRecordCommand, Result<Guid>>
 {
     public async Task<Result<Guid>> Handle(CreateBookingRecordCommand request, CancellationToken cancellationToken)
     {
-        var booking = new BookingRecord
-        {
-            Id = Guid.NewGuid(),
-            StudentId = request.StudentId,
-            SlotId = request.SlotId,
-            CreatedAt = DateTime.UtcNow
-        };
+        var slot = await unitOfWork
+            .GetRepository<ISubmissionSlotRepository>()
+            .GetByIdAsync(request.SlotId, cancellationToken);
+        
+        if (slot is null)
+            return Result.Fail(
+                new NotFoundError()
+                    .WithMessage("Submission Slot not found")
+                    .WithId(request.SlotId));
+        
+        var student = await unitOfWork
+            .GetRepository<IStudentRepository>()
+            .GetByIdAsync(request.StudentId, cancellationToken);
 
-        await unitOfWork
-            .GetRepository<IBookingRecordRepository>()
-            .CreateAsync(booking, cancellationToken);
-
-        return Result.Ok(booking.Id);
+        if (student is null)
+            return Result.Fail(
+                new NotFoundError()
+                    .WithMessage("Student not found")
+                    .WithId(request.StudentId));
+        
+        var bookingRecord = slot.BookToSlot(student.Id, systemClock.UtcNow);
+        
+        await unitOfWork.GetRepository<IBookingRecordRepository>().CreateAsync(bookingRecord, cancellationToken);
+        
+        return Result.Ok(bookingRecord.Id.Value);
     }
 }

@@ -1,6 +1,5 @@
 ﻿using System.Data;
 using EFlow.Booking.Application.Common.Markers;
-using EFlow.Common.Domain;
 using EFlow.Common.Infrastructure;
 using MediatR;
 using Microsoft.Extensions.Logging;

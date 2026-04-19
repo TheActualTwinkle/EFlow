@@ -31,7 +31,7 @@ public class OutboxProcessor(
                 var messageType = Type.GetType(message.Type);
 
                 if (messageType is null)
-                    throw new InvalidOperationException($"Outbox message type {message.Type} is null");
+                    throw new InvalidOperationException($"Outbox message type {message.Type} is null"); // TODO: Тут надо пофиксить потениальную бесконечную обработку 
 
                 var messageProcessor = messageProcessorFactory.Get(messageType);
 
@@ -40,6 +40,8 @@ public class OutboxProcessor(
                     logger.LogError(
                         "No message processor found for type {MessageType}. Will skip and mark as processed.",
                         messageType.FullName);
+                    
+                    processedMessageIds.Add(message.Id);
 
                     continue;
                 }

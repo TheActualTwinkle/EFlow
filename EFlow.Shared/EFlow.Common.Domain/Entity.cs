@@ -12,6 +12,18 @@ public abstract class Entity
     protected void AddDomainEvent(IDomainEvent domainEvent) =>
         _domainEvents.Add(domainEvent);
 
+    public IReadOnlyCollection<IDomainEvent> DequeueDomainEvents()
+    {
+        if (_domainEvents.Count == 0)
+            return [];
+
+        var domainEvents = _domainEvents.ToArray();
+
+        _domainEvents.Clear();
+
+        return domainEvents;
+    }
+
     protected static void ThrowIfBroken(IBusinessRule rule)
     {
         if (rule.IsBroken())

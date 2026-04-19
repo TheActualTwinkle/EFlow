@@ -1,9 +1,8 @@
 ﻿using EFlow.Booking.Application.Common.Errors;
 using EFlow.Booking.Application.Common.Errors.Abstractions;
-using EFlow.Booking.Domain;
+using EFlow.Booking.Domain.SubmissionSlots;
 using EFlow.Common.Infrastructure;
 using FluentResults;
-using Mapster;
 using MediatR;
 
 namespace EFlow.Booking.Application.SubmissionSlots.Commands.Update;
@@ -23,7 +22,7 @@ public class UpdateSubmissionSlotCommandHandler(IUnitOfWork unitOfWork)
                     .WithMessage("Submission slot not found")
                     .WithId(request.Id));
 
-        request.Adapt(slot);
+        // TODO: Update Domain Model
 
         repository.Update(slot);
 

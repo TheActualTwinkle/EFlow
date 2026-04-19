@@ -1,14 +1,13 @@
 ﻿using EFlow.Booking.Application.Common.Errors;
 using EFlow.Booking.Application.Common.Errors.Abstractions;
-using EFlow.Booking.Domain;
+using EFlow.Booking.Domain.Students;
 using EFlow.Common.Infrastructure;
 using FluentResults;
-using Mapster;
 using MediatR;
 
 namespace EFlow.Booking.Application.Students.Commands.Update;
 
-public class UpdateStudentCommandHandler(IUnitOfWork unitOfWork)
+public class UpdateStudentCommandHandler(IUnitOfWork unitOfWork, ISystemClock systemClock)
     : IRequestHandler<UpdateStudentCommand, Result>
 {
     public async Task<Result> Handle(UpdateStudentCommand request, CancellationToken cancellationToken)
@@ -23,7 +22,14 @@ public class UpdateStudentCommandHandler(IUnitOfWork unitOfWork)
                     .WithMessage("Student not found")
                     .WithId(request.Id));
 
-        request.Adapt(student);
+        // var utcNow = systemClock.UtcNow;
+
+        // student.Update(
+        //     request.FirstName,
+        //     request.LastName,
+        //     request.MiddleName,
+        //     request.BirthDate,
+        //     utcNow);
 
         repository.Update(student);
 

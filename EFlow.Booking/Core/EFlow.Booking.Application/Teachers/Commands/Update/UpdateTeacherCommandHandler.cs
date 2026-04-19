@@ -1,9 +1,8 @@
 ﻿using EFlow.Booking.Application.Common.Errors;
 using EFlow.Booking.Application.Common.Errors.Abstractions;
-using EFlow.Booking.Domain;
+using EFlow.Booking.Domain.Teachers;
 using EFlow.Common.Infrastructure;
 using FluentResults;
-using Mapster;
 using MediatR;
 
 namespace EFlow.Booking.Application.Teachers.Commands;
@@ -22,7 +21,12 @@ public class UpdateTeacherCommandHandler(IUnitOfWork unitOfWork) : IRequestHandl
                     .WithMessage("Teacher not found")
                     .WithId(request.Id));
 
-        request.Adapt(teacher);
+        // teacher.Update(
+        //     request.FirstName,
+        //     request.LastName,
+        //     request.MiddleName,
+        //     request.BirthDate,
+        //     systemClock.UtcNow);
 
         repository.Update(teacher);
 

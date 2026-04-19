@@ -27,13 +27,9 @@ public abstract class RepositoryBase<TEntity>(DbContext context)
     protected void UpdateBulkInternal(IEnumerable<TEntity> entities) =>
         context.Set<TEntity>().UpdateRange(entities);
 
-    protected async Task DeleteInternalAsync(Guid id, CancellationToken cancellationToken = new()) =>
-        await context.Set<TEntity>()
-            .Where(e => e.Id == id)
-            .ExecuteDeleteAsync(cancellationToken);
+    protected async Task DeleteInternalAsync(TEntity entity) =>
+        context.Set<TEntity>().Remove(entity);
 
-    protected async Task DeleteBulkInternal(IEnumerable<Guid> ids, CancellationToken cancellationToken = new()) =>
-        await context.Set<TEntity>()
-            .Where(e => ids.Contains(e.Id))
-            .ExecuteDeleteAsync(cancellationToken);
+    protected async Task DeleteBulkInternal(IEnumerable<TEntity> entities) =>
+        context.Set<TEntity>().RemoveRange(entities);
 }

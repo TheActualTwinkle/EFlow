@@ -2,7 +2,8 @@
 using EFlow.Booking.Application.BookingRecords.Commands;
 using EFlow.Booking.Application.BookingRecords.Commands.Update;
 using EFlow.Booking.Application.BookingRecords.Queries;
-using EFlow.Common.Domain.Models;
+using EFlow.Booking.Domain;
+using EFlow.Booking.WebApi.Contracts.Bookings;
 using EFlow.Booking.WebApi.Extensions;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -16,8 +17,14 @@ public class BookingsController(ISender sender) : ControllerBase
 {
     [HttpPost]
     [Authorize(Roles = $"{Identity.Roles.Admin},{Identity.Roles.Student}")]
-    public async Task<IActionResult> CreateBooking([FromBody] CreateBookingRecordCommand command, CancellationToken cancellationToken)
+    public async Task<IActionResult> CreateBooking([FromBody] CreateBookingRequest request, CancellationToken cancellationToken)
     {
+        var command = new CreateBookingRecordCommand
+        {
+            StudentId = request.StudentId,
+            SlotId = request.SlotId
+        };
+
         if (User.IsInRole(Identity.Roles.Student))
         {
             var studentId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
@@ -97,10 +104,17 @@ public class BookingsController(ISender sender) : ControllerBase
     [Authorize(Roles = Identity.Roles.Admin)]
     public async Task<IActionResult> UpdateBooking(
         Guid id,
-        [FromBody] UpdateBookingRecordCommand command,
+        [FromBody] UpdateBookingRequest request,
         CancellationToken cancellationToken)
     {
-        var result = await sender.Send(command with { Id = id }, cancellationToken);
+        var command = new UpdateBookingRecordCommand
+        {
+            Id = id,
+            StudentId = request.StudentId,
+            SlotId = request.SlotId
+        };
+
+        var result = await sender.Send(command, cancellationToken);
 
         return result.IsFailed ?
             result.Errors[0].ToProblemDetails() :

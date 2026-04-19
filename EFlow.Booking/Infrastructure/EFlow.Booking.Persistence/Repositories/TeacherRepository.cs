@@ -1,5 +1,4 @@
-﻿using EFlow.Common.Domain.Models;
-using EFlow.Common.Domain;
+﻿using EFlow.Booking.Domain.Teachers;
 using EFlow.Booking.Persistence.DatabaseContext;
 
 namespace EFlow.Booking.Persistence.Repositories;
@@ -19,6 +18,6 @@ public class TeacherRepository(ApplicationDbContext context) :
     public void Update(Teacher teacher) =>
         UpdateInternal(teacher);
 
-    public async Task DeleteAsync(Guid id, CancellationToken cancellationToken = new()) =>
-        await DeleteInternalAsync(id, cancellationToken);
+    public async Task DeleteAsync(Teacher teacher) =>
+        await DeleteInternalAsync(teacher);
 }

@@ -1,6 +1,6 @@
 using EFlow.Common.Domain;
 
-namespace EFlow.Booking.Subjects.Rules;
+namespace EFlow.Booking.Domain.Subjects.Rules;
 
 /// <inheritdoc />
 public sealed class SubjectNameMustBeProperLengthRule : IBusinessRule

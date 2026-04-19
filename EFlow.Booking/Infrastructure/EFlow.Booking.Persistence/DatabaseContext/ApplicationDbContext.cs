@@ -1,5 +1,12 @@
-﻿using EFlow.Common.Domain.Entities;
-using EFlow.Common.Domain.Models;
+﻿using EFlow.Booking.Domain;
+using EFlow.Booking.Domain.Admins;
+using EFlow.Booking.Domain.BookingRecords;
+using EFlow.Booking.Domain.Groups;
+using EFlow.Booking.Domain.SubmissionSlots;
+using EFlow.Booking.Domain.Teachers;
+using EFlow.Booking.Domain.Subjects;
+using EFlow.Common.Domain.Entities;
+using EFlow.Common.Domain.Students;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;

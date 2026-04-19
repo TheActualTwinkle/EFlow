@@ -1,6 +1,6 @@
-﻿using EFlow.Common.Domain.Models;
-using EFlow.Common.Domain;
+﻿using EFlow.Booking.Domain.Students;
 using EFlow.Booking.Persistence.DatabaseContext;
+using EFlow.Common.Domain.Students;
 using Microsoft.EntityFrameworkCore;
 
 namespace EFlow.Booking.Persistence.Repositories;
@@ -12,24 +12,19 @@ public class StudentRepository(ApplicationDbContext context) :
         await CreateInternalAsync(student, cancellationToken);
 
     public async Task<IEnumerable<Student>> GetAllAsync(CancellationToken cancellationToken = new()) =>
-        await context.Students
-            .Include(s => s.Group)
-            .ToListAsync(cancellationToken);
+        await context.Students.ToListAsync(cancellationToken);
 
     public async Task<Student?> GetByIdAsync(Guid id, CancellationToken cancellationToken = new()) =>
-        await context.Students
-            .Include(s => s.Group)
-            .FirstOrDefaultAsync(s => s.Id == id, cancellationToken);
+        await context.Students.FirstOrDefaultAsync(s => s.Id.Value == id, cancellationToken);
 
     public async Task<IEnumerable<Student>> GetByGroupIdAsync(Guid groupId, CancellationToken cancellationToken = new()) =>
         await context.Students
-            .Where(s => s.GroupId == groupId)
-            .Include(s => s.Group)
+            .Where(s => s.GroupId.Value == groupId)
             .ToListAsync(cancellationToken);
 
     public void Update(Student student) =>
         UpdateInternal(student);
 
-    public Task DeleteAsync(Guid id, CancellationToken cancellationToken = new()) =>
-        DeleteInternalAsync(id, cancellationToken);
+    public Task DeleteAsync(Student student) =>
+        DeleteInternalAsync(student);
 }

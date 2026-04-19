@@ -18,5 +18,5 @@ public sealed class AllowedGroupIdsMustBeEmptyWhenAllowAllGroupsIsTrueRule : IBu
         "Allowed group IDs must be empty when allow all groups is true.";
 
     public bool IsBroken() =>
-        _allowAllGroups && !_allowedGroupIds.Any();
+        _allowAllGroups && _allowedGroupIds.Any();
 }

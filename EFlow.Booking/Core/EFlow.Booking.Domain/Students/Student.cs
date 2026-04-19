@@ -8,7 +8,7 @@ namespace EFlow.Common.Domain.Students;
 
 public sealed class Student : Entity, IAggreagateRoot
 {
-    internal StudentId Id { get; }
+    public StudentId Id { get; }
 
     internal GroupId GroupId { get; private set; }
 
@@ -22,6 +22,8 @@ public sealed class Student : Entity, IAggreagateRoot
 
     internal DateTime CreatedAt { get; private set; }
 
+    private Student() { }
+    
     public Student(
         GroupId groupId,
         string firstName,
@@ -106,22 +108,5 @@ public sealed class Student : Entity, IAggreagateRoot
     //             UpdatedAt = utcNow
     //         });
     // }
-    
-    public void ChangeGroup(GroupId newGroupId, DateTime utcNow)
-    {
-        ThrowIfBroken(new StudentCannotBeMovedToSameGroupRule(GroupId, newGroupId));
-        
-        var oldGroupId = GroupId;
-        
-        GroupId = newGroupId;
-        
-        AddDomainEvent(
-            new StudentChangedGroupDomainEvent
-            {
-                StudentId = Id,
-                OldGroupId = oldGroupId,
-                NewGroupId = newGroupId,
-                ChangedAt = utcNow
-            });
     }
 }

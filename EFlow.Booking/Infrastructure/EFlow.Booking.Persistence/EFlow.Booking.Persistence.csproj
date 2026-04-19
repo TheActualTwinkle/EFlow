@@ -11,6 +11,8 @@
 
     <ItemGroup>
         <ProjectReference Include="..\..\Core\EFlow.Booking.Domain\EFlow.Booking.Domain.csproj"/>
+        <ProjectReference Include="..\..\Core\EFlow.Booking.IntegrationEvents\EFlow.Booking.IntegrationEvents.csproj"/>
+        <ProjectReference Include="..\..\..\EFlow.Shared\EFlow.Common.Infrastructure\EFlow.Common.Infrastructure.csproj"/>
     </ItemGroup>
 
     <ItemGroup>

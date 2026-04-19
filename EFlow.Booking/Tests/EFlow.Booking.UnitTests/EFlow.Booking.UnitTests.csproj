@@ -20,8 +20,10 @@
     </ItemGroup>
 
     <ItemGroup>
+        <ProjectReference Include="..\..\Core\EFlow.Booking.Application\EFlow.Booking.Application.csproj"/>
         <ProjectReference Include="..\..\Core\EFlow.Booking.Domain\EFlow.Booking.Domain.csproj"/>
         <ProjectReference Include="..\..\Presentation\EFlow.Booking.WebApi\EFlow.Booking.WebApi.csproj"/>
+        <ProjectReference Include="..\..\..\EFlow.Shared\EFlow.Common.Infrastructure\EFlow.Common.Infrastructure.csproj"/>
     </ItemGroup>
 
 </Project>

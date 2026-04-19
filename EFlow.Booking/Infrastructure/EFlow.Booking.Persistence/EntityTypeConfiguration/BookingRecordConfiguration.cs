@@ -1,4 +1,6 @@
-﻿using EFlow.Booking.Domain.Models;
+﻿using EFlow.Booking.Domain.BookingRecords;
+using EFlow.Booking.Domain.Students;
+using EFlow.Booking.Domain.SubmissionSlots;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -14,13 +16,22 @@ public class BookingRecordConfiguration : IEntityTypeConfiguration<BookingRecord
             .HasName("pk_booking_records");
 
         builder.Property(b => b.Id)
+            .HasConversion(
+                id => id.Value, 
+                value => new BookingRecordId(value))
             .HasColumnName("id");
 
         builder.Property(b => b.StudentId)
+            .HasConversion(
+                id => id.Value,
+                value => new StudentId(value))
             .HasColumnName("student_id")
             .IsRequired();
 
         builder.Property(b => b.SlotId)
+            .HasConversion(
+                id => id.Value,
+                value => new SubmissionSlotId(value))
             .HasColumnName("slot_id")
             .IsRequired();
 
@@ -31,17 +42,5 @@ public class BookingRecordConfiguration : IEntityTypeConfiguration<BookingRecord
         builder.HasIndex(b => new { b.StudentId, b.SlotId })
             .IsUnique()
             .HasDatabaseName("ix_booking_records_student_id_slot_id");
-
-        builder.HasOne(b => b.Student)
-            .WithMany()
-            .HasForeignKey(b => b.StudentId)
-            .OnDelete(DeleteBehavior.Cascade)
-            .HasConstraintName("fk_booking_records_students");
-
-        builder.HasOne(b => b.SubmissionSlot)
-            .WithMany()
-            .HasForeignKey(b => b.SlotId)
-            .OnDelete(DeleteBehavior.Cascade)
-            .HasConstraintName("fk_booking_records_submission_slots");
     }
 }

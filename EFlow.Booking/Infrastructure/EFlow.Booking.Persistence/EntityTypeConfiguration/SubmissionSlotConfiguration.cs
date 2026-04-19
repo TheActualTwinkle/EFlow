@@ -1,4 +1,7 @@
-﻿using EFlow.Common.Domain.Models;
+﻿using EFlow.Booking.Domain.Groups;
+using EFlow.Booking.Domain.SubmissionSlots;
+using EFlow.Booking.Domain.Subjects;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -21,9 +24,11 @@ public class SubmissionSlotConfiguration : IEntityTypeConfiguration<SubmissionSl
             .HasName("pk_submission_slots");
 
         builder.Property(s => s.Id)
+            .HasConversion(id => id.Value, value => new SubmissionSlotId(value))
             .HasColumnName("id");
 
         builder.Property(s => s.SubjectId)
+            .HasConversion(id => id.Value, value => new SubjectId(value))
             .HasColumnName("subject_id")
             .IsRequired();
 
@@ -48,16 +53,19 @@ public class SubmissionSlotConfiguration : IEntityTypeConfiguration<SubmissionSl
             .IsRequired();
 
         builder.Property(s => s.AllowedGroupIds)
+            .HasConversion(
+                ids => ids.Select(x => x.Value).ToArray(),
+                values => values
+                    .Select(value => new GroupId(value))
+                    .ToArray())
+            .Metadata.SetValueComparer(
+                new ValueComparer<ICollection<GroupId>>(
+                    (left, right) => left!.SequenceEqual(right!),
+                    ids => ids.Aggregate(0, (hash, id) => HashCode.Combine(hash, id.Value.GetHashCode())),
+                    ids => ids.ToArray()));
+        
+        builder.Property(s => s.AllowedGroupIds)
             .HasColumnName("allowed_group_ids")
             .HasColumnType("uuid[]");
-
-        builder.HasOne(s => s.Subject)
-            .WithMany()
-            .HasForeignKey(s => s.SubjectId)
-            .HasConstraintName("fk_submission_slots_subjects");
-
-        builder.HasMany(s => s.AllowedGroups)
-            .WithMany(g => g.SubmissionSlots)
-            .UsingEntity("group_submission_slot");
     }
 }

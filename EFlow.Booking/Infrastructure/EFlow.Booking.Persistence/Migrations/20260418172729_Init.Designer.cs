@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace EFlow.Booking.Persistence.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260117223125_Init")]
+    [Migration("20260418172729_Init")]
     partial class Init
     {
         /// <inheritdoc />
@@ -25,43 +25,7 @@ namespace EFlow.Booking.Persistence.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("EFlow.Common.Domain.Entities.OutboxMessage", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created_at");
-
-                    b.Property<string>("ErrorMessage")
-                        .HasColumnType("text")
-                        .HasColumnName("error_message");
-
-                    b.Property<byte[]>("Payload")
-                        .IsRequired()
-                        .HasColumnType("bytea")
-                        .HasColumnName("payload");
-
-                    b.Property<DateTime?>("ProcessedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("processed_at");
-
-                    b.Property<string>("Type")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("character varying(255)")
-                        .HasColumnName("type");
-
-                    b.HasKey("Id")
-                        .HasName("pk_outbox_messages");
-
-                    b.ToTable("outbox_messages", (string)null);
-                });
-
-            modelBuilder.Entity("EFlow.Common.Domain.Models.Admin", b =>
+            modelBuilder.Entity("EFlow.Booking.Domain.Admins.Admin", b =>
                 {
                     b.Property<Guid>("Id")
                         .HasColumnType("uuid")
@@ -77,10 +41,9 @@ namespace EFlow.Booking.Persistence.Migrations
                     b.ToTable("admins", (string)null);
                 });
 
-            modelBuilder.Entity("EFlow.Common.Domain.Models.BookingRecord", b =>
+            modelBuilder.Entity("EFlow.Booking.Domain.BookingRecords.BookingRecord", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
@@ -99,8 +62,6 @@ namespace EFlow.Booking.Persistence.Migrations
                     b.HasKey("Id")
                         .HasName("pk_booking_records");
 
-                    b.HasIndex("SlotId");
-
                     b.HasIndex("StudentId", "SlotId")
                         .IsUnique()
                         .HasDatabaseName("ix_booking_records_student_id_slot_id");
@@ -108,17 +69,16 @@ namespace EFlow.Booking.Persistence.Migrations
                     b.ToTable("booking_records", (string)null);
                 });
 
-            modelBuilder.Entity("EFlow.Common.Domain.Models.Group", b =>
+            modelBuilder.Entity("EFlow.Booking.Domain.Groups.Group", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasMaxLength(127)
-                        .HasColumnType("character varying(127)")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
                         .HasColumnName("name");
 
                     b.HasKey("Id")
@@ -127,7 +87,7 @@ namespace EFlow.Booking.Persistence.Migrations
                     b.ToTable("groups", (string)null);
                 });
 
-            modelBuilder.Entity("EFlow.Common.Domain.Models.Identity", b =>
+            modelBuilder.Entity("EFlow.Booking.Domain.Identity", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -192,7 +152,152 @@ namespace EFlow.Booking.Persistence.Migrations
                     b.ToTable("AspNetUsers", "identity");
                 });
 
-            modelBuilder.Entity("EFlow.Common.Domain.Models.Student", b =>
+            modelBuilder.Entity("EFlow.Booking.Domain.SubmissionSlots.SubmissionSlot", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<bool>("AllowAllGroups")
+                        .HasColumnType("boolean")
+                        .HasColumnName("allow_all_groups");
+
+                    b.Property<Guid[]>("AllowedGroupIds")
+                        .IsRequired()
+                        .HasColumnType("uuid[]")
+                        .HasColumnName("allowed_group_ids");
+
+                    b.Property<DateTime>("EndTime")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("end_time");
+
+                    b.Property<string>("Location")
+                        .HasMaxLength(127)
+                        .HasColumnType("character varying(127)")
+                        .HasColumnName("location");
+
+                    b.Property<int>("MaxStudents")
+                        .HasColumnType("integer")
+                        .HasColumnName("max_students");
+
+                    b.Property<DateTime>("StartTime")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("start_time");
+
+                    b.Property<Guid>("SubjectId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("subject_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_submission_slots");
+
+                    b.ToTable("submission_slots", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_SubmissionSlots_ValidTimeRange", "start_time < end_time");
+                        });
+                });
+
+            modelBuilder.Entity("EFlow.Booking.Domain.Teachers.Teacher", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateOnly>("BirthDate")
+                        .HasColumnType("date")
+                        .HasColumnName("birth_date");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("FirstName")
+                        .IsRequired()
+                        .HasMaxLength(31)
+                        .HasColumnType("character varying(31)")
+                        .HasColumnName("first_name");
+
+                    b.Property<string>("LastName")
+                        .IsRequired()
+                        .HasMaxLength(31)
+                        .HasColumnType("character varying(31)")
+                        .HasColumnName("last_name");
+
+                    b.Property<string>("MiddleName")
+                        .HasMaxLength(31)
+                        .HasColumnType("character varying(31)")
+                        .HasColumnName("middle_name");
+
+                    b.HasKey("Id")
+                        .HasName("pk_teachers");
+
+                    b.ToTable("teachers", (string)null);
+                });
+
+            modelBuilder.Entity("EFlow.Booking.Subjects.Subject", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid[]>("GroupIds")
+                        .IsRequired()
+                        .HasColumnType("uuid[]")
+                        .HasColumnName("group_ids");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(127)
+                        .HasColumnType("character varying(127)")
+                        .HasColumnName("name");
+
+                    b.Property<Guid>("TeacherId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("teacher_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_subjects");
+
+                    b.ToTable("subjects", (string)null);
+                });
+
+            modelBuilder.Entity("EFlow.Common.Domain.Entities.OutboxMessage", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("ErrorMessage")
+                        .HasColumnType("text")
+                        .HasColumnName("error_message");
+
+                    b.Property<byte[]>("Payload")
+                        .IsRequired()
+                        .HasColumnType("bytea")
+                        .HasColumnName("payload");
+
+                    b.Property<DateTime?>("ProcessedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("processed_at");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
+                        .HasColumnName("type");
+
+                    b.HasKey("Id")
+                        .HasName("pk_outbox_messages");
+
+                    b.ToTable("outbox_messages", (string)null);
+                });
+
+            modelBuilder.Entity("EFlow.Common.Domain.Students.Student", b =>
                 {
                     b.Property<Guid>("Id")
                         .HasColumnType("uuid")
@@ -230,123 +335,7 @@ namespace EFlow.Booking.Persistence.Migrations
                     b.HasKey("Id")
                         .HasName("pk_students");
 
-                    b.HasIndex("GroupId");
-
                     b.ToTable("students", (string)null);
-                });
-
-            modelBuilder.Entity("EFlow.Common.Domain.Models.Subject", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
-
-                    b.PrimitiveCollection<Guid[]>("GroupIds")
-                        .IsRequired()
-                        .HasColumnType("uuid[]")
-                        .HasColumnName("group_ids");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(127)
-                        .HasColumnType("character varying(127)")
-                        .HasColumnName("name");
-
-                    b.Property<Guid>("TeacherId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("teacher_id");
-
-                    b.HasKey("Id")
-                        .HasName("pk_subjects");
-
-                    b.HasIndex("TeacherId");
-
-                    b.ToTable("subjects", (string)null);
-                });
-
-            modelBuilder.Entity("EFlow.Common.Domain.Models.SubmissionSlot", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
-
-                    b.Property<bool>("AllowAllGroups")
-                        .HasColumnType("boolean")
-                        .HasColumnName("allow_all_groups");
-
-                    b.PrimitiveCollection<Guid[]>("AllowedGroupIds")
-                        .HasColumnType("uuid[]")
-                        .HasColumnName("allowed_group_ids");
-
-                    b.Property<DateTime>("EndTime")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("end_time");
-
-                    b.Property<string>("Location")
-                        .HasMaxLength(127)
-                        .HasColumnType("character varying(127)")
-                        .HasColumnName("location");
-
-                    b.Property<int>("MaxStudents")
-                        .HasColumnType("integer")
-                        .HasColumnName("max_students");
-
-                    b.Property<DateTime>("StartTime")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("start_time");
-
-                    b.Property<Guid>("SubjectId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("subject_id");
-
-                    b.HasKey("Id")
-                        .HasName("pk_submission_slots");
-
-                    b.HasIndex("SubjectId");
-
-                    b.ToTable("submission_slots", null, t =>
-                        {
-                            t.HasCheckConstraint("CK_SubmissionSlots_ValidTimeRange", "start_time < end_time");
-                        });
-                });
-
-            modelBuilder.Entity("EFlow.Common.Domain.Models.Teacher", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
-
-                    b.Property<DateOnly>("BirthDate")
-                        .HasColumnType("date")
-                        .HasColumnName("birth_date");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created_at");
-
-                    b.Property<string>("FirstName")
-                        .IsRequired()
-                        .HasMaxLength(31)
-                        .HasColumnType("character varying(31)")
-                        .HasColumnName("first_name");
-
-                    b.Property<string>("LastName")
-                        .IsRequired()
-                        .HasMaxLength(31)
-                        .HasColumnType("character varying(31)")
-                        .HasColumnName("last_name");
-
-                    b.Property<string>("MiddleName")
-                        .HasMaxLength(31)
-                        .HasColumnType("character varying(31)")
-                        .HasColumnName("middle_name");
-
-                    b.HasKey("Id")
-                        .HasName("pk_teachers");
-
-                    b.ToTable("teachers", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole<System.Guid>", b =>
@@ -479,126 +468,6 @@ namespace EFlow.Booking.Persistence.Migrations
                     b.ToTable("AspNetUserTokens", "identity");
                 });
 
-            modelBuilder.Entity("group_subject", b =>
-                {
-                    b.Property<Guid>("GroupsId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("SubjectsId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("GroupsId", "SubjectsId");
-
-                    b.HasIndex("SubjectsId");
-
-                    b.ToTable("group_subject");
-                });
-
-            modelBuilder.Entity("group_submission_slot", b =>
-                {
-                    b.Property<Guid>("AllowedGroupsId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("SubmissionSlotsId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("AllowedGroupsId", "SubmissionSlotsId");
-
-                    b.HasIndex("SubmissionSlotsId");
-
-                    b.ToTable("group_submission_slot");
-                });
-
-            modelBuilder.Entity("EFlow.Common.Domain.Models.Admin", b =>
-                {
-                    b.HasOne("EFlow.Common.Domain.Models.Identity", "Identity")
-                        .WithOne()
-                        .HasForeignKey("EFlow.Common.Domain.Models.Admin", "Id")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_admins_identity");
-
-                    b.Navigation("Identity");
-                });
-
-            modelBuilder.Entity("EFlow.Common.Domain.Models.BookingRecord", b =>
-                {
-                    b.HasOne("EFlow.Common.Domain.Models.SubmissionSlot", "SubmissionSlot")
-                        .WithMany()
-                        .HasForeignKey("SlotId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_booking_records_submission_slots");
-
-                    b.HasOne("EFlow.Common.Domain.Models.Student", "Student")
-                        .WithMany()
-                        .HasForeignKey("StudentId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_booking_records_students");
-
-                    b.Navigation("Student");
-
-                    b.Navigation("SubmissionSlot");
-                });
-
-            modelBuilder.Entity("EFlow.Common.Domain.Models.Student", b =>
-                {
-                    b.HasOne("EFlow.Common.Domain.Models.Group", "Group")
-                        .WithMany("Students")
-                        .HasForeignKey("GroupId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_students_groups");
-
-                    b.HasOne("EFlow.Common.Domain.Models.Identity", "Identity")
-                        .WithOne()
-                        .HasForeignKey("EFlow.Common.Domain.Models.Student", "Id")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_students_identity");
-
-                    b.Navigation("Group");
-
-                    b.Navigation("Identity");
-                });
-
-            modelBuilder.Entity("EFlow.Common.Domain.Models.Subject", b =>
-                {
-                    b.HasOne("EFlow.Common.Domain.Models.Teacher", "Teacher")
-                        .WithMany()
-                        .HasForeignKey("TeacherId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_subjects_teachers");
-
-                    b.Navigation("Teacher");
-                });
-
-            modelBuilder.Entity("EFlow.Common.Domain.Models.SubmissionSlot", b =>
-                {
-                    b.HasOne("EFlow.Common.Domain.Models.Subject", "Subject")
-                        .WithMany()
-                        .HasForeignKey("SubjectId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_submission_slots_subjects");
-
-                    b.Navigation("Subject");
-                });
-
-            modelBuilder.Entity("EFlow.Common.Domain.Models.Teacher", b =>
-                {
-                    b.HasOne("EFlow.Common.Domain.Models.Identity", "Identity")
-                        .WithOne()
-                        .HasForeignKey("EFlow.Common.Domain.Models.Teacher", "Id")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_teachers_identity");
-
-                    b.Navigation("Identity");
-                });
-
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<System.Guid>", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole<System.Guid>", null)
@@ -610,7 +479,7 @@ namespace EFlow.Booking.Persistence.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<System.Guid>", b =>
                 {
-                    b.HasOne("EFlow.Common.Domain.Models.Identity", null)
+                    b.HasOne("EFlow.Booking.Domain.Identity", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -619,7 +488,7 @@ namespace EFlow.Booking.Persistence.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<System.Guid>", b =>
                 {
-                    b.HasOne("EFlow.Common.Domain.Models.Identity", null)
+                    b.HasOne("EFlow.Booking.Domain.Identity", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -634,7 +503,7 @@ namespace EFlow.Booking.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("EFlow.Common.Domain.Models.Identity", null)
+                    b.HasOne("EFlow.Booking.Domain.Identity", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -643,46 +512,11 @@ namespace EFlow.Booking.Persistence.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<System.Guid>", b =>
                 {
-                    b.HasOne("EFlow.Common.Domain.Models.Identity", null)
+                    b.HasOne("EFlow.Booking.Domain.Identity", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-                });
-
-            modelBuilder.Entity("group_subject", b =>
-                {
-                    b.HasOne("EFlow.Common.Domain.Models.Group", null)
-                        .WithMany()
-                        .HasForeignKey("GroupsId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("EFlow.Common.Domain.Models.Subject", null)
-                        .WithMany()
-                        .HasForeignKey("SubjectsId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("group_submission_slot", b =>
-                {
-                    b.HasOne("EFlow.Common.Domain.Models.Group", null)
-                        .WithMany()
-                        .HasForeignKey("AllowedGroupsId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("EFlow.Common.Domain.Models.SubmissionSlot", null)
-                        .WithMany()
-                        .HasForeignKey("SubmissionSlotsId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("EFlow.Common.Domain.Models.Group", b =>
-                {
-                    b.Navigation("Students");
                 });
 #pragma warning restore 612, 618
         }

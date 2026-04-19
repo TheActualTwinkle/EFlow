@@ -1,7 +1,8 @@
 ﻿using EFlow.Booking.Application.Subjects.Commands;
 using EFlow.Booking.Application.Subjects.Commands.Update;
 using EFlow.Booking.Application.Subjects.Queries;
-using EFlow.Common.Domain.Models;
+using EFlow.Booking.Domain;
+using EFlow.Booking.WebApi.Contracts.Subjects;
 using EFlow.Booking.WebApi.Extensions;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -15,8 +16,15 @@ public class SubjectsController(ISender sender) : ControllerBase
 {
     [HttpPost]
     [Authorize(Roles = Identity.Roles.Admin)]
-    public async Task<IActionResult> CreateSubject([FromBody] CreateSubjectCommand command, CancellationToken cancellationToken)
+    public async Task<IActionResult> CreateSubject([FromBody] CreateSubjectRequest request, CancellationToken cancellationToken)
     {
+        var command = new CreateSubjectCommand
+        {
+            Name = request.Name,
+            TeacherId = request.TeacherId,
+            GroupIds = request.GroupIds
+        };
+
         var result = await sender.Send(command, cancellationToken);
 
         return result.IsFailed ?
@@ -61,10 +69,18 @@ public class SubjectsController(ISender sender) : ControllerBase
     [Authorize(Roles = Identity.Roles.Admin)]
     public async Task<IActionResult> UpdateSubject(
         Guid id,
-        [FromBody] UpdateSubjectCommand command,
+        [FromBody] UpdateSubjectRequest request,
         CancellationToken cancellationToken)
     {
-        var result = await sender.Send(command with { Id = id }, cancellationToken);
+        var command = new UpdateSubjectCommand
+        {
+            Id = id,
+            Name = request.Name,
+            TeacherId = request.TeacherId,
+            GroupIds = request.GroupIds
+        };
+
+        var result = await sender.Send(command, cancellationToken);
 
         return result.IsFailed ?
             result.Errors[0].ToProblemDetails() :

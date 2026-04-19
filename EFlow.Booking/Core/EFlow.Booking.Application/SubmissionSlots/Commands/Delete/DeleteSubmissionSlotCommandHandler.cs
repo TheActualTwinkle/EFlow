@@ -1,4 +1,4 @@
-﻿using EFlow.Booking.Domain;
+﻿using EFlow.Booking.Domain.SubmissionSlots;
 using EFlow.Common.Infrastructure;
 using FluentResults;
 using MediatR;
@@ -10,9 +10,16 @@ public class DeleteSubmissionSlotCommandHandler(IUnitOfWork unitOfWork)
 {
     public async Task<Result> Handle(DeleteSubmissionSlotCommand request, CancellationToken cancellationToken)
     {
-        await unitOfWork
-            .GetRepository<ISubmissionSlotRepository>()
-            .DeleteAsync(request.Id, cancellationToken);
+        var repository = unitOfWork.GetRepository<ISubmissionSlotRepository>();
+        
+        var slot = await repository.GetByIdAsync(request.Id, cancellationToken);
+
+        if (slot is null)
+            return Result.Ok();
+
+        slot.Delete();
+
+        await repository.DeleteAsync(slot);
 
         return Result.Ok();
     }

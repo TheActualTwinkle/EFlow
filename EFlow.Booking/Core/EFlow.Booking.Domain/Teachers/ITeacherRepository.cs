@@ -12,5 +12,5 @@ public interface ITeacherRepository : IRepository
 
     public void Update(Teacher teacher);
 
-    public Task DeleteAsync(Guid id, CancellationToken cancellationToken = new());
+    public Task DeleteAsync(Teacher teacher);
 }

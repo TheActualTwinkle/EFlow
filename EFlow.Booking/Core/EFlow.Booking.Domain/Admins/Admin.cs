@@ -6,10 +6,12 @@ namespace EFlow.Booking.Domain.Admins;
 
 public sealed class Admin : Entity, IAggreagateRoot
 {
-    internal AdminId Id { get; }
+    public AdminId Id { get; }
 
     internal DateTime CreatedAt { get; private set; }
 
+    private Admin() { }
+    
     private Admin(DateTime createdAt, DateTime utcNow)
     {
         ThrowIfBroken(new CreationTimeMustBeInPastRule(utcNow, createdAt));

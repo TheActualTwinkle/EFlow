@@ -7,6 +7,8 @@
     <ItemGroup>
         <PackageReference Include="AspNetCore.HealthChecks.Hangfire"/>
         <PackageReference Include="AspNetCore.HealthChecks.UI.Client"/>
+        <PackageReference Include="Microsoft.CodeAnalysis.Common"/>
+        <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces"/>
         <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer"/>
         <PackageReference Include="Microsoft.AspNetCore.OpenApi"/>
         <PackageReference Include="Microsoft.EntityFrameworkCore.Tools">

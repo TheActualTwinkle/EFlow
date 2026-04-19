@@ -1,7 +1,9 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using EFlow.Common.Domain.Models;
+using EFlow.Booking.Domain;
+using EFlow.Booking.WebApi.Contracts.Auth;
+using EFlow.Common.Infrastructure;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -14,13 +16,17 @@ namespace EFlow.Booking.WebApi.Controllers;
 public class AuthController(
     UserManager<Identity> userManager,
     SignInManager<Identity> signInManager,
-    IConfiguration configuration)
+    IConfiguration configuration,
+    ISystemClock systemClock)
     : ControllerBase
 {
-    // TODO: убрать этот endpoint когда появится другая возможность регистрации админов
+    // TODO: убрать этот endpoint когда появится другая возможность регистрации админов из файлика
     [HttpPost("register")]
     public async Task<IActionResult> Register(RegisterRequest request)
     {
+        if (request.Role is not Identity.Role.Admin)
+            return BadRequest("Only admin registration is allowed");
+
         var user = new Identity
         {
             Id = Guid.NewGuid(),
@@ -110,14 +116,10 @@ public class AuthController(
             configuration["Jwt:Issuer"],
             configuration["Jwt:Audience"],
             claims,
-            expires: DateTime.UtcNow.AddMinutes(configuration.GetValue<int>("Jwt:ExpireMinutes")),
+            expires: systemClock.UtcNow.AddMinutes(configuration.GetValue<int>("Jwt:ExpireMinutes")),
             signingCredentials: credentials
         );
 
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
-
-    public record RegisterRequest(string Username, string Password, Identity.Role Role);
 }
-
-public record LoginRequest(string Username, string Password);

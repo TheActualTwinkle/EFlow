@@ -1,4 +1,4 @@
-﻿using EFlow.Common.Domain.Models;
+﻿using EFlow.Booking.Domain.Teachers;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -14,6 +14,7 @@ public class TeacherConfiguration : IEntityTypeConfiguration<Teacher>
             .HasName("pk_teachers");
 
         builder.Property(t => t.Id)
+            .HasConversion(id => id.Value, value => new TeacherId(value))
             .HasColumnName("id");
 
         builder.Property(t => t.FirstName)
@@ -37,11 +38,5 @@ public class TeacherConfiguration : IEntityTypeConfiguration<Teacher>
         builder.Property(t => t.CreatedAt)
             .HasColumnName("created_at")
             .IsRequired();
-
-        builder.HasOne(t => t.Identity)
-            .WithOne()
-            .HasForeignKey<Teacher>(t => t.Id)
-            .OnDelete(DeleteBehavior.Cascade)
-            .HasConstraintName("fk_teachers_identity");
     }
 }

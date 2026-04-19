@@ -1,20 +1,22 @@
 ﻿using EFlow.Booking.Domain.Groups;
+using EFlow.Booking.Domain.Subjects.Events;
+using EFlow.Booking.Domain.Subjects.Rules;
 using EFlow.Booking.Domain.Teachers;
-using EFlow.Booking.Subjects.Events;
-using EFlow.Booking.Subjects.Rules;
 using EFlow.Common.Domain;
 
-namespace EFlow.Booking.Subjects;
+namespace EFlow.Booking.Domain.Subjects;
 
 public sealed class Subject : Entity, IAggreagateRoot
 {
-    internal SubjectId Id { get; }
+    public SubjectId Id { get; }
 
     internal string Name { get; private set; }
 
     internal TeacherId TeacherId { get; private set; }
     
     internal ICollection<GroupId> GroupIds { get; private set; }
+    
+    private Subject() { }
     
     private Subject(
         string name,

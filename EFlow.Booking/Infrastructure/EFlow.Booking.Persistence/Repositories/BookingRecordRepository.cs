@@ -1,5 +1,4 @@
-﻿using EFlow.Common.Domain.Models;
-using EFlow.Common.Domain;
+﻿using EFlow.Booking.Domain.BookingRecords;
 using EFlow.Booking.Persistence.DatabaseContext;
 using Microsoft.EntityFrameworkCore;
 
@@ -19,14 +18,12 @@ public class BookingRecordRepository(ApplicationDbContext context) :
 
     public async Task<IEnumerable<BookingRecord>> GetByStudentIdAsync(Guid studentId, CancellationToken cancellationToken = new()) =>
         await context.BookingRecords
-            .Where(b => b.StudentId == studentId)
-            .Include(b => b.SubmissionSlot)
+            .Where(b => b.StudentId.Value == studentId)
             .ToListAsync(cancellationToken);
 
     public async Task<IEnumerable<BookingRecord>> GetBySlotIdAsync(Guid slotId, CancellationToken cancellationToken = new()) =>
         await context.BookingRecords
-            .Where(b => b.SlotId == slotId)
-            .Include(b => b.Student)
+            .Where(b => b.SlotId.Value == slotId)
             .OrderBy(b => b.CreatedAt)
             .ThenBy(b => b.Id)
             .ToListAsync(cancellationToken);
@@ -34,6 +31,6 @@ public class BookingRecordRepository(ApplicationDbContext context) :
     public void Update(BookingRecord booking) =>
         UpdateInternal(booking);
 
-    public Task DeleteAsync(Guid id, CancellationToken cancellationToken = new()) =>
-        DeleteInternalAsync(id, cancellationToken);
+    public Task DeleteAsync(BookingRecord bookingRecord) =>
+        DeleteInternalAsync(bookingRecord);
 }

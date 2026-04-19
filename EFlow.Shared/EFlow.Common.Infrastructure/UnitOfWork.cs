@@ -1,6 +1,6 @@
-﻿using System.Collections.Concurrent;
-using System.Data;
+﻿using System.Data;
 using EFlow.Common.Domain;
+using EFlow.Common.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.DependencyInjection;
@@ -12,8 +12,6 @@ public sealed class UnitOfWork(
     IServiceProvider serviceProvider)
     : IUnitOfWork
 {
-    private readonly ConcurrentDictionary<Type, IRepository> _repositories = new();
-
     private IDbContextTransaction? _currentTransaction;
 
     private bool _isTransactionStarted;
@@ -26,7 +24,7 @@ public sealed class UnitOfWork(
 
         var type = typeof(T);
 
-        return (T)_repositories.GetOrAdd(type, _ => (T)serviceProvider.GetRequiredService(type));
+        return (T)serviceProvider.GetRequiredService(type);
     }
 
     public async Task BeginTransactionAsync(
@@ -52,7 +50,16 @@ public sealed class UnitOfWork(
 
         try
         {
+            var outboxMessages = CollectOutboxMessages();
+
             await context.SaveChangesAsync(cancellationToken);
+
+            if (outboxMessages.Count != 0)
+            {
+                await context.Set<OutboxMessage>().AddRangeAsync(outboxMessages, cancellationToken);
+                await context.SaveChangesAsync(cancellationToken);
+            }
+
             await _currentTransaction.CommitAsync(cancellationToken);
         }
         catch
@@ -84,11 +91,17 @@ public sealed class UnitOfWork(
         }
     }
 
-    public async Task SaveChangesAsync(CancellationToken cancellationToken = default)
+    private IReadOnlyCollection<OutboxMessage> CollectOutboxMessages()
     {
-        ObjectDisposedException.ThrowIf(_disposed, nameof(UnitOfWork));
+        var domainEvents = context.ChangeTracker
+            .Entries<Entity>()
+            .SelectMany(entry => entry.Entity.DequeueDomainEvents())
+            .ToList();
 
-        await context.SaveChangesAsync(cancellationToken);
+        if (domainEvents.Count == 0)
+            return [];
+
+        return [];
     }
 
     public async ValueTask DisposeAsync()
@@ -100,8 +113,6 @@ public sealed class UnitOfWork(
             await RollbackTransactionAsync();
 
         await context.DisposeAsync();
-
-        _repositories.Clear();
 
         _disposed = true;
     }

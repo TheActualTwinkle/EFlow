@@ -1,16 +1,16 @@
 ﻿using EFlow.Booking.Domain.BookingRecords;
 using EFlow.Booking.Domain.Groups;
 using EFlow.Booking.Domain.Students;
+using EFlow.Booking.Domain.Subjects;
 using EFlow.Booking.Domain.SubmissionSlots.Events;
 using EFlow.Booking.Domain.SubmissionSlots.Rules;
-using EFlow.Booking.Subjects;
 using EFlow.Common.Domain;
 
 namespace EFlow.Booking.Domain.SubmissionSlots;
 
 public sealed class SubmissionSlot : Entity
 {
-    internal SubmissionSlotId Id { get; private set; }
+    public SubmissionSlotId Id { get; private set; }
 
     internal SubjectId SubjectId { get; private set; }
 
@@ -25,6 +25,8 @@ public sealed class SubmissionSlot : Entity
     internal ICollection<GroupId> AllowedGroupIds { get; private set; }
 
     internal string? Location { get; private set; }
+    
+    private SubmissionSlot() { }
     
     private SubmissionSlot(
         SubjectId subjectId,
@@ -72,6 +74,11 @@ public sealed class SubmissionSlot : Entity
         slot.AddDomainEvent(new SubmissionSlotCreatedDomainEvent
         {
             SlotId = slot.Id,
+            SubjectId = slot.SubjectId,
+            StartTime = slot.StartTime,
+            EndTime = slot.EndTime,
+            MaxStudents = slot.MaxStudents,
+            Location = slot.Location,
             CreatedAt = nowUtc
         });
         

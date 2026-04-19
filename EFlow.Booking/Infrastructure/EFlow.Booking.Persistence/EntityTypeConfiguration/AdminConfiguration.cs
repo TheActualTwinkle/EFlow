@@ -1,4 +1,4 @@
-﻿using EFlow.Booking.Domain.Models;
+﻿using EFlow.Booking.Domain.Admins;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -14,15 +14,11 @@ public class AdminConfiguration : IEntityTypeConfiguration<Admin>
             .HasName("pk_admins");
 
         builder.Property(a => a.Id)
+            .HasConversion(id => id.Value, value => new AdminId(value))
             .HasColumnName("id");
 
         builder.Property(a => a.CreatedAt)
             .HasColumnName("created_at")
             .IsRequired();
-
-        builder.HasOne(a => a.Identity)
-            .WithOne()
-            .HasForeignKey<Admin>(a => a.Id)
-            .HasConstraintName("fk_admins_identity");
     }
 }

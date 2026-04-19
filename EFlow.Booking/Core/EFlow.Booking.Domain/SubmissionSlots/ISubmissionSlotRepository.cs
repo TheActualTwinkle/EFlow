@@ -16,5 +16,5 @@ public interface ISubmissionSlotRepository : IRepository
 
     public void Update(SubmissionSlot slot);
 
-    public Task DeleteAsync(Guid id, CancellationToken cancellationToken = new());
+    public Task DeleteAsync(SubmissionSlot submissionSlot);
 }

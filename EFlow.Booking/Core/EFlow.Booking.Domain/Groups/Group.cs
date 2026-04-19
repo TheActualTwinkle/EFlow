@@ -1,7 +1,7 @@
 ﻿using EFlow.Booking.Domain.Groups.Events;
 using EFlow.Booking.Domain.Groups.Rules;
 using EFlow.Booking.Domain.Students;
-using EFlow.Booking.Subjects;
+using EFlow.Booking.Domain.Subjects;
 using EFlow.Common.Domain;
 using EFlow.Common.Domain.Students;
 
@@ -9,7 +9,7 @@ namespace EFlow.Booking.Domain.Groups;
 
 public sealed class Group : Entity, IAggreagateRoot
 {
-    internal GroupId Id { get; }
+    public GroupId Id { get; }
 
     internal string Name { get; private set; }
 
@@ -17,19 +17,22 @@ public sealed class Group : Entity, IAggreagateRoot
 
     internal ICollection<Subject> Subjects { get; private set; } = []; // TODO: Check private set usage.
 
-    private Group(string name)
+    private Group(string name, IEnumerable<string> existingGroupNames)
     {
         var trimmedName = name.Trim();
         
         ThrowIfBroken(new GroupNameMustBeProperLengthRule(trimmedName));
+        ThrowIfBroken(new GroupNameMustUniqueRule(trimmedName, existingGroupNames));
 
         Id = new GroupId(Guid.CreateVersion7());
         Name = trimmedName;
     }
     
-    public static Group Create(string name)
+    private Group() { }
+    
+    public static Group Create(string name, IEnumerable<string> existingGroupNames)
     {
-        var group = new Group(name);
+        var group = new Group(name, existingGroupNames);
 
         group.AddDomainEvent(new GroupCreatedDomainEvent
         {

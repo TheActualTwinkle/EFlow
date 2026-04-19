@@ -16,5 +16,5 @@ public interface IBookingRecordRepository : IRepository
 
     public void Update(BookingRecord bookingRecord);
 
-    public Task DeleteAsync(Guid id, CancellationToken cancellationToken = new());
+    public Task DeleteAsync(BookingRecord bookingRecord);
 }
