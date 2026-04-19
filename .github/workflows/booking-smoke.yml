@@ -23,4 +23,4 @@ jobs:
 
       - name: Run Booking smoke scenarios
         run: |
-          bash scripts/smoke/run_booking_smoke.sh --base-url http://localhost:8081 --wait-seconds 180
+          bash scripts/smoke/run_booking_e2e_smoke.sh --base-url http://localhost:8081 --wait-seconds 180

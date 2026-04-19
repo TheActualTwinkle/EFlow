@@ -2,6 +2,15 @@ name: CI
 
 on:
   pull_request:
+    branches:
+      - main
+      - release/**
+      - feature/**
+  push:
+    branches:
+      - main
+      - release/**
+      - feature/**
 
 jobs:
   build-and-test:
