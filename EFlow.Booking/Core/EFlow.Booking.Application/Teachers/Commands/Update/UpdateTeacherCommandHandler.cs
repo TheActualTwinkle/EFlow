@@ -13,7 +13,7 @@ public class UpdateTeacherCommandHandler(IUnitOfWork unitOfWork) : IRequestHandl
     {
         var repository = unitOfWork.GetRepository<ITeacherRepository>();
 
-        var teacher = await repository.GetByIdAsync(request.Id, cancellationToken);
+        var teacher = await repository.GetByIdAsync(new TeacherId(request.Id), cancellationToken);
 
         if (teacher is null)
             return Result.Fail(
@@ -21,12 +21,7 @@ public class UpdateTeacherCommandHandler(IUnitOfWork unitOfWork) : IRequestHandl
                     .WithMessage("Teacher not found")
                     .WithId(request.Id));
 
-        // teacher.Update(
-        //     request.FirstName,
-        //     request.LastName,
-        //     request.MiddleName,
-        //     request.BirthDate,
-        //     systemClock.UtcNow);
+        // TODO: Update Domain Model
 
         repository.Update(teacher);
 

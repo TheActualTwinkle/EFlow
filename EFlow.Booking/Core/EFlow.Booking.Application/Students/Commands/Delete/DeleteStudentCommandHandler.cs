@@ -29,7 +29,7 @@ public class DeleteStudentCommandHandler(IUnitOfWork unitOfWork, UserManager<Ide
                     .WithMessage("Failed to delete student")
                     .WithIdentityErrors(result.Errors));
 
-        var student = await repository.GetByIdAsync(request.Id, cancellationToken);
+        var student = await repository.GetByIdAsync(new StudentId(request.Id), cancellationToken);
 
         if (student is null)
             return Result.Ok();

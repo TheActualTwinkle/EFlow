@@ -1,5 +1,6 @@
 ﻿using EFlow.Common.Domain;
 using EFlow.Common.Domain.Students;
+using EFlow.Booking.Domain.Groups;
 
 namespace EFlow.Booking.Domain.Students;
 
@@ -9,9 +10,9 @@ public interface IStudentRepository : IRepository
 
     public Task<IEnumerable<Student>> GetAllAsync(CancellationToken cancellationToken = new());
 
-    public Task<Student?> GetByIdAsync(Guid id, CancellationToken cancellationToken = new());
+    public Task<Student?> GetByIdAsync(StudentId id, CancellationToken cancellationToken = new());
 
-    public Task<IEnumerable<Student>> GetByGroupIdAsync(Guid groupId, CancellationToken cancellationToken = new());
+    public Task<IEnumerable<Student>> GetByGroupIdAsync(GroupId groupId, CancellationToken cancellationToken = new());
 
     public void Update(Student student);
 

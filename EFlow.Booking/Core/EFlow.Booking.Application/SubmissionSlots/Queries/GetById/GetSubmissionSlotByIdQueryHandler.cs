@@ -15,7 +15,7 @@ public class GetSubmissionSlotByIdQueryHandler(IUnitOfWork unitOfWork)
     {
         var slot = await unitOfWork
             .GetRepository<ISubmissionSlotRepository>()
-            .GetByIdAsync(request.Id, cancellationToken);
+            .GetByIdAsync(new SubmissionSlotId(request.Id), cancellationToken);
 
         if (slot is null)
             return Result.Fail(

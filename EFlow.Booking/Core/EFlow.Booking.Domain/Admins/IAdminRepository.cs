@@ -8,7 +8,7 @@ public interface IAdminRepository : IRepository
 
     public Task<IEnumerable<Admin>> GetAllAsync(CancellationToken cancellationToken = new());
 
-    public Task<Admin?> GetByIdAsync(Guid id, CancellationToken cancellationToken = new());
+    public Task<Admin?> GetByIdAsync(AdminId id, CancellationToken cancellationToken = new());
 
     public Task DeleteAsync(Admin admin);
 }

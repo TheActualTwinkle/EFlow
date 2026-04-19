@@ -7,10 +7,10 @@ using Microsoft.EntityFrameworkCore;
 namespace EFlow.Booking.Persistence.Repositories;
 
 public class OutboxMessageRepository(ApplicationDbContext context, ISystemClock systemClock) :
-    RepositoryBase<OutboxMessage>(context), IOutboxMessageRepository
+    IOutboxMessageRepository
 {
     public async Task CreateAsync(OutboxMessage message, CancellationToken cancellationToken = new()) =>
-        await CreateInternalAsync(message, cancellationToken);
+        await context.OutboxMessages.AddAsync(message, cancellationToken);
 
     public async Task<IReadOnlyList<OutboxMessage>> GetUnprocessedAsync(int batchSize, CancellationToken cancellationToken = new()) =>
         await context.OutboxMessages

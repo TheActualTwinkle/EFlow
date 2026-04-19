@@ -8,7 +8,7 @@ public interface ITeacherRepository : IRepository
 
     public Task<IEnumerable<Teacher>> GetAllAsync(CancellationToken cancellationToken = new());
 
-    public Task<Teacher?> GetByIdAsync(Guid id, CancellationToken cancellationToken = new());
+    public Task<Teacher?> GetByIdAsync(TeacherId id, CancellationToken cancellationToken = new());
 
     public void Update(Teacher teacher);
 

@@ -15,7 +15,7 @@ public class GetStudentByIdQueryHandler(IUnitOfWork unitOfWork)
     {
         var student = await unitOfWork
             .GetRepository<IStudentRepository>()
-            .GetByIdAsync(request.Id, cancellationToken);
+            .GetByIdAsync(new StudentId(request.Id), cancellationToken);
 
         if (student is null)
             return Result.Fail(

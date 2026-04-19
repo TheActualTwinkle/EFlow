@@ -1,4 +1,5 @@
 ﻿using EFlow.Booking.Domain.BookingRecords;
+using EFlow.Booking.Domain.Students;
 using EFlow.Common.Infrastructure;
 using FluentResults;
 using Mapster;
@@ -13,7 +14,7 @@ public class GetBookingRecordsByStudentIdQueryHandler(IUnitOfWork unitOfWork)
     {
         var bookings = (await unitOfWork
                 .GetRepository<IBookingRecordRepository>()
-                .GetByStudentIdAsync(request.StudentId, cancellationToken))
+                .GetByStudentIdAsync(new StudentId(request.StudentId), cancellationToken))
             .Adapt<IEnumerable<BookingRecordDto>>();
 
         return Result.Ok(bookings);

@@ -14,7 +14,7 @@ public class UpdateGroupCommandHandler(IUnitOfWork unitOfWork)
     {
         var repository = unitOfWork.GetRepository<IGroupRepository>();
 
-        var group = await repository.GetByIdAsync(request.Id, cancellationToken);
+        var group = await repository.GetByIdAsync(new GroupId(request.Id), cancellationToken);
 
         if (group is null)
             return Result.Fail(

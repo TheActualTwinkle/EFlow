@@ -15,7 +15,7 @@ public class GetAdminByIdQueryHandler(IUnitOfWork unitOfWork)
     {
         var admin = await unitOfWork
             .GetRepository<IAdminRepository>()
-            .GetByIdAsync(request.Id, cancellationToken);
+            .GetByIdAsync(new AdminId(request.Id), cancellationToken);
 
         if (admin is null)
             return Result.Fail(

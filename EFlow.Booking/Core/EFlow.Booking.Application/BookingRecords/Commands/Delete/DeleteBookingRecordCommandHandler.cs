@@ -15,14 +15,14 @@ public class DeleteBookingRecordCommandHandler(IUnitOfWork unitOfWork)
     {
         var bookingRecordRepository = unitOfWork.GetRepository<IBookingRecordRepository>();
 
-        var bookingRecord = await bookingRecordRepository.GetByIdAsync(request.Id, cancellationToken);
+        var bookingRecord = await bookingRecordRepository.GetByIdAsync(new BookingRecordId(request.Id), cancellationToken);
 
         if (bookingRecord is null)
             return Result.Ok();
 
         var slot = await unitOfWork
             .GetRepository<ISubmissionSlotRepository>()
-            .GetByIdAsync(bookingRecord.GetSlotId().Value, cancellationToken);
+            .GetByIdAsync(bookingRecord.GetSlotId(), cancellationToken);
         
         if (slot is null)
             return Result.Fail(

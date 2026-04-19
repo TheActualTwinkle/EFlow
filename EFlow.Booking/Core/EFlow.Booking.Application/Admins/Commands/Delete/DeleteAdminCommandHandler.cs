@@ -28,7 +28,7 @@ public class DeleteAdminCommandHandler(IUnitOfWork unitOfWork, UserManager<Ident
                     .WithMessage("Failed to delete admin")
                     .WithIdentityErrors(result.Errors));
 
-        var admin = await repository.GetByIdAsync(request.Id, cancellationToken);
+        var admin = await repository.GetByIdAsync(new AdminId(request.Id), cancellationToken);
 
         if (admin is null)
             return Result.Ok();

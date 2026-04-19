@@ -14,7 +14,7 @@ public class GetTeacherByIdQueryHandler(IUnitOfWork unitOfWork) : IRequestHandle
     {
         var teacher = await unitOfWork
             .GetRepository<ITeacherRepository>()
-            .GetByIdAsync(request.Id, cancellationToken);
+            .GetByIdAsync(new TeacherId(request.Id), cancellationToken);
 
         if (teacher is null)
             return Result.Fail(

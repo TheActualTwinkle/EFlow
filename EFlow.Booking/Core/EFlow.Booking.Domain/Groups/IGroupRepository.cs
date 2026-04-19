@@ -8,7 +8,7 @@ public interface IGroupRepository : IRepository
 
     public Task<IEnumerable<Group>> GetAllAsync(CancellationToken cancellationToken = new());
 
-    public Task<Group?> GetByIdAsync(Guid id, CancellationToken cancellationToken = new());
+    public Task<Group?> GetByIdAsync(GroupId id, CancellationToken cancellationToken = new());
 
     public void Update(Group group);
 

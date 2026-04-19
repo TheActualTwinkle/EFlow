@@ -14,7 +14,7 @@ public class UpdateStudentCommandHandler(IUnitOfWork unitOfWork, ISystemClock sy
     {
         var repository = unitOfWork.GetRepository<IStudentRepository>();
 
-        var student = await repository.GetByIdAsync(request.Id, cancellationToken);
+        var student = await repository.GetByIdAsync(new StudentId(request.Id), cancellationToken);
 
         if (student is null)
             return Result.Fail(
@@ -22,14 +22,7 @@ public class UpdateStudentCommandHandler(IUnitOfWork unitOfWork, ISystemClock sy
                     .WithMessage("Student not found")
                     .WithId(request.Id));
 
-        // var utcNow = systemClock.UtcNow;
-
-        // student.Update(
-        //     request.FirstName,
-        //     request.LastName,
-        //     request.MiddleName,
-        //     request.BirthDate,
-        //     utcNow);
+        // TODO: Update Domain Model
 
         repository.Update(student);
 

@@ -28,7 +28,7 @@ public class DeleteTeacherCommandHandler(IUnitOfWork unitOfWork, UserManager<Ide
                     .WithMessage("Failed to delete teacher")
                     .WithIdentityErrors(result.Errors));
 
-        var teacher = await repository.GetByIdAsync(request.Id, cancellationToken);
+        var teacher = await repository.GetByIdAsync(new TeacherId(request.Id), cancellationToken);
 
         if (teacher is null)
             return Result.Ok();

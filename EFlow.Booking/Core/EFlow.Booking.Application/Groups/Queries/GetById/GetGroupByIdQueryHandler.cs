@@ -15,7 +15,7 @@ public class GetGroupByIdQueryHandler(IUnitOfWork unitOfWork)
     {
         var group = await unitOfWork
             .GetRepository<IGroupRepository>()
-            .GetByIdAsync(request.Id, cancellationToken);
+            .GetByIdAsync(new GroupId(request.Id), cancellationToken);
 
         if (group is null)
             return Result.Fail(

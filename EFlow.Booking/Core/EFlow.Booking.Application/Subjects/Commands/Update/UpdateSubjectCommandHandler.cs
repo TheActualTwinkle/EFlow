@@ -14,7 +14,7 @@ public class UpdateSubjectCommandHandler(IUnitOfWork unitOfWork)
     {
         var repository = unitOfWork.GetRepository<ISubjectRepository>();
 
-        var subject = await repository.GetByIdAsync(request.Id, cancellationToken);
+        var subject = await repository.GetByIdAsync(new SubjectId(request.Id), cancellationToken);
 
         if (subject is null)
             return Result.Fail(

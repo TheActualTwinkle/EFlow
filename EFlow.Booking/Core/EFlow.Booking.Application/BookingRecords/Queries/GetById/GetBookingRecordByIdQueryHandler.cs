@@ -15,7 +15,7 @@ public class GetBookingRecordByIdQueryHandler(IUnitOfWork unitOfWork)
     {
         var booking = await unitOfWork
             .GetRepository<IBookingRecordRepository>()
-            .GetByIdAsync(request.Id, cancellationToken);
+            .GetByIdAsync(new BookingRecordId(request.Id), cancellationToken);
 
         if (booking is null)
             return Result.Fail(

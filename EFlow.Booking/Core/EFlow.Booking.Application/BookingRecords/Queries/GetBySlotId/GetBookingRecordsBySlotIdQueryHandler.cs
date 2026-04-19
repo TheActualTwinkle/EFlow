@@ -1,4 +1,5 @@
 ﻿using EFlow.Booking.Domain.BookingRecords;
+using EFlow.Booking.Domain.SubmissionSlots;
 using EFlow.Common.Infrastructure;
 using FluentResults;
 using Mapster;
@@ -13,7 +14,7 @@ public class GetBookingRecordsBySlotIdQueryHandler(IUnitOfWork unitOfWork)
     {
         var bookings = (await unitOfWork
                 .GetRepository<IBookingRecordRepository>()
-                .GetBySlotIdAsync(request.SlotId, cancellationToken))
+                .GetBySlotIdAsync(new SubmissionSlotId(request.SlotId), cancellationToken))
             .Adapt<IEnumerable<BookingRecordDto>>();
 
         return Result.Ok(bookings);

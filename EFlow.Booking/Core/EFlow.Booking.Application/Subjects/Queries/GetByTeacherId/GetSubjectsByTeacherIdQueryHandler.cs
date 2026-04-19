@@ -1,4 +1,5 @@
 ﻿using EFlow.Booking.Domain.Subjects;
+using EFlow.Booking.Domain.Teachers;
 using EFlow.Common.Infrastructure;
 using FluentResults;
 using Mapster;
@@ -13,7 +14,7 @@ public class GetSubjectsByTeacherIdQueryHandler(IUnitOfWork unitOfWork)
     {
         var subjects = (await unitOfWork
                 .GetRepository<ISubjectRepository>()
-                .GetByTeacherIdAsync(request.TeacherId, cancellationToken))
+                .GetByTeacherIdAsync(new TeacherId(request.TeacherId), cancellationToken))
             .Adapt<IEnumerable<SubjectDto>>();
 
         return Result.Ok(subjects);

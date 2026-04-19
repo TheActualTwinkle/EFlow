@@ -14,7 +14,7 @@ public class UpdateBookingRecordCommandHandler(IUnitOfWork unitOfWork)
     {
         var repository = unitOfWork.GetRepository<IBookingRecordRepository>();
 
-        var booking = await repository.GetByIdAsync(request.Id, cancellationToken);
+        var booking = await repository.GetByIdAsync(new BookingRecordId(request.Id), cancellationToken);
 
         if (booking is null)
             return Result.Fail(

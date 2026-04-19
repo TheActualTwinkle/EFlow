@@ -1,24 +1,25 @@
 ﻿using EFlow.Booking.Domain.SubmissionSlots;
+using EFlow.Booking.Domain.Subjects;
 using EFlow.Booking.Persistence.DatabaseContext;
 using Microsoft.EntityFrameworkCore;
 
 namespace EFlow.Booking.Persistence.Repositories;
 
 public class SubmissionSlotRepository(ApplicationDbContext context) :
-    RepositoryBase<SubmissionSlot>(context), ISubmissionSlotRepository
+    ISubmissionSlotRepository
 {
     public async Task CreateAsync(SubmissionSlot slot, CancellationToken cancellationToken = new()) =>
-        await CreateInternalAsync(slot, cancellationToken);
+        await context.SubmissionSlots.AddAsync(slot, cancellationToken);
 
     public async Task<IEnumerable<SubmissionSlot>> GetAllAsync(CancellationToken cancellationToken = new()) =>
-        await GetAllInternalAsync(cancellationToken);
+        await context.SubmissionSlots.ToListAsync(cancellationToken);
 
-    public async Task<SubmissionSlot?> GetByIdAsync(Guid id, CancellationToken cancellationToken = new()) =>
-        await context.SubmissionSlots.FirstOrDefaultAsync(s => s.Id.Value == id, cancellationToken);
+    public async Task<SubmissionSlot?> GetByIdAsync(SubmissionSlotId id, CancellationToken cancellationToken = new()) =>
+        await context.SubmissionSlots.FirstOrDefaultAsync(s => s.Id == id, cancellationToken);
 
-    public async Task<IEnumerable<SubmissionSlot>> GetBySubjectIdAsync(Guid subjectId, CancellationToken cancellationToken = new()) =>
+    public async Task<IEnumerable<SubmissionSlot>> GetBySubjectIdAsync(SubjectId subjectId, CancellationToken cancellationToken = new()) =>
         await context.SubmissionSlots
-            .Where(s => s.SubjectId.Value == subjectId)
+            .Where(s => s.SubjectId == subjectId)
             .ToListAsync(cancellationToken);
 
     public async Task<IEnumerable<SubmissionSlot>> GetAvailableSlotsAsync(DateTime fromDate, CancellationToken cancellationToken = new()) =>
@@ -27,8 +28,12 @@ public class SubmissionSlotRepository(ApplicationDbContext context) :
             .ToListAsync(cancellationToken);
 
     public void Update(SubmissionSlot slot) =>
-        UpdateInternal(slot);
+        context.SubmissionSlots.Update(slot);
 
-    public Task DeleteAsync(SubmissionSlot submissionSlot) =>
-        DeleteInternalAsync(submissionSlot);
+    public Task DeleteAsync(SubmissionSlot submissionSlot)
+    {
+        context.SubmissionSlots.Remove(submissionSlot);
+        
+        return Task.CompletedTask;
+    }
 }

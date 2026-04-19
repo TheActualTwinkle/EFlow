@@ -18,7 +18,7 @@ public class CreateBookingRecordCommandHandler(
     {
         var slot = await unitOfWork
             .GetRepository<ISubmissionSlotRepository>()
-            .GetByIdAsync(request.SlotId, cancellationToken);
+            .GetByIdAsync(new SubmissionSlotId(request.SlotId), cancellationToken);
         
         if (slot is null)
             return Result.Fail(
@@ -28,7 +28,7 @@ public class CreateBookingRecordCommandHandler(
         
         var student = await unitOfWork
             .GetRepository<IStudentRepository>()
-            .GetByIdAsync(request.StudentId, cancellationToken);
+            .GetByIdAsync(new StudentId(request.StudentId), cancellationToken);
 
         if (student is null)
             return Result.Fail(
