@@ -33,4 +33,3 @@ public class CreateTeacherCommandValidatorTests
             x.ErrorMessage == "Teacher must be at least 18 years old");
     }
 }
-
