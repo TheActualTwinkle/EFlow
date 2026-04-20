@@ -1,85 +1,11 @@
-name: eflow-api-tests
 services:
   postgres:
-    image: postgres:16
-    restart: unless-stopped
-    environment:
-      POSTGRES_DB: ${POSTGRES_DB:-eflow}
-      POSTGRES_USER: ${POSTGRES_USER:-postgres}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-123456789}
-    ports:
-      - "${POSTGRES_PORT:-5433}:5432"
     volumes:
       - postgres_api-tests_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -h localhost -p 5432 -U ${POSTGRES_USER:-postgres} >/dev/null 2>&1"]
-      interval: 15s
-      timeout: 10s
-      retries: 5
 
   kafka:
-    image: apache/kafka:4.1.0
-    restart: unless-stopped
-    user: "0"
-    environment:
-      KAFKA_NODE_ID: 1
-      KAFKA_PROCESS_ROLES: broker,controller
-      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
-      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
-      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
-      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
-      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
-      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
-      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
-      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "false"
-      CLUSTER_ID: 1
-    ports:
-      - "${KAFKA_PORT:-9092}:9092"
     volumes:
       - kafka_api-tests_data:/tmp/kafka-logs
-    healthcheck:
-      test: ["CMD-SHELL", "/opt/kafka/bin/kafka-topics.sh --bootstrap-server localhost:9092 --list >/dev/null 2>&1"]
-      interval: 15s
-      timeout: 10s
-      retries: 5
-
-  booking-api:
-    build:
-      context: ..
-      dockerfile: EFlow.Booking/Presentation/EFlow.Booking.WebApi/Dockerfile
-    restart: unless-stopped
-    depends_on:
-      postgres:
-        condition: service_healthy
-      kafka:
-        condition: service_healthy
-    environment:
-      ASPNETCORE_ENVIRONMENT: Production
-      Jwt__Key: ${JWT_KEY:?JWT_KEY is required}
-      Jwt__Issuer: ${JWT_ISSUER:-http://localhost:8081}
-      Jwt__Audience: ${JWT_AUDIENCE:-http://localhost:8081}
-      Jwt__ExpireMinutes: ${JWT_EXPIRE_MINUTES:-1440}
-      ConnectionStrings__Database: Host=postgres;Port=5432;Database=${POSTGRES_DB:-eflow};Username=${POSTGRES_USER:-postgres};Password=${POSTGRES_PASSWORD:-123456789}
-      ConnectionStrings__HangfireDb: Host=postgres;Port=5432;Database=${POSTGRES_DB:-eflow};Username=${POSTGRES_USER:-postgres};Password=${POSTGRES_PASSWORD:-123456789}
-      KafkaSettings__BootstrapServers: kafka:9092
-    ports:
-      - "${BOOKING_API_PORT:-8081}:8081"
-
-  notifications-api:
-    build:
-      context: ..
-      dockerfile: EFlow.Notifications/Web/EFlow.Notifications.WebApi/Dockerfile
-    restart: unless-stopped
-    depends_on:
-      kafka:
-        condition: service_healthy
-    environment:
-      ASPNETCORE_ENVIRONMENT: Production
-      KafkaSettings__BootstrapServers: kafka:9092
-    ports:
-      - "${NOTIFICATIONS_API_PORT:-8082}:8082"
 
 volumes:
   postgres_api-tests_data:

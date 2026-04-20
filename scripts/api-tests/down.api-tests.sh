@@ -13,4 +13,4 @@ if [ -f "$ENV_FILE" ]; then
   set +a
 fi
 
-docker compose -f "$COMPOSE_FILE" down -v
+docker compose --env-file "$ENV_FILE" -f "$ROOT_DIR/docker/docker-compose.prod.yml" -f "$COMPOSE_FILE" down -v

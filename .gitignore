@@ -372,11 +372,10 @@ FodyWeavers.xsd
 .containers/
 *.env
 !/docker/api-tests.env
+!/docker/debug.env
 
 !/scripts/
 !/scripts/**/*
 
-scripts/**/.volumes/
-scripts/*/.volumes/
-.volumes/
+docker/debug_data/
 docker/data

@@ -10,7 +10,7 @@ services:
     ports:
       - "${PGPORT}:${PGPORT}"
     volumes:
-      - .volumes/pgdata:/var/lib/postgresql/data
+      - ./debug_data/pgdata:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -h localhost -p ${PGPORT} -U ${POSTGRES_USER} >/dev/null 2>&1"]
       interval: 15s
@@ -37,7 +37,7 @@ services:
     ports:
       - "${KAFKA_PORT:-9092}:${KAFKA_PORT:-9092}"
     volumes:
-      - .volumes/kafka_data:/tmp/kafka-logs
+      - ./debug_data/kafka_data:/tmp/kafka-logs
     healthcheck:
       test: ["CMD-SHELL", "/opt/kafka/bin/kafka-topics.sh --bootstrap-server localhost:${KAFKA_PORT:-9092} --list >/dev/null 2>&1"]
       interval: 15s
