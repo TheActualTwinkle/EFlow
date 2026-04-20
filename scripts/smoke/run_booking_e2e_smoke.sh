@@ -7,8 +7,8 @@ MANAGE_STACK="${MANAGE_STACK:-1}"
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
-PROD_UP_SCRIPT="$PROJECT_ROOT/scripts/prod/up.prod.sh"
-PROD_DOWN_SCRIPT="$PROJECT_ROOT/scripts/prod/down.prod.sh"
+E2E_UP_SCRIPT="$PROJECT_ROOT/scripts/e2e/up.e2e.sh"
+E2E_DOWN_SCRIPT="$PROJECT_ROOT/scripts/e2e/down.e2e.sh"
 E2E_ENV_FILE="${E2E_ENV_FILE:-$PROJECT_ROOT/docker/e2e.env}"
 
 while [[ $# -gt 0 ]]; do
@@ -36,7 +36,7 @@ TMP_DIR="$(mktemp -d)"
 STACK_STARTED="0"
 cleanup() {
   if [[ "$MANAGE_STACK" == "1" && "$STACK_STARTED" == "1" ]]; then
-    ENV_FILE="$E2E_ENV_FILE" bash "$PROD_DOWN_SCRIPT"
+    ENV_FILE="$E2E_ENV_FILE" bash "$E2E_DOWN_SCRIPT"
   fi
   rm -rf "$TMP_DIR"
 }
@@ -121,7 +121,7 @@ if [[ "$MANAGE_STACK" == "1" ]]; then
     echo "E2E env file not found: $E2E_ENV_FILE" >&2
     exit 1
   fi
-  ENV_FILE="$E2E_ENV_FILE" bash "$PROD_UP_SCRIPT"
+  ENV_FILE="$E2E_ENV_FILE" bash "$E2E_UP_SCRIPT"
   STACK_STARTED="1"
   wait_for_health
 else
