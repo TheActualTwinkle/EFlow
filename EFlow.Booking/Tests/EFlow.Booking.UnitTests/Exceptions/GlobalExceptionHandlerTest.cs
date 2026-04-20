@@ -13,7 +13,7 @@ namespace EFlow.Booking.UnitTests.Exceptions;
 public class GlobalExceptionHandlerTest
 {
     [Fact]
-    public async Task TryHandleAsync_ShouldReturn500_ForGeneralException()
+    public async Task TryHandleAsync_WhenGeneralException_ShouldReturn500()
     {
         // Arrange
         var loggerMock = new Mock<ILogger<GlobalExceptionHandler>>();

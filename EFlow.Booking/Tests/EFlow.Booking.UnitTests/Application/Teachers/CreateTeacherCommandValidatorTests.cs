@@ -7,7 +7,7 @@ namespace EFlow.Booking.UnitTests.Application.Teachers;
 public class CreateTeacherCommandValidatorTests
 {
     [Fact]
-    public void Validate_ShouldFail_WhenBirthDateIsExactlyAt18YearsBoundary()
+    public void Validate_WhenBirthDateIsExactlyAt18YearsBoundary_ShouldFail()
     {
         // Arrange
         var now = new DateTime(2026, 04, 18, 12, 0, 0, DateTimeKind.Utc);
