@@ -19,7 +19,6 @@ public class BookingsController(ISender sender) : ControllerBase
     [Authorize(Roles = $"{Identity.Roles.Admin},{Identity.Roles.Student}")]
     public async Task<IActionResult> CreateBooking([FromBody] CreateBookingRequest request, CancellationToken cancellationToken)
     {
-        throw new Exception();
         var command = new CreateBookingRecordCommand
         {
             StudentId = request.StudentId,

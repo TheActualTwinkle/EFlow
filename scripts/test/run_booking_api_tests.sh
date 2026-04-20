@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -euo pipefail
+set -uo pipefail
 
 BASE_URL="${BASE_URL:-http://localhost:8081}"
 WAIT_SECONDS="${WAIT_SECONDS:-120}"
@@ -34,6 +34,9 @@ done
 
 TMP_DIR="$(mktemp -d)"
 STACK_STARTED="0"
+FAILED_COUNT=0
+FAILURES=()
+
 cleanup() {
   if [[ "$MANAGE_STACK" == "1" && "$STACK_STARTED" == "1" ]]; then
     ENV_FILE="$TESTS_ENV_FILE" bash "$TESTS_DOWN_SCRIPT"
@@ -74,12 +77,14 @@ assert_code() {
   local code
   code="$(cat "$TMP_DIR/${name}.code")"
   if [[ "$code" != "$expected" ]]; then
-    echo "Assertion failed for $name: expected HTTP $expected, got $code" >&2
+    echo "[FAIL] $name: expected HTTP $expected, got $code" >&2
     if [[ -s "$TMP_DIR/${name}.body" ]]; then
-      echo "Body:" >&2
-      cat "$TMP_DIR/${name}.body" >&2
+      echo "Body for $name:" >&2
+      sed -n '1,200p' "$TMP_DIR/${name}.body" >&2
     fi
-    exit 1
+    FAILURES+=("$name: expected HTTP $expected, got $code")
+    FAILED_COUNT=$((FAILED_COUNT+1))
+    return 0
   fi
 }
 
@@ -92,10 +97,15 @@ body_path, expr, msg = sys.argv[1:4]
 with open(body_path, 'r', encoding='utf-8') as f:
     data = json.load(f)
 if not eval(expr, {"data": data}):
-    print(f"Assertion failed: {msg}", file=sys.stderr)
+    print(f"[FAIL] {msg}", file=sys.stderr)
     print(json.dumps(data, ensure_ascii=False, indent=2), file=sys.stderr)
-    sys.exit(1)
+    sys.exit(2)
 PY
+  rc=$?
+  if [[ $rc -ne 0 ]]; then
+    FAILURES+=("$name: $msg")
+    FAILED_COUNT=$((FAILED_COUNT+1))
+  fi
 }
 
 extract_location_id() {
@@ -323,4 +333,17 @@ assert_code auth_logout 200
 request auth_me_after_logout GET /api/auth/me "$ADMIN_COOKIE"
 assert_code auth_me_after_logout 401
 
-echo "All API Tests passed for $BASE_URL"
+if [[ $FAILED_COUNT -ne 0 ]]; then
+  echo ""
+  echo "========================"
+  echo "API TESTS: ${FAILED_COUNT} FAILURE(S)"
+  echo "------------------------"
+  for f in "${FAILURES[@]}"; do
+    echo "- $f"
+  done
+  echo "========================"
+  exit 1
+else
+  echo "All API Tests passed for $BASE_URL"
+  exit 0
+fi
