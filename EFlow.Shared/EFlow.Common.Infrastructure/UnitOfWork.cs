@@ -50,7 +50,7 @@ public sealed class UnitOfWork(
 
         try
         {
-            await domainEventsDispatcher.DispatchEventsAsync();
+            await domainEventsDispatcher.DispatchEventsAsync(cancellationToken);
             
             await context.SaveChangesAsync(cancellationToken);
 

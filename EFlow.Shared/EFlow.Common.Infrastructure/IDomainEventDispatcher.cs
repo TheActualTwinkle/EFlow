@@ -2,5 +2,5 @@ namespace EFlow.Common.Infrastructure;
 
 public interface IDomainEventDispatcher
 {
-    Task DispatchEventsAsync();
+    Task DispatchEventsAsync(CancellationToken cancellationToken = new());
 }
