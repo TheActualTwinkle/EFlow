@@ -14,4 +14,4 @@ if [ -f "$ENV_FILE" ]; then
   set +a
 fi
 
-docker compose --env-file "$ENV_FILE" -f "$BASE_COMPOSE_FILE" -f "TESTS_COMPOSE_FILE" up -d --build
+docker compose --env-file "$ENV_FILE" -f "$BASE_COMPOSE_FILE" -f "$TESTS_COMPOSE_FILE" up -d --build
