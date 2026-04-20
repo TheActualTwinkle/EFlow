@@ -1,9 +1,9 @@
-# EFlow.Booking Smoke API Tests
+# EFlow.Booking API Tests
 
 ## Local run
 
 ```bash
-./scripts/smoke/run_booking_e2e_smoke.sh
+./scripts/test/run_booking_api_tests.sh
 ```
 
 ## What is covered

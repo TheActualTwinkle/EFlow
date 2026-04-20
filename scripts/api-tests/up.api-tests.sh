@@ -2,8 +2,8 @@
 set -e
 
 ROOT_DIR="$(cd "$(dirname "$0")/../.." && pwd)"
-COMPOSE_FILE="$ROOT_DIR/docker/docker-compose.e2e.yml"
-ENV_FILE="$ROOT_DIR/docker/e2e.env"
+COMPOSE_FILE="$ROOT_DIR/docker/docker-compose.api-tests.yml"
+ENV_FILE="$ROOT_DIR/docker/api-tests.env"
 
 cd "$ROOT_DIR"
 

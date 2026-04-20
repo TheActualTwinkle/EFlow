@@ -1,4 +1,4 @@
-name: eflow-e2e
+name: eflow-api-tests
 services:
   postgres:
     image: postgres:16
@@ -10,7 +10,7 @@ services:
     ports:
       - "${POSTGRES_PORT:-5433}:5432"
     volumes:
-      - postgres_e2e_data:/var/lib/postgresql/data
+      - postgres_api-tests_data:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -h localhost -p 5432 -U ${POSTGRES_USER:-postgres} >/dev/null 2>&1"]
       interval: 15s
@@ -38,7 +38,7 @@ services:
     ports:
       - "${KAFKA_PORT:-9092}:9092"
     volumes:
-      - kafka_e2e_data:/tmp/kafka-logs
+      - kafka_api-tests_data:/tmp/kafka-logs
     healthcheck:
       test: ["CMD-SHELL", "/opt/kafka/bin/kafka-topics.sh --bootstrap-server localhost:9092 --list >/dev/null 2>&1"]
       interval: 15s
@@ -82,5 +82,5 @@ services:
       - "${NOTIFICATIONS_API_PORT:-8082}:8082"
 
 volumes:
-  postgres_e2e_data:
-  kafka_e2e_data:
+  postgres_api-tests_data:
+  kafka_api-tests_data:

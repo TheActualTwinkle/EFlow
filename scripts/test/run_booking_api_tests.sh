@@ -7,9 +7,9 @@ MANAGE_STACK="${MANAGE_STACK:-1}"
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
-E2E_UP_SCRIPT="$PROJECT_ROOT/scripts/e2e/up.e2e.sh"
-E2E_DOWN_SCRIPT="$PROJECT_ROOT/scripts/e2e/down.e2e.sh"
-E2E_ENV_FILE="${E2E_ENV_FILE:-$PROJECT_ROOT/docker/e2e.env}"
+TESTS_UP_SCRIPT="$PROJECT_ROOT/scripts/api-tests/up.api-tests.sh"
+TESTS_DOWN_SCRIPT="$PROJECT_ROOT/scripts/api-tests/down.api-tests.sh"
+TESTS_ENV_FILE="${TESTS_ENV_FILE:-$PROJECT_ROOT/docker/api-tests.env}"
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -36,7 +36,7 @@ TMP_DIR="$(mktemp -d)"
 STACK_STARTED="0"
 cleanup() {
   if [[ "$MANAGE_STACK" == "1" && "$STACK_STARTED" == "1" ]]; then
-    ENV_FILE="$E2E_ENV_FILE" bash "$E2E_DOWN_SCRIPT"
+    ENV_FILE="$TESTS_ENV_FILE" bash "$TESTS_DOWN_SCRIPT"
   fi
   rm -rf "$TMP_DIR"
 }
@@ -117,11 +117,11 @@ wait_for_health() {
 }
 
 if [[ "$MANAGE_STACK" == "1" ]]; then
-  if [[ ! -f "$E2E_ENV_FILE" ]]; then
-    echo "E2E env file not found: $E2E_ENV_FILE" >&2
+  if [[ ! -f "$TESTS_ENV_FILE" ]]; then
+    echo "API Tests env file not found: $TESTS_ENV_FILE" >&2
     exit 1
   fi
-  ENV_FILE="$E2E_ENV_FILE" bash "$E2E_UP_SCRIPT"
+  ENV_FILE="$TESTS_ENV_FILE" bash "$TESTS_UP_SCRIPT"
   STACK_STARTED="1"
   wait_for_health
 else
@@ -150,8 +150,8 @@ assert_json_expr auth_me "data['userName'] == '$ADMIN_USER'" "auth/me must retur
 assert_json_expr auth_me "'Admin' in data['roles']" "admin role must be present"
 
 # Group lifecycle
-GROUP_NAME="Group Smoke ${RUN_ID}"
-GROUP_UPDATED_NAME="Group Smoke Updated ${RUN_ID}"
+GROUP_NAME="Group API ${RUN_ID}"
+GROUP_UPDATED_NAME="Group API Updated ${RUN_ID}"
 request groups_create POST /api/groups "$ADMIN_COOKIE" "{\"name\":\"$GROUP_NAME\"}"
 assert_code groups_create 201
 GROUP_ID="$(extract_location_id groups_create)"
@@ -227,7 +227,7 @@ request students_create_forbidden_for_student POST /api/students "$STUDENT1_COOK
 assert_code students_create_forbidden_for_student 403
 
 # Subject lifecycle
-request subjects_create POST /api/subjects "$ADMIN_COOKIE" "{\"name\":\"Math Smoke ${RUN_ID}\",\"teacherId\":\"$TEACHER1_ID\",\"groupIds\":[\"$GROUP_ID\"]}"
+request subjects_create POST /api/subjects "$ADMIN_COOKIE" "{\"name\":\"Math API ${RUN_ID}\",\"teacherId\":\"$TEACHER1_ID\",\"groupIds\":[\"$GROUP_ID\"]}"
 assert_code subjects_create 201
 SUBJECT_ID="$(extract_location_id subjects_create)"
 
@@ -240,7 +240,7 @@ assert_code subjects_by_teacher 200
 assert_json_expr subjects_by_teacher "any(x['id'] == '$SUBJECT_ID' for x in data)" "subject must be present in by-teacher list"
 
 # Update scenarios are temporarily disabled.
-# request subjects_patch PATCH "/api/subjects/$SUBJECT_ID" "$ADMIN_COOKIE" "{\"name\":\"Math Smoke Updated ${RUN_ID}\",\"teacherId\":\"$TEACHER1_ID\",\"groupIds\":[\"$GROUP_ID\"]}"
+# request subjects_patch PATCH "/api/subjects/$SUBJECT_ID" "$ADMIN_COOKIE" "{\"name\":\"Math API Updated ${RUN_ID}\",\"teacherId\":\"$TEACHER1_ID\",\"groupIds\":[\"$GROUP_ID\"]}"
 # assert_code subjects_patch 204
 
 # Slots lifecycle
@@ -323,4 +323,4 @@ assert_code auth_logout 200
 request auth_me_after_logout GET /api/auth/me "$ADMIN_COOKIE"
 assert_code auth_me_after_logout 401
 
-echo "Smoke test passed for $BASE_URL"
+echo "All API Tests passed for $BASE_URL"

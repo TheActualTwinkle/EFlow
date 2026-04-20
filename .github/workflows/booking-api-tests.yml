@@ -1,4 +1,4 @@
-name: booking-e2e-smoke
+name: booking-api-tests
 
 on:
   pull_request:
@@ -13,7 +13,7 @@ on:
       - feature/**
 
 jobs:
-  smoke:
+  api-tests:
     runs-on: ubuntu-latest
     timeout-minutes: 30
 
@@ -21,6 +21,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Run Booking smoke scenarios
+      - name: Run Booking API Test
         run: |
-          bash scripts/smoke/run_booking_e2e_smoke.sh --base-url http://localhost:8081 --wait-seconds 180
+          bash scripts/test/run_booking_api_tests.sh --base-url http://localhost:8081 --wait-seconds 180
