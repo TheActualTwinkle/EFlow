@@ -1,24 +1,28 @@
-﻿using EFlow.Common.Domain.Models;
-using EFlow.Common.Domain;
+﻿using EFlow.Booking.Domain.Teachers;
 using EFlow.Booking.Persistence.DatabaseContext;
+using Microsoft.EntityFrameworkCore;
 
 namespace EFlow.Booking.Persistence.Repositories;
 
 public class TeacherRepository(ApplicationDbContext context) :
-    RepositoryBase<Teacher>(context), ITeacherRepository
+    ITeacherRepository
 {
     public async Task CreateAsync(Teacher teacher, CancellationToken cancellationToken = new()) =>
-        await CreateInternalAsync(teacher, cancellationToken);
+        await context.Teachers.AddAsync(teacher, cancellationToken);
 
     public async Task<IEnumerable<Teacher>> GetAllAsync(CancellationToken cancellationToken = new()) =>
-        await GetAllInternalAsync(cancellationToken);
+        await context.Teachers.ToListAsync(cancellationToken);
 
-    public async Task<Teacher?> GetByIdAsync(Guid id, CancellationToken cancellationToken = new()) =>
-        await GetByIdInternalAsync(id, cancellationToken);
+    public async Task<Teacher?> GetByIdAsync(TeacherId id, CancellationToken cancellationToken = new()) =>
+        await context.Teachers.FirstOrDefaultAsync(t => t.Id == id, cancellationToken);
 
     public void Update(Teacher teacher) =>
-        UpdateInternal(teacher);
+        context.Teachers.Update(teacher);
 
-    public async Task DeleteAsync(Guid id, CancellationToken cancellationToken = new()) =>
-        await DeleteInternalAsync(id, cancellationToken);
+    public Task DeleteAsync(Teacher teacher)
+    {
+        context.Teachers.Remove(teacher);
+        
+        return Task.CompletedTask;
+    }
 }

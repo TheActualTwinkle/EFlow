@@ -1,4 +1,10 @@
-﻿using EFlow.Common.Domain;
+﻿using EFlow.Booking.Domain.Admins;
+using EFlow.Booking.Domain.BookingRecords;
+using EFlow.Booking.Domain.Groups;
+using EFlow.Booking.Domain.Students;
+using EFlow.Booking.Domain.SubmissionSlots;
+using EFlow.Booking.Domain.Teachers;
+using EFlow.Booking.Domain.Subjects;
 using EFlow.Booking.Persistence.DatabaseContext;
 using EFlow.Booking.Persistence.Repositories;
 using EFlow.Common.Domain.Repositories;
@@ -36,6 +42,8 @@ public static class DependencyInjection
         services.AddScoped<ISubmissionSlotRepository, SubmissionSlotRepository>();
         services.AddScoped<IBookingRecordRepository, BookingRecordRepository>();
         services.AddScoped<IOutboxMessageRepository, OutboxMessageRepository>();
+        
+        services.AddScoped<IDomainEventDispatcher, DomainEventDispatcher>();
 
         return services;
     }

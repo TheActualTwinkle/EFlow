@@ -1,9 +1,8 @@
 ﻿using EFlow.Booking.Application.Common.Errors;
 using EFlow.Booking.Application.Common.Errors.Abstractions;
-using EFlow.Common.Domain;
+using EFlow.Booking.Domain.BookingRecords;
 using EFlow.Common.Infrastructure;
 using FluentResults;
-using Mapster;
 using MediatR;
 
 namespace EFlow.Booking.Application.BookingRecords.Commands.Update;
@@ -15,7 +14,7 @@ public class UpdateBookingRecordCommandHandler(IUnitOfWork unitOfWork)
     {
         var repository = unitOfWork.GetRepository<IBookingRecordRepository>();
 
-        var booking = await repository.GetByIdAsync(request.Id, cancellationToken);
+        var booking = await repository.GetByIdAsync(new BookingRecordId(request.Id), cancellationToken);
 
         if (booking is null)
             return Result.Fail(
@@ -23,8 +22,8 @@ public class UpdateBookingRecordCommandHandler(IUnitOfWork unitOfWork)
                     .WithMessage("BookingRecord not found")
                     .WithId(request.Id));
 
-        request.Adapt(booking);
-
+        // TODO: Update Domain Model
+        
         repository.Update(booking);
 
         return Result.Ok();

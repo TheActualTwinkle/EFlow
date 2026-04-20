@@ -7,4 +7,6 @@ public record SubjectDto
     public required string Name { get; init; }
 
     public required Guid TeacherId { get; init; }
+    
+    public required IEnumerable<Guid> GroupIds { get; init; }
 }

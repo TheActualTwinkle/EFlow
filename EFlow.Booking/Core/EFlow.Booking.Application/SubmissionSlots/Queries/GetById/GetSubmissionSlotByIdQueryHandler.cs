@@ -1,6 +1,6 @@
 ﻿using EFlow.Booking.Application.Common.Errors;
 using EFlow.Booking.Application.Common.Errors.Abstractions;
-using EFlow.Common.Domain;
+using EFlow.Booking.Domain.SubmissionSlots;
 using EFlow.Common.Infrastructure;
 using FluentResults;
 using Mapster;
@@ -15,7 +15,7 @@ public class GetSubmissionSlotByIdQueryHandler(IUnitOfWork unitOfWork)
     {
         var slot = await unitOfWork
             .GetRepository<ISubmissionSlotRepository>()
-            .GetByIdAsync(request.Id, cancellationToken);
+            .GetByIdAsync(new SubmissionSlotId(request.Id), cancellationToken);
 
         if (slot is null)
             return Result.Fail(

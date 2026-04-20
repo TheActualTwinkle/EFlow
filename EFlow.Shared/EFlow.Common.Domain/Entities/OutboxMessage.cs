@@ -1,6 +1,6 @@
 ﻿namespace EFlow.Common.Domain.Entities;
 
-public record OutboxMessage : IEntity
+public sealed class OutboxMessage : Entity
 {
     public required string Type { get; init; }
 

@@ -1,11 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <ItemGroup>
+        <PackageReference Include="FluentPatcher" />
         <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore"/>
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\..\EFlow.Shared\EFlow.Common.Infrastructure\EFlow.Common.Infrastructure.csproj" />
+      <ProjectReference Include="..\..\..\EFlow.Shared\EFlow.Common.Domain\EFlow.Common.Domain.csproj" />
     </ItemGroup>
 
 </Project>

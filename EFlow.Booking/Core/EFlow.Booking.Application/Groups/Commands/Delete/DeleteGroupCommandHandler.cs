@@ -1,4 +1,4 @@
-﻿using EFlow.Common.Domain;
+﻿using EFlow.Booking.Domain.Groups;
 using EFlow.Common.Infrastructure;
 using FluentResults;
 using MediatR;
@@ -10,9 +10,16 @@ public class DeleteGroupCommandHandler(IUnitOfWork unitOfWork)
 {
     public async Task<Result> Handle(DeleteGroupCommand request, CancellationToken cancellationToken)
     {
-        await unitOfWork
-            .GetRepository<IGroupRepository>()
-            .DeleteAsync(request.Id, cancellationToken);
+        var repository = unitOfWork.GetRepository<IGroupRepository>();
+        
+        var group = await repository.GetByIdAsync(new GroupId(request.Id), cancellationToken);
+
+        if (group is null)
+            return Result.Ok();
+
+        group.Delete();
+
+        await repository.DeleteAsync(group);
 
         return Result.Ok();
     }

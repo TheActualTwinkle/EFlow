@@ -1,7 +1,7 @@
 ﻿using EFlow.Booking.Application.Common.Errors.Abstractions;
 using EFlow.Booking.Application.Common.Errors.Identity;
-using EFlow.Common.Domain.Models;
-using EFlow.Common.Domain;
+using EFlow.Booking.Domain;
+using EFlow.Booking.Domain.Admins;
 using EFlow.Common.Infrastructure;
 using FluentResults;
 using MediatR;
@@ -14,6 +14,7 @@ public class DeleteAdminCommandHandler(IUnitOfWork unitOfWork, UserManager<Ident
 {
     public async Task<Result> Handle(DeleteAdminCommand request, CancellationToken cancellationToken)
     {
+        var repository = unitOfWork.GetRepository<IAdminRepository>();
         var identity = await userManager.FindByIdAsync(request.Id.ToString());
 
         if (identity is null)
@@ -24,12 +25,17 @@ public class DeleteAdminCommandHandler(IUnitOfWork unitOfWork, UserManager<Ident
         if (!result.Succeeded)
             return Result.Fail(
                 new IdentityInternalError()
-                    .WithMessage("Failed to delete user")
+                    .WithMessage("Failed to delete admin")
                     .WithIdentityErrors(result.Errors));
 
-        await unitOfWork
-            .GetRepository<IAdminRepository>()
-            .DeleteAsync(request.Id, cancellationToken);
+        var admin = await repository.GetByIdAsync(new AdminId(request.Id), cancellationToken);
+
+        if (admin is null)
+            return Result.Ok();
+
+        admin.Delete();
+
+        await repository.DeleteAsync(admin);
 
         return Result.Ok();
     }

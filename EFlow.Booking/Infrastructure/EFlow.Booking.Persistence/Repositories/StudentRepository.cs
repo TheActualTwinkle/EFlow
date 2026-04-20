@@ -1,35 +1,35 @@
-﻿using EFlow.Common.Domain.Models;
-using EFlow.Common.Domain;
+﻿using EFlow.Booking.Domain.Domain.Students;
+using EFlow.Booking.Domain.Students;
+using EFlow.Booking.Domain.Groups;
 using EFlow.Booking.Persistence.DatabaseContext;
 using Microsoft.EntityFrameworkCore;
 
 namespace EFlow.Booking.Persistence.Repositories;
 
 public class StudentRepository(ApplicationDbContext context) :
-    RepositoryBase<Student>(context), IStudentRepository
+    IStudentRepository
 {
     public async Task CreateAsync(Student student, CancellationToken cancellationToken = new()) =>
-        await CreateInternalAsync(student, cancellationToken);
+        await context.Students.AddAsync(student, cancellationToken);
 
     public async Task<IEnumerable<Student>> GetAllAsync(CancellationToken cancellationToken = new()) =>
-        await context.Students
-            .Include(s => s.Group)
-            .ToListAsync(cancellationToken);
+        await context.Students.ToListAsync(cancellationToken);
 
-    public async Task<Student?> GetByIdAsync(Guid id, CancellationToken cancellationToken = new()) =>
-        await context.Students
-            .Include(s => s.Group)
-            .FirstOrDefaultAsync(s => s.Id == id, cancellationToken);
+    public async Task<Student?> GetByIdAsync(StudentId id, CancellationToken cancellationToken = new()) =>
+        await context.Students.FirstOrDefaultAsync(s => s.Id == id, cancellationToken);
 
-    public async Task<IEnumerable<Student>> GetByGroupIdAsync(Guid groupId, CancellationToken cancellationToken = new()) =>
+    public async Task<IEnumerable<Student>> GetByGroupIdAsync(GroupId groupId, CancellationToken cancellationToken = new()) =>
         await context.Students
             .Where(s => s.GroupId == groupId)
-            .Include(s => s.Group)
             .ToListAsync(cancellationToken);
 
     public void Update(Student student) =>
-        UpdateInternal(student);
+        context.Students.Update(student);
 
-    public Task DeleteAsync(Guid id, CancellationToken cancellationToken = new()) =>
-        DeleteInternalAsync(id, cancellationToken);
+    public Task DeleteAsync(Student student)
+    {
+        context.Students.Remove(student);
+        
+        return Task.CompletedTask;
+    }
 }

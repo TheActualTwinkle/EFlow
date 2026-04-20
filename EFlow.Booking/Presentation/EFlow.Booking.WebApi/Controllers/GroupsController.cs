@@ -1,7 +1,8 @@
 ﻿using EFlow.Booking.Application.Groups.Commands;
 using EFlow.Booking.Application.Groups.Commands.Update;
 using EFlow.Booking.Application.Groups.Queries;
-using EFlow.Common.Domain.Models;
+using EFlow.Booking.Domain;
+using EFlow.Booking.WebApi.Contracts.Groups;
 using EFlow.Booking.WebApi.Extensions;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -15,8 +16,13 @@ public class GroupsController(ISender sender) : ControllerBase
 {
     [HttpPost]
     [Authorize(Roles = Identity.Roles.Admin)]
-    public async Task<IActionResult> CreateGroup([FromBody] CreateGroupCommand command, CancellationToken cancellationToken)
+    public async Task<IActionResult> CreateGroup([FromBody] CreateGroupRequest request, CancellationToken cancellationToken)
     {
+        var command = new CreateGroupCommand
+        {
+            Name = request.Name
+        };
+
         var result = await sender.Send(command, cancellationToken);
 
         return result.IsFailed ?
@@ -50,10 +56,16 @@ public class GroupsController(ISender sender) : ControllerBase
     [Authorize(Roles = Identity.Roles.Admin)]
     public async Task<IActionResult> UpdateGroup(
         Guid id,
-        [FromBody] UpdateGroupCommand command,
+        [FromBody] UpdateGroupRequest request,
         CancellationToken cancellationToken)
     {
-        var result = await sender.Send(command with { Id = id }, cancellationToken);
+        var command = new UpdateGroupCommand
+        {
+            Id = id,
+            Name = request.Name
+        };
+
+        var result = await sender.Send(command, cancellationToken);
 
         return result.IsFailed ?
             result.Errors[0].ToProblemDetails() :

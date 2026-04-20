@@ -1,4 +1,6 @@
-﻿using EFlow.Common.Domain.Models;
+﻿using EFlow.Booking.Domain.Domain.Students;
+using EFlow.Booking.Domain.Groups;
+using EFlow.Booking.Domain.Students;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -14,9 +16,15 @@ public class StudentConfiguration : IEntityTypeConfiguration<Student>
             .HasName("pk_students");
 
         builder.Property(s => s.Id)
+            .HasConversion(
+                id => id.Value,
+                value => new StudentId(value))
             .HasColumnName("id");
 
         builder.Property(s => s.GroupId)
+            .HasConversion(
+                id => id.Value,
+                value => new GroupId(value))
             .HasColumnName("group_id")
             .IsRequired();
 
@@ -41,15 +49,5 @@ public class StudentConfiguration : IEntityTypeConfiguration<Student>
         builder.Property(s => s.CreatedAt)
             .HasColumnName("created_at")
             .IsRequired();
-
-        builder.HasOne(s => s.Identity)
-            .WithOne()
-            .HasForeignKey<Student>(s => s.Id)
-            .HasConstraintName("fk_students_identity");
-
-        builder.HasOne(s => s.Group)
-            .WithMany(g => g.Students)
-            .HasForeignKey(s => s.GroupId)
-            .HasConstraintName("fk_students_groups");
     }
 }

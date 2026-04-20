@@ -1,6 +1,6 @@
 ﻿using EFlow.Booking.Application.Common.Errors;
 using EFlow.Booking.Application.Common.Errors.Abstractions;
-using EFlow.Common.Domain;
+using EFlow.Booking.Domain.Groups;
 using EFlow.Common.Infrastructure;
 using FluentResults;
 using Mapster;
@@ -15,7 +15,7 @@ public class GetGroupByIdQueryHandler(IUnitOfWork unitOfWork)
     {
         var group = await unitOfWork
             .GetRepository<IGroupRepository>()
-            .GetByIdAsync(request.Id, cancellationToken);
+            .GetByIdAsync(new GroupId(request.Id), cancellationToken);
 
         if (group is null)
             return Result.Fail(

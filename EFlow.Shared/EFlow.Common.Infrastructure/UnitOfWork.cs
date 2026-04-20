@@ -1,5 +1,4 @@
-﻿using System.Collections.Concurrent;
-using System.Data;
+﻿using System.Data;
 using EFlow.Common.Domain;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
@@ -9,11 +8,10 @@ namespace EFlow.Common.Infrastructure;
 
 public sealed class UnitOfWork(
     DbContext context,
-    IServiceProvider serviceProvider)
+    IServiceProvider serviceProvider,
+    IDomainEventDispatcher domainEventsDispatcher)
     : IUnitOfWork
 {
-    private readonly ConcurrentDictionary<Type, IRepository> _repositories = new();
-
     private IDbContextTransaction? _currentTransaction;
 
     private bool _isTransactionStarted;
@@ -26,12 +24,12 @@ public sealed class UnitOfWork(
 
         var type = typeof(T);
 
-        return (T)_repositories.GetOrAdd(type, _ => (T)serviceProvider.GetRequiredService(type));
+        return (T)serviceProvider.GetRequiredService(type);
     }
 
     public async Task BeginTransactionAsync(
         IsolationLevel isolationLevel = IsolationLevel.ReadCommitted,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = new())
     {
         ObjectDisposedException.ThrowIf(_disposed, nameof(UnitOfWork));
 
@@ -43,7 +41,7 @@ public sealed class UnitOfWork(
         _isTransactionStarted = true;
     }
 
-    public async Task CommitTransactionAsync(CancellationToken cancellationToken = default)
+    public async Task CommitTransactionAsync(CancellationToken cancellationToken = new())
     {
         ObjectDisposedException.ThrowIf(_disposed, nameof(UnitOfWork));
 
@@ -52,7 +50,10 @@ public sealed class UnitOfWork(
 
         try
         {
+            await domainEventsDispatcher.DispatchEventsAsync(cancellationToken);
+            
             await context.SaveChangesAsync(cancellationToken);
+
             await _currentTransaction.CommitAsync(cancellationToken);
         }
         catch
@@ -67,7 +68,7 @@ public sealed class UnitOfWork(
         }
     }
 
-    public async Task RollbackTransactionAsync(CancellationToken cancellationToken = default)
+    public async Task RollbackTransactionAsync(CancellationToken cancellationToken = new())
     {
         ObjectDisposedException.ThrowIf(_disposed, nameof(UnitOfWork));
 
@@ -84,13 +85,6 @@ public sealed class UnitOfWork(
         }
     }
 
-    public async Task SaveChangesAsync(CancellationToken cancellationToken = default)
-    {
-        ObjectDisposedException.ThrowIf(_disposed, nameof(UnitOfWork));
-
-        await context.SaveChangesAsync(cancellationToken);
-    }
-
     public async ValueTask DisposeAsync()
     {
         if (_disposed)
@@ -100,8 +94,6 @@ public sealed class UnitOfWork(
             await RollbackTransactionAsync();
 
         await context.DisposeAsync();
-
-        _repositories.Clear();
 
         _disposed = true;
     }

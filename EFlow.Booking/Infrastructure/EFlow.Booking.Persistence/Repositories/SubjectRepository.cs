@@ -1,35 +1,34 @@
-﻿using EFlow.Common.Domain.Models;
-using EFlow.Common.Domain;
-using EFlow.Booking.Persistence.DatabaseContext;
+﻿using EFlow.Booking.Persistence.DatabaseContext;
+using EFlow.Booking.Domain.Subjects;
+using EFlow.Booking.Domain.Teachers;
 using Microsoft.EntityFrameworkCore;
 
 namespace EFlow.Booking.Persistence.Repositories;
 
 public class SubjectRepository(ApplicationDbContext context) :
-    RepositoryBase<Subject>(context), ISubjectRepository
+    ISubjectRepository
 {
     public async Task CreateAsync(Subject subject, CancellationToken cancellationToken = new()) =>
-        await CreateInternalAsync(subject, cancellationToken);
+        await context.Subjects.AddAsync(subject, cancellationToken);
 
     public async Task<IEnumerable<Subject>> GetAllAsync(CancellationToken cancellationToken = new()) =>
-        await context.Subjects
-            .Include(s => s.Teacher)
-            .ToListAsync(cancellationToken);
+        await context.Subjects.ToListAsync(cancellationToken);
 
-    public async Task<Subject?> GetByIdAsync(Guid id, CancellationToken cancellationToken = new()) =>
-        await context.Subjects
-            .Include(s => s.Teacher)
-            .FirstOrDefaultAsync(s => s.Id == id, cancellationToken);
+    public async Task<Subject?> GetByIdAsync(SubjectId id, CancellationToken cancellationToken = new()) =>
+        await context.Subjects.FirstOrDefaultAsync(s => s.Id == id, cancellationToken);
 
-    public async Task<IEnumerable<Subject>> GetByTeacherIdAsync(Guid teacherId, CancellationToken cancellationToken = new()) =>
+    public async Task<IEnumerable<Subject>> GetByTeacherIdAsync(TeacherId teacherId, CancellationToken cancellationToken = new()) =>
         await context.Subjects
             .Where(s => s.TeacherId == teacherId)
-            .Include(s => s.Teacher)
             .ToListAsync(cancellationToken);
 
     public void Update(Subject subject) =>
-        UpdateInternal(subject);
+        context.Subjects.Update(subject);
 
-    public Task DeleteAsync(Guid id, CancellationToken cancellationToken = new()) =>
-        DeleteInternalAsync(id, cancellationToken);
+    public Task DeleteAsync(Subject subject)
+    {
+        context.Subjects.Remove(subject);
+        
+        return Task.CompletedTask;
+    }
 }

@@ -14,6 +14,4 @@ public interface IUnitOfWork : IAsyncDisposable
     public Task CommitTransactionAsync(CancellationToken cancellationToken = new());
 
     public Task RollbackTransactionAsync(CancellationToken cancellationToken = new());
-
-    public Task SaveChangesAsync(CancellationToken cancellationToken = new());
 }

@@ -1,5 +1,6 @@
-﻿using EFlow.Common.Domain.Models;
-using EFlow.Common.Domain;
+﻿using EFlow.Booking.Domain.Groups;
+using EFlow.Booking.Domain.Teachers;
+using EFlow.Booking.Domain.Subjects;
 using EFlow.Common.Infrastructure;
 using FluentResults;
 using MediatR;
@@ -12,18 +13,15 @@ public class CreateSubjectCommandHandler(
 {
     public async Task<Result<Guid>> Handle(CreateSubjectCommand request, CancellationToken cancellationToken)
     {
-        var subject = new Subject
-        {
-            Id = Guid.NewGuid(),
-            Name = request.Name,
-            TeacherId = request.TeacherId,
-            GroupIds = request.GroupIds
-        };
+        var subject = Subject.Create(
+            request.Name,
+            new TeacherId(request.TeacherId),
+            request.GroupIds.Select(id => new GroupId(id)).ToArray());
 
         await unitOfWork
             .GetRepository<ISubjectRepository>()
             .CreateAsync(subject, cancellationToken);
 
-        return Result.Ok(subject.Id);
+        return Result.Ok(subject.Id.Value);
     }
 }

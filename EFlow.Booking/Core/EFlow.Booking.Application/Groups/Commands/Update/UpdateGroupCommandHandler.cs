@@ -1,9 +1,8 @@
 ﻿using EFlow.Booking.Application.Common.Errors;
 using EFlow.Booking.Application.Common.Errors.Abstractions;
-using EFlow.Common.Domain;
+using EFlow.Booking.Domain.Groups;
 using EFlow.Common.Infrastructure;
 using FluentResults;
-using Mapster;
 using MediatR;
 
 namespace EFlow.Booking.Application.Groups.Commands.Update;
@@ -15,7 +14,7 @@ public class UpdateGroupCommandHandler(IUnitOfWork unitOfWork)
     {
         var repository = unitOfWork.GetRepository<IGroupRepository>();
 
-        var group = await repository.GetByIdAsync(request.Id, cancellationToken);
+        var group = await repository.GetByIdAsync(new GroupId(request.Id), cancellationToken);
 
         if (group is null)
             return Result.Fail(
@@ -23,7 +22,7 @@ public class UpdateGroupCommandHandler(IUnitOfWork unitOfWork)
                     .WithMessage("Group not found")
                     .WithId(request.Id));
 
-        request.Adapt(group);
+        // TODO: Update Domain Model
 
         repository.Update(group);
 

@@ -1,0 +1,12 @@
+services:
+  postgres:
+    volumes:
+      - postgres_api-tests_data:/var/lib/postgresql/data
+
+  kafka:
+    volumes:
+      - kafka_api-tests_data:/tmp/kafka-logs
+
+volumes:
+  postgres_api-tests_data:
+  kafka_api-tests_data:

@@ -1,7 +1,7 @@
 ﻿using EFlow.Booking.Application.Common.Errors.Abstractions;
 using EFlow.Booking.Application.Common.Errors.Identity;
-using EFlow.Common.Domain.Models;
-using EFlow.Common.Domain;
+using EFlow.Booking.Domain;
+using EFlow.Booking.Domain.Teachers;
 using EFlow.Common.Infrastructure;
 using FluentResults;
 using MediatR;
@@ -11,7 +11,8 @@ namespace EFlow.Booking.Application.Teachers.Commands;
 
 public class CreateTeacherCommandHandler(
     IUnitOfWork unitOfWork,
-    UserManager<Identity> userManager)
+    UserManager<Identity> userManager,
+    ISystemClock systemClock)
     : IRequestHandler<CreateTeacherCommand, Result<Guid>>
 {
     public async Task<Result<Guid>> Handle(CreateTeacherCommand request, CancellationToken cancellationToken)
@@ -33,20 +34,20 @@ public class CreateTeacherCommandHandler(
                     .WithMessage("Failed to add user to role")
                     .WithIdentityErrors(addToRoleResult.Errors));
 
-        var teacher = new Teacher
-        {
-            Id = identity.Id,
-            FirstName = request.FirstName,
-            LastName = request.LastName,
-            MiddleName = request.MiddleName,
-            BirthDate = request.BirthDate,
-            CreatedAt = DateTime.UtcNow
-        };
+        var nowUtc = systemClock.UtcNow;
+        
+        var teacher = Teacher.Create(
+            request.FirstName,
+            request.LastName,
+            request.MiddleName,
+            request.BirthDate,
+            nowUtc,
+            nowUtc);
 
         await unitOfWork
             .GetRepository<ITeacherRepository>()
             .CreateAsync(teacher, cancellationToken);
 
-        return Result.Ok(identity.Id);
+        return Result.Ok(teacher.Id.Value);
     }
 }

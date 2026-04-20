@@ -1,6 +1,6 @@
 ﻿using EFlow.Booking.Application.Common.Errors;
 using EFlow.Booking.Application.Common.Errors.Abstractions;
-using EFlow.Common.Domain;
+using EFlow.Booking.Domain.BookingRecords;
 using EFlow.Common.Infrastructure;
 using FluentResults;
 using Mapster;
@@ -15,7 +15,7 @@ public class GetBookingRecordByIdQueryHandler(IUnitOfWork unitOfWork)
     {
         var booking = await unitOfWork
             .GetRepository<IBookingRecordRepository>()
-            .GetByIdAsync(request.Id, cancellationToken);
+            .GetByIdAsync(new BookingRecordId(request.Id), cancellationToken);
 
         if (booking is null)
             return Result.Fail(

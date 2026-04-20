@@ -1,6 +1,6 @@
 ﻿using EFlow.Booking.Application.Common.Errors;
 using EFlow.Booking.Application.Common.Errors.Abstractions;
-using EFlow.Common.Domain;
+using EFlow.Booking.Domain.Students;
 using EFlow.Common.Infrastructure;
 using FluentResults;
 using Mapster;
@@ -15,7 +15,7 @@ public class GetStudentByIdQueryHandler(IUnitOfWork unitOfWork)
     {
         var student = await unitOfWork
             .GetRepository<IStudentRepository>()
-            .GetByIdAsync(request.Id, cancellationToken);
+            .GetByIdAsync(new StudentId(request.Id), cancellationToken);
 
         if (student is null)
             return Result.Fail(

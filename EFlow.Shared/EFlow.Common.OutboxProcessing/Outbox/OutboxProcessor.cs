@@ -28,18 +28,30 @@ public class OutboxProcessor(
         foreach (var message in messages)
             try
             {
-                var messageType = Type.GetType(message.Type);
+                var resolvedMessageType = Type.GetType(message.Type);
 
-                if (messageType is null)
-                    throw new InvalidOperationException($"Outbox message type {message.Type} is null");
+                if (resolvedMessageType is null)
+                {
+                    await HandleCorruptedMessage(
+                        outboxMessageRepository,
+                        message.Id, 
+                        $"Unable to resolve outbox message type {message.Type}. Will skip and mark message as processed",
+                        processedMessageIds,
+                        cancellationToken);
 
-                var messageProcessor = messageProcessorFactory.Get(messageType);
+                    continue;
+                }
+
+                var messageProcessor = messageProcessorFactory.Get(resolvedMessageType);
 
                 if (messageProcessor is null)
                 {
-                    logger.LogError(
-                        "No message processor found for type {MessageType}. Will skip and mark as processed.",
-                        messageType.FullName);
+                    await HandleCorruptedMessage(
+                        outboxMessageRepository,
+                        message.Id,
+                        $"No message processor found for type {resolvedMessageType.FullName}. Will skip and mark message as processed.",
+                        processedMessageIds,
+                        cancellationToken);
 
                     continue;
                 }
@@ -78,5 +90,19 @@ public class OutboxProcessor(
         await unitOfWork.CommitTransactionAsync(cancellationToken);
 
         logger.LogInformation("Deleted outbox messages older than {BeforeDate}", beforeDate);
+    }
+
+    private async Task HandleCorruptedMessage(
+        IOutboxMessageRepository outboxMessageRepository,
+        Guid messageId,
+        string error,
+        List<Guid> processedMessageIds,
+        CancellationToken cancellationToken)
+    {
+        logger.LogError(error);
+
+        await outboxMessageRepository.AddErrorAsync(messageId, error, cancellationToken);
+
+        processedMessageIds.Add(messageId);
     }
 }

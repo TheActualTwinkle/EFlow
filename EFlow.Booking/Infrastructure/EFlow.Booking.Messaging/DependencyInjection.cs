@@ -137,7 +137,10 @@ public static class DependencyInjection
     {
         var messageType = typeof(TMessage);
 
-        var assemblies = AppDomain.CurrentDomain.GetAssemblies();
+        var assemblies = new[]
+        {
+            typeof(IntegrationEventsAssemblyMarker).Assembly
+        };
 
         var messageTypes = assemblies
             .SelectMany(a => a.GetTypes())

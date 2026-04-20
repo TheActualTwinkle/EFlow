@@ -1,15 +1,16 @@
 ﻿using EFlow.Booking.Persistence.DatabaseContext;
 using EFlow.Common.Domain.Entities;
 using EFlow.Common.Domain.Repositories;
+using EFlow.Common.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 
 namespace EFlow.Booking.Persistence.Repositories;
 
-public class OutboxMessageRepository(ApplicationDbContext context) :
-    RepositoryBase<OutboxMessage>(context), IOutboxMessageRepository
+public class OutboxMessageRepository(ApplicationDbContext context, ISystemClock systemClock) :
+    IOutboxMessageRepository
 {
     public async Task CreateAsync(OutboxMessage message, CancellationToken cancellationToken = new()) =>
-        await CreateInternalAsync(message, cancellationToken);
+        await context.OutboxMessages.AddAsync(message, cancellationToken);
 
     public async Task<IReadOnlyList<OutboxMessage>> GetUnprocessedAsync(int batchSize, CancellationToken cancellationToken = new()) =>
         await context.OutboxMessages
@@ -28,7 +29,7 @@ public class OutboxMessageRepository(ApplicationDbContext context) :
         await context.OutboxMessages
             .Where(m => ids.Contains(m.Id))
             .ExecuteUpdateAsync(
-                u => u.SetProperty(m => m.ProcessedAt, DateTime.UtcNow),
+                u => u.SetProperty(m => m.ProcessedAt, systemClock.UtcNow),
                 cancellationToken);
 
     public async Task AddErrorAsync(Guid id, string error, CancellationToken cancellationToken = new()) =>

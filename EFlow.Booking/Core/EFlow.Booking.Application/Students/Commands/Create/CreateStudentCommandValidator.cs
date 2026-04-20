@@ -1,11 +1,12 @@
 ﻿using EFlow.Booking.Application.Common.Validators;
+using EFlow.Common.Infrastructure;
 using FluentValidation;
 
 namespace EFlow.Booking.Application.Students.Commands;
 
 public class CreateStudentCommandValidator : AbstractValidator<CreateStudentCommand>
 {
-    public CreateStudentCommandValidator()
+    public CreateStudentCommandValidator(ISystemClock systemClock)
     {
         RuleFor(x => x.UserName).ValidateUsername();
         RuleFor(x => x.Password).ValidatePassword();
@@ -18,7 +19,7 @@ public class CreateStudentCommandValidator : AbstractValidator<CreateStudentComm
 
         RuleFor(x => x.BirthDate)
             .NotEmpty().WithMessage("Birth date is required")
-            .LessThan(DateOnly.FromDateTime(DateTime.UtcNow.AddYears(-14)))
+            .Must(birthDate => birthDate < DateOnly.FromDateTime(systemClock.UtcNow.AddYears(-14)))
             .WithMessage("Student must be at least 14 years old");
     }
 }

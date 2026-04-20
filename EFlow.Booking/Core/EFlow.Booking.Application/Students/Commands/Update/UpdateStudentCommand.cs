@@ -1,5 +1,4 @@
-﻿using System.Text.Json.Serialization;
-using EFlow.Booking.Application.Common.Markers;
+﻿using EFlow.Booking.Application.Common.Markers;
 using FluentResults;
 using MediatR;
 
@@ -7,7 +6,6 @@ namespace EFlow.Booking.Application.Students.Commands.Update;
 
 public record UpdateStudentCommand : IRequest<Result>, ITransactionalRequest
 {
-    [JsonIgnore]
     public Guid Id { get; init; }
 
     public Guid? GroupId { get; init; }

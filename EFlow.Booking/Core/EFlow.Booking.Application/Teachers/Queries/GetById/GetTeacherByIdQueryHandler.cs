@@ -1,6 +1,6 @@
 ﻿using EFlow.Booking.Application.Common.Errors;
 using EFlow.Booking.Application.Common.Errors.Abstractions;
-using EFlow.Common.Domain;
+using EFlow.Booking.Domain.Teachers;
 using EFlow.Common.Infrastructure;
 using FluentResults;
 using Mapster;
@@ -14,7 +14,7 @@ public class GetTeacherByIdQueryHandler(IUnitOfWork unitOfWork) : IRequestHandle
     {
         var teacher = await unitOfWork
             .GetRepository<ITeacherRepository>()
-            .GetByIdAsync(request.Id, cancellationToken);
+            .GetByIdAsync(new TeacherId(request.Id), cancellationToken);
 
         if (teacher is null)
             return Result.Fail(

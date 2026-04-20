@@ -1,4 +1,5 @@
-﻿using EFlow.Common.Domain;
+﻿using EFlow.Booking.Domain.SubmissionSlots;
+using EFlow.Booking.Domain.Subjects;
 using EFlow.Common.Infrastructure;
 using FluentResults;
 using Mapster;
@@ -13,7 +14,7 @@ public class GetSubmissionSlotsBySubjectIdQueryHandler(IUnitOfWork unitOfWork)
     {
         var slots = (await unitOfWork
                 .GetRepository<ISubmissionSlotRepository>()
-                .GetBySubjectIdAsync(request.SubjectId, cancellationToken))
+                .GetBySubjectIdAsync(new SubjectId(request.SubjectId), cancellationToken))
             .Adapt<IEnumerable<SubmissionSlotDto>>();
 
         return Result.Ok(slots);

@@ -1,21 +1,20 @@
 ﻿using EFlow.Booking.Application.Common.Errors;
 using EFlow.Booking.Application.Common.Errors.Abstractions;
-using EFlow.Common.Domain;
+using EFlow.Booking.Domain.Students;
 using EFlow.Common.Infrastructure;
 using FluentResults;
-using Mapster;
 using MediatR;
 
 namespace EFlow.Booking.Application.Students.Commands.Update;
 
-public class UpdateStudentCommandHandler(IUnitOfWork unitOfWork)
+public class UpdateStudentCommandHandler(IUnitOfWork unitOfWork, ISystemClock systemClock)
     : IRequestHandler<UpdateStudentCommand, Result>
 {
     public async Task<Result> Handle(UpdateStudentCommand request, CancellationToken cancellationToken)
     {
         var repository = unitOfWork.GetRepository<IStudentRepository>();
 
-        var student = await repository.GetByIdAsync(request.Id, cancellationToken);
+        var student = await repository.GetByIdAsync(new StudentId(request.Id), cancellationToken);
 
         if (student is null)
             return Result.Fail(
@@ -23,7 +22,7 @@ public class UpdateStudentCommandHandler(IUnitOfWork unitOfWork)
                     .WithMessage("Student not found")
                     .WithId(request.Id));
 
-        request.Adapt(student);
+        // TODO: Update Domain Model
 
         repository.Update(student);
 

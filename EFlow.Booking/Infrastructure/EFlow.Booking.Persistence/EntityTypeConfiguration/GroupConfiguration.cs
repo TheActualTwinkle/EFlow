@@ -1,4 +1,4 @@
-﻿using EFlow.Common.Domain.Models;
+﻿using EFlow.Booking.Domain.Groups;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -14,11 +14,12 @@ public class GroupConfiguration : IEntityTypeConfiguration<Group>
             .HasName("pk_groups");
 
         builder.Property(g => g.Id)
+            .HasConversion(id => id.Value, value => new GroupId(value))
             .HasColumnName("id");
 
         builder.Property(g => g.Name)
             .HasColumnName("name")
-            .HasMaxLength(127)
+            .HasMaxLength(64)
             .IsRequired();
     }
 }

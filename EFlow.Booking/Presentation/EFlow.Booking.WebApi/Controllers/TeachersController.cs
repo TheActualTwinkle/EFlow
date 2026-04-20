@@ -1,7 +1,8 @@
 ﻿using System.Security.Claims;
 using EFlow.Booking.Application.Teachers.Commands;
 using EFlow.Booking.Application.Teachers.Queries;
-using EFlow.Common.Domain.Models;
+using EFlow.Booking.Domain;
+using EFlow.Booking.WebApi.Contracts.Teachers;
 using EFlow.Booking.WebApi.Extensions;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -15,8 +16,18 @@ public class TeachersController(ISender sender) : ControllerBase
 {
     [HttpPost]
     [Authorize(Roles = Identity.Roles.Admin)]
-    public async Task<IActionResult> CreateTeacher([FromBody] CreateTeacherCommand command, CancellationToken cancellationToken)
+    public async Task<IActionResult> CreateTeacher([FromBody] CreateTeacherRequest request, CancellationToken cancellationToken)
     {
+        var command = new CreateTeacherCommand
+        {
+            UserName = request.UserName,
+            Password = request.Password,
+            FirstName = request.FirstName,
+            MiddleName = request.MiddleName,
+            LastName = request.LastName,
+            BirthDate = request.BirthDate
+        };
+
         var result = await sender.Send(command, cancellationToken);
 
         return result.IsFailed ?
@@ -50,7 +61,7 @@ public class TeachersController(ISender sender) : ControllerBase
     [Authorize(Roles = $"{Identity.Roles.Admin},{Identity.Roles.Teacher}")]
     public async Task<IActionResult> UpdateTeacher(
         Guid id,
-        [FromBody] UpdateTeacherCommand command,
+        [FromBody] UpdateTeacherRequest request,
         CancellationToken cancellationToken)
     {
         if (User.IsInRole(Identity.Roles.Teacher))
@@ -65,7 +76,16 @@ public class TeachersController(ISender sender) : ControllerBase
                 );
         }
 
-        var result = await sender.Send(command with { Id = id }, cancellationToken);
+        var command = new UpdateTeacherCommand
+        {
+            Id = id,
+            FirstName = request.FirstName,
+            LastName = request.LastName,
+            MiddleName = request.MiddleName,
+            BirthDate = request.BirthDate
+        };
+
+        var result = await sender.Send(command, cancellationToken);
 
         return result.IsFailed ?
             result.Errors[0].ToProblemDetails() :

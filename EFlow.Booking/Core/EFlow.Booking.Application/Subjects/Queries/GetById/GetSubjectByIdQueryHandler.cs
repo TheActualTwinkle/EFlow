@@ -1,6 +1,6 @@
 ﻿using EFlow.Booking.Application.Common.Errors;
 using EFlow.Booking.Application.Common.Errors.Abstractions;
-using EFlow.Common.Domain;
+using EFlow.Booking.Domain.Subjects;
 using EFlow.Common.Infrastructure;
 using FluentResults;
 using Mapster;
@@ -15,7 +15,7 @@ public class GetSubjectByIdQueryHandler(IUnitOfWork unitOfWork)
     {
         var subject = await unitOfWork
             .GetRepository<ISubjectRepository>()
-            .GetByIdAsync(request.Id, cancellationToken);
+            .GetByIdAsync(new SubjectId(request.Id), cancellationToken);
 
         if (subject is null)
             return Result.Fail(

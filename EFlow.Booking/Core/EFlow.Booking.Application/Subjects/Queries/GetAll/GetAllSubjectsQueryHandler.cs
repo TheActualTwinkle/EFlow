@@ -1,4 +1,4 @@
-﻿using EFlow.Common.Domain;
+﻿using EFlow.Booking.Domain.Subjects;
 using EFlow.Common.Infrastructure;
 using FluentResults;
 using Mapster;

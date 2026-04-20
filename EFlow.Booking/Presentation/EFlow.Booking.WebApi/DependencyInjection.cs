@@ -1,6 +1,8 @@
 ﻿using System.Text;
-using EFlow.Common.Domain.Models;
+using EFlow.Booking.Domain;
 using EFlow.Booking.Persistence.DatabaseContext;
+using EFlow.Booking.WebApi.Mapping;
+using Mapster;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
@@ -36,7 +38,7 @@ public static class DependencyInjection
                 options.Password.RequireLowercase = false;
                 options.Password.RequireUppercase = false;
                 options.Password.RequireNonAlphanumeric = false;
-                options.Password.RequiredLength = 6;
+                options.Password.RequiredLength = 6; // TODO сделать нормальные ограничения
             })
             .AddEntityFrameworkStores<ApplicationDbContext>()
             .AddDefaultTokenProviders();
@@ -94,6 +96,17 @@ public static class DependencyInjection
                 });
 
         services.AddAuthorization();
+
+        return services;
+    }
+    
+    public static IServiceCollection AddMapping(this IServiceCollection services)
+    {
+        TypeAdapterConfig.GlobalSettings.Apply(new MapsterRegister());
+        TypeAdapterConfig.GlobalSettings.RequireExplicitMapping = true;
+        TypeAdapterConfig.GlobalSettings.Default.IgnoreNonMapped(true);
+
+        services.AddSingleton(TypeAdapterConfig.GlobalSettings);
 
         return services;
     }

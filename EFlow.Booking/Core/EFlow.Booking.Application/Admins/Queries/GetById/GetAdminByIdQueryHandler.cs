@@ -1,6 +1,6 @@
 ﻿using EFlow.Booking.Application.Common.Errors;
 using EFlow.Booking.Application.Common.Errors.Abstractions;
-using EFlow.Common.Domain;
+using EFlow.Booking.Domain.Admins;
 using EFlow.Common.Infrastructure;
 using FluentResults;
 using Mapster;
@@ -15,7 +15,7 @@ public class GetAdminByIdQueryHandler(IUnitOfWork unitOfWork)
     {
         var admin = await unitOfWork
             .GetRepository<IAdminRepository>()
-            .GetByIdAsync(request.Id, cancellationToken);
+            .GetByIdAsync(new AdminId(request.Id), cancellationToken);
 
         if (admin is null)
             return Result.Fail(
