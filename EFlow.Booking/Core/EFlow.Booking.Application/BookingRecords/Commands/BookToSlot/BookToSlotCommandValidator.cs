@@ -2,9 +2,9 @@
 
 namespace EFlow.Booking.Application.BookingRecords.Commands;
 
-public class CreateBookingRecordCommandValidator : AbstractValidator<CreateBookingRecordCommand>
+public class BookToSlotCommandValidator : AbstractValidator<BookToSlotCommand>
 {
-    public CreateBookingRecordCommandValidator()
+    public BookToSlotCommandValidator()
     {
         RuleFor(x => x.StudentId)
             .NotEmpty().WithMessage("Student ID is required");

@@ -26,6 +26,7 @@ public sealed class Student : Entity, IAggreagateRoot
     private Student() { }
     
     public Student(
+        StudentId id,
         GroupId groupId,
         string firstName,
         string lastName,
@@ -48,16 +49,17 @@ public sealed class Student : Entity, IAggreagateRoot
         
         ThrowIfBroken(new CreationTimeMustBeInPastRule(createdAt, utcNow));
         
-        Id = new StudentId(Guid.CreateVersion7());
+        Id = id;
         GroupId = groupId;
-        FirstName = firstName;
-        LastName = lastName;
-        MiddleName = middleName;
+        FirstName = trimmedFirstName;
+        LastName = trimmedLastName;
+        MiddleName = trimmedMiddleName;
         BirthDate = birthDate;
         CreatedAt = createdAt;
     }
     
     public static Student Create(
+        StudentId id,
         GroupId groupId,
         string firstName,
         string lastName,
@@ -67,6 +69,7 @@ public sealed class Student : Entity, IAggreagateRoot
         DateTime now)
     {
         var student = new Student(
+            id,
             groupId,
             firstName,
             lastName,

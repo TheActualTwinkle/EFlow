@@ -4,7 +4,7 @@ using MediatR;
 
 namespace EFlow.Booking.Application.BookingRecords.Commands;
 
-public record CreateBookingRecordCommand : IRequest<Result<Guid>>, ITransactionalRequest
+public record BookToSlotCommand : IRequest<Result<Guid>>, ITransactionalRequest
 {
     public required Guid StudentId { get; init; }
 

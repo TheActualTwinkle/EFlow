@@ -23,5 +23,9 @@ public class CreateSubmissionSlotCommandValidator : AbstractValidator<CreateSubm
         RuleFor(x => x.Location)
             .MaximumLength(127).When(x => !string.IsNullOrEmpty(x.Location))
             .WithMessage("Location must not exceed 127 characters");
+
+        RuleFor(x => x.Comment)
+            .MaximumLength(1023).When(x => !string.IsNullOrEmpty(x.Comment))
+            .WithMessage("Comment must not exceed 1023 characters");
     }
 }

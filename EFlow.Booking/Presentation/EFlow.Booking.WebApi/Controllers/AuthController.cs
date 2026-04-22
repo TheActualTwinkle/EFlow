@@ -30,7 +30,8 @@ public class AuthController(
         var user = new Identity
         {
             Id = Guid.NewGuid(),
-            UserName = request.Username
+            UserName = request.Username,
+            Email = request.Email
         };
 
         var result = await userManager.CreateAsync(user, request.Password);
@@ -42,7 +43,7 @@ public class AuthController(
 
         await signInManager.SignInAsync(user, true);
 
-        var token = GenerateJwtToken(user);
+        var token = await GenerateJwtTokenAsync(user);
 
         return Ok(new { Token = token });
     }
@@ -55,14 +56,20 @@ public class AuthController(
         if (user is null)
             return Unauthorized("Invalid credentials");
 
-        var result = await signInManager.CheckPasswordSignInAsync(user, request.Password, false);
+        if (await userManager.IsLockedOutAsync(user))
+            return Unauthorized($"Account is locked until {user.LockoutEnd:O}");
+
+        var result = await signInManager.CheckPasswordSignInAsync(user, request.Password, true);
+
+        if (result.IsLockedOut)
+            return Unauthorized($"Account is locked until {user.LockoutEnd:O}");
 
         if (!result.Succeeded)
             return Unauthorized("Invalid credentials");
 
         await signInManager.SignInAsync(user, true);
 
-        var token = GenerateJwtToken(user);
+        var token = await GenerateJwtTokenAsync(user);
 
         return Ok(new { Token = token });
     }
@@ -97,20 +104,25 @@ public class AuthController(
             {
                 user.Id,
                 user.UserName,
+                user.Email,
                 roles
             });
     }
 
-    private string GenerateJwtToken(Identity user)
+    private async Task<string> GenerateJwtTokenAsync(Identity user)
     {
         var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["Jwt:Key"]!));
         var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
+        var roles = await userManager.GetRolesAsync(user);
 
-        var claims = new[]
+        var claims = new List<Claim>
         {
-            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-            new Claim(ClaimTypes.Name, user.UserName!)
+            new(ClaimTypes.NameIdentifier, user.Id.ToString()),
+            new(ClaimTypes.Name, user.UserName!),
+            new(ClaimTypes.Email, user.Email ?? string.Empty)
         };
+
+        claims.AddRange(roles.Select(role => new Claim(ClaimTypes.Role, role)));
 
         var token = new JwtSecurityToken(
             configuration["Jwt:Issuer"],

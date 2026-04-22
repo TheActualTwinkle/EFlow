@@ -47,6 +47,7 @@ public class MapsterRegister : IRegister
     private void MapStudent(TypeAdapterConfig config) =>
         config.NewConfig<Student, StudentDto>()
             .Map(dest => dest.Id, src => src.Id.Value)
+            .Map(dest => dest.GroupId, src => src.GroupId.Value)
             .Map(dest => dest.FirstName, src => src.FirstName)
             .Map(dest => dest.LastName, src => src.LastName)
             .Map(dest => dest.MiddleName, src => src.MiddleName)
@@ -56,8 +57,7 @@ public class MapsterRegister : IRegister
     private void MapGroup(TypeAdapterConfig config) =>
         config.NewConfig<Group, GroupDto>()
             .Map(dest => dest.Id, src => src.Id.Value)
-            .Map(dest => dest.Name, src => src.Name)
-            .Map(dest => dest.Students, src => src.Students);
+            .Map(dest => dest.Name, src => src.Name);
 
     private void MapSubject(TypeAdapterConfig config) =>
         config.NewConfig<Subject, SubjectDto>()
@@ -73,7 +73,8 @@ public class MapsterRegister : IRegister
             .Map(dest => dest.StartTime, src => src.StartTime)
             .Map(dest => dest.EndTime, src => src.EndTime)
             .Map(dest => dest.MaxStudents, src => src.MaxStudents)
-            .Map(dest => dest.Location, src => src.Location);
+            .Map(dest => dest.Location, src => src.Location)
+            .Map(dest => dest.Comment, src => src.Comment);
 
     private void MapBooking(TypeAdapterConfig config) =>
         config.NewConfig<BookingRecord, BookingRecordDto>()

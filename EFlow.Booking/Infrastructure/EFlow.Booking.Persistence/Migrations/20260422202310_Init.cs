@@ -69,20 +69,6 @@ namespace EFlow.Booking.Persistence.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "booking_records",
-                columns: table => new
-                {
-                    id = table.Column<Guid>(type: "uuid", nullable: false),
-                    student_id = table.Column<Guid>(type: "uuid", nullable: false),
-                    slot_id = table.Column<Guid>(type: "uuid", nullable: false),
-                    created_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("pk_booking_records", x => x.id);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "groups",
                 columns: table => new
                 {
@@ -147,12 +133,14 @@ namespace EFlow.Booking.Persistence.Migrations
                 {
                     id = table.Column<Guid>(type: "uuid", nullable: false),
                     subject_id = table.Column<Guid>(type: "uuid", nullable: false),
+                    teacher_id = table.Column<Guid>(type: "uuid", nullable: false),
                     start_time = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     end_time = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     max_students = table.Column<int>(type: "integer", nullable: false),
                     allow_all_groups = table.Column<bool>(type: "boolean", nullable: false),
                     allowed_group_ids = table.Column<Guid[]>(type: "uuid[]", nullable: false),
-                    location = table.Column<string>(type: "character varying(127)", maxLength: 127, nullable: true)
+                    location = table.Column<string>(type: "character varying(127)", maxLength: 127, nullable: true),
+                    comment = table.Column<string>(type: "character varying(1023)", maxLength: 1023, nullable: true)
                 },
                 constraints: table =>
                 {
@@ -293,6 +281,80 @@ namespace EFlow.Booking.Persistence.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "booking_records",
+                columns: table => new
+                {
+                    id = table.Column<Guid>(type: "uuid", nullable: false),
+                    student_id = table.Column<Guid>(type: "uuid", nullable: false),
+                    slot_id = table.Column<Guid>(type: "uuid", nullable: false),
+                    created_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("pk_booking_records", x => x.id);
+                    table.ForeignKey(
+                        name: "FK_booking_records_students_student_id",
+                        column: x => x.student_id,
+                        principalTable: "students",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_booking_records_submission_slots_slot_id",
+                        column: x => x.slot_id,
+                        principalTable: "submission_slots",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "submission_slot_admissions",
+                columns: table => new
+                {
+                    id = table.Column<Guid>(type: "uuid", nullable: false),
+                    submission_slot_id = table.Column<Guid>(type: "uuid", nullable: false),
+                    student_id = table.Column<Guid>(type: "uuid", nullable: false),
+                    created_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("pk_submission_slot_admissions", x => x.id);
+                    table.ForeignKey(
+                        name: "FK_submission_slot_admissions_students_student_id",
+                        column: x => x.student_id,
+                        principalTable: "students",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_submission_slot_admissions_submission_slots_submission_slot~",
+                        column: x => x.submission_slot_id,
+                        principalTable: "submission_slots",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "submission_slot_notification_settings",
+                columns: table => new
+                {
+                    id = table.Column<Guid>(type: "uuid", nullable: false),
+                    submission_slot_id = table.Column<Guid>(type: "uuid", nullable: false),
+                    user_id = table.Column<Guid>(type: "uuid", nullable: false),
+                    reminder_schedule = table.Column<int>(type: "integer", nullable: false),
+                    booking_notification_mode = table.Column<int>(type: "integer", nullable: true),
+                    created_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("pk_submission_slot_notification_settings", x => x.id);
+                    table.ForeignKey(
+                        name: "FK_submission_slot_notification_settings_submission_slots_subm~",
+                        column: x => x.submission_slot_id,
+                        principalTable: "submission_slots",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
             migrationBuilder.CreateIndex(
                 name: "IX_AspNetRoleClaims_RoleId",
                 schema: "identity",
@@ -338,10 +400,30 @@ namespace EFlow.Booking.Persistence.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
+                name: "IX_booking_records_slot_id",
+                table: "booking_records",
+                column: "slot_id");
+
+            migrationBuilder.CreateIndex(
                 name: "ix_booking_records_student_id_slot_id",
                 table: "booking_records",
                 columns: new[] { "student_id", "slot_id" },
                 unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_submission_slot_admissions_student_id",
+                table: "submission_slot_admissions",
+                column: "student_id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_submission_slot_admissions_submission_slot_id",
+                table: "submission_slot_admissions",
+                column: "submission_slot_id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_submission_slot_notification_settings_submission_slot_id",
+                table: "submission_slot_notification_settings",
+                column: "submission_slot_id");
         }
 
         /// <inheritdoc />
@@ -380,13 +462,13 @@ namespace EFlow.Booking.Persistence.Migrations
                 name: "outbox_messages");
 
             migrationBuilder.DropTable(
-                name: "students");
-
-            migrationBuilder.DropTable(
                 name: "subjects");
 
             migrationBuilder.DropTable(
-                name: "submission_slots");
+                name: "submission_slot_admissions");
+
+            migrationBuilder.DropTable(
+                name: "submission_slot_notification_settings");
 
             migrationBuilder.DropTable(
                 name: "teachers");
@@ -398,6 +480,12 @@ namespace EFlow.Booking.Persistence.Migrations
             migrationBuilder.DropTable(
                 name: "AspNetUsers",
                 schema: "identity");
+
+            migrationBuilder.DropTable(
+                name: "students");
+
+            migrationBuilder.DropTable(
+                name: "submission_slots");
         }
     }
 }

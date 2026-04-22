@@ -10,6 +10,7 @@ public class CreateTeacherCommandValidator : AbstractValidator<CreateTeacherComm
     {
         RuleFor(x => x.UserName).ValidateUsername();
         RuleFor(x => x.Password).ValidatePassword();
+        RuleFor(x => x.Email).ValidateEmail();
 
         RuleFor(x => x.FirstName).ValidateFirstName();
         RuleFor(x => x.LastName).ValidateLastName();

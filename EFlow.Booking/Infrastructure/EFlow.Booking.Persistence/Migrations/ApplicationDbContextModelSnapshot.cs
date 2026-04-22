@@ -59,11 +59,54 @@ namespace EFlow.Booking.Persistence.Migrations
                     b.HasKey("Id")
                         .HasName("pk_booking_records");
 
+                    b.HasIndex("SlotId");
+
                     b.HasIndex("StudentId", "SlotId")
                         .IsUnique()
                         .HasDatabaseName("ix_booking_records_student_id_slot_id");
 
                     b.ToTable("booking_records", (string)null);
+                });
+
+            modelBuilder.Entity("EFlow.Booking.Domain.Domain.Students.Student", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateOnly>("BirthDate")
+                        .HasColumnType("date")
+                        .HasColumnName("birth_date");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("FirstName")
+                        .IsRequired()
+                        .HasMaxLength(31)
+                        .HasColumnType("character varying(31)")
+                        .HasColumnName("first_name");
+
+                    b.Property<Guid>("GroupId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("group_id");
+
+                    b.Property<string>("LastName")
+                        .IsRequired()
+                        .HasMaxLength(31)
+                        .HasColumnType("character varying(31)")
+                        .HasColumnName("last_name");
+
+                    b.Property<string>("MiddleName")
+                        .HasMaxLength(31)
+                        .HasColumnType("character varying(31)")
+                        .HasColumnName("middle_name");
+
+                    b.HasKey("Id")
+                        .HasName("pk_students");
+
+                    b.ToTable("students", (string)null);
                 });
 
             modelBuilder.Entity("EFlow.Booking.Domain.Groups.Group", b =>
@@ -149,6 +192,95 @@ namespace EFlow.Booking.Persistence.Migrations
                     b.ToTable("AspNetUsers", "identity");
                 });
 
+            modelBuilder.Entity("EFlow.Booking.Domain.Subjects.Subject", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid[]>("GroupIds")
+                        .IsRequired()
+                        .HasColumnType("uuid[]")
+                        .HasColumnName("group_ids");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(127)
+                        .HasColumnType("character varying(127)")
+                        .HasColumnName("name");
+
+                    b.Property<Guid>("TeacherId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("teacher_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_subjects");
+
+                    b.ToTable("subjects", (string)null);
+                });
+
+            modelBuilder.Entity("EFlow.Booking.Domain.SubmissionSlots.Admissions.SubmissionSlotAdmission", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<Guid>("StudentId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("student_id");
+
+                    b.Property<Guid>("SubmissionSlotId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("submission_slot_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_submission_slot_admissions");
+
+                    b.HasIndex("StudentId");
+
+                    b.HasIndex("SubmissionSlotId");
+
+                    b.ToTable("submission_slot_admissions", (string)null);
+                });
+
+            modelBuilder.Entity("EFlow.Booking.Domain.SubmissionSlots.NotificationSettings.SubmissionSlotNotificationSettings", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<int?>("BookingNotificationMode")
+                        .HasColumnType("integer")
+                        .HasColumnName("booking_notification_mode");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<int>("ReminderSchedule")
+                        .HasColumnType("integer")
+                        .HasColumnName("reminder_schedule");
+
+                    b.Property<Guid>("SubmissionSlotId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("submission_slot_id");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_submission_slot_notification_settings");
+
+                    b.HasIndex("SubmissionSlotId");
+
+                    b.ToTable("submission_slot_notification_settings", (string)null);
+                });
+
             modelBuilder.Entity("EFlow.Booking.Domain.SubmissionSlots.SubmissionSlot", b =>
                 {
                     b.Property<Guid>("Id")
@@ -163,6 +295,11 @@ namespace EFlow.Booking.Persistence.Migrations
                         .IsRequired()
                         .HasColumnType("uuid[]")
                         .HasColumnName("allowed_group_ids");
+
+                    b.Property<string>("Comment")
+                        .HasMaxLength(1023)
+                        .HasColumnType("character varying(1023)")
+                        .HasColumnName("comment");
 
                     b.Property<DateTime>("EndTime")
                         .HasColumnType("timestamp with time zone")
@@ -184,6 +321,10 @@ namespace EFlow.Booking.Persistence.Migrations
                     b.Property<Guid>("SubjectId")
                         .HasColumnType("uuid")
                         .HasColumnName("subject_id");
+
+                    b.Property<Guid>("TeacherId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("teacher_id");
 
                     b.HasKey("Id")
                         .HasName("pk_submission_slots");
@@ -231,33 +372,6 @@ namespace EFlow.Booking.Persistence.Migrations
                     b.ToTable("teachers", (string)null);
                 });
 
-            modelBuilder.Entity("EFlow.Booking.Subjects.Subject", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
-
-                    b.Property<Guid[]>("GroupIds")
-                        .IsRequired()
-                        .HasColumnType("uuid[]")
-                        .HasColumnName("group_ids");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(127)
-                        .HasColumnType("character varying(127)")
-                        .HasColumnName("name");
-
-                    b.Property<Guid>("TeacherId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("teacher_id");
-
-                    b.HasKey("Id")
-                        .HasName("pk_subjects");
-
-                    b.ToTable("subjects", (string)null);
-                });
-
             modelBuilder.Entity("EFlow.Common.Domain.Entities.OutboxMessage", b =>
                 {
                     b.Property<Guid>("Id")
@@ -292,47 +406,6 @@ namespace EFlow.Booking.Persistence.Migrations
                         .HasName("pk_outbox_messages");
 
                     b.ToTable("outbox_messages", (string)null);
-                });
-
-            modelBuilder.Entity("EFlow.Common.Domain.Students.Student", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
-
-                    b.Property<DateOnly>("BirthDate")
-                        .HasColumnType("date")
-                        .HasColumnName("birth_date");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created_at");
-
-                    b.Property<string>("FirstName")
-                        .IsRequired()
-                        .HasMaxLength(31)
-                        .HasColumnType("character varying(31)")
-                        .HasColumnName("first_name");
-
-                    b.Property<Guid>("GroupId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("group_id");
-
-                    b.Property<string>("LastName")
-                        .IsRequired()
-                        .HasMaxLength(31)
-                        .HasColumnType("character varying(31)")
-                        .HasColumnName("last_name");
-
-                    b.Property<string>("MiddleName")
-                        .HasMaxLength(31)
-                        .HasColumnType("character varying(31)")
-                        .HasColumnName("middle_name");
-
-                    b.HasKey("Id")
-                        .HasName("pk_students");
-
-                    b.ToTable("students", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole<System.Guid>", b =>
@@ -465,6 +538,45 @@ namespace EFlow.Booking.Persistence.Migrations
                     b.ToTable("AspNetUserTokens", "identity");
                 });
 
+            modelBuilder.Entity("EFlow.Booking.Domain.BookingRecords.BookingRecord", b =>
+                {
+                    b.HasOne("EFlow.Booking.Domain.SubmissionSlots.SubmissionSlot", null)
+                        .WithMany()
+                        .HasForeignKey("SlotId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("EFlow.Booking.Domain.Domain.Students.Student", null)
+                        .WithMany()
+                        .HasForeignKey("StudentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("EFlow.Booking.Domain.SubmissionSlots.Admissions.SubmissionSlotAdmission", b =>
+                {
+                    b.HasOne("EFlow.Booking.Domain.Domain.Students.Student", null)
+                        .WithMany()
+                        .HasForeignKey("StudentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("EFlow.Booking.Domain.SubmissionSlots.SubmissionSlot", null)
+                        .WithMany("Admissions")
+                        .HasForeignKey("SubmissionSlotId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("EFlow.Booking.Domain.SubmissionSlots.NotificationSettings.SubmissionSlotNotificationSettings", b =>
+                {
+                    b.HasOne("EFlow.Booking.Domain.SubmissionSlots.SubmissionSlot", null)
+                        .WithMany("NotificationSettings")
+                        .HasForeignKey("SubmissionSlotId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<System.Guid>", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole<System.Guid>", null)
@@ -514,6 +626,13 @@ namespace EFlow.Booking.Persistence.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("EFlow.Booking.Domain.SubmissionSlots.SubmissionSlot", b =>
+                {
+                    b.Navigation("Admissions");
+
+                    b.Navigation("NotificationSettings");
                 });
 #pragma warning restore 612, 618
         }

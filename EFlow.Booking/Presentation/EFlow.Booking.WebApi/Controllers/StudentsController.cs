@@ -23,6 +23,7 @@ public class StudentsController(ISender sender) : ControllerBase
         {
             UserName = request.UserName,
             Password = request.Password,
+            Email = request.Email,
             GroupId = request.GroupId,
             FirstName = request.FirstName,
             MiddleName = request.MiddleName,

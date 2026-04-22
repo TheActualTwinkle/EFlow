@@ -19,7 +19,13 @@ public class CreateStudentCommandHandler(
 {
     public async Task<Result<Guid>> Handle(CreateStudentCommand request, CancellationToken cancellationToken)
     {
-        var identity = new Identity { UserName = request.UserName };
+        var identity = new Identity
+        {
+            Id = Guid.NewGuid(),
+            UserName = request.UserName,
+            Email = request.Email
+        };
+
         var createUserResult = await userManager.CreateAsync(identity, request.Password);
 
         if (!createUserResult.Succeeded)
@@ -37,8 +43,9 @@ public class CreateStudentCommandHandler(
                     .WithIdentityErrors(addToRoleResult.Errors));
 
         var nowUtc = systemClock.UtcNow;
-        
+
         var student = Student.Create(
+            new StudentId(identity.Id),
             new GroupId(request.GroupId),
             request.FirstName,
             request.LastName,

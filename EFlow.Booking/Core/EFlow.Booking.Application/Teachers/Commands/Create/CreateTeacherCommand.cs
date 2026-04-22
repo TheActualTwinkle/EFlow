@@ -10,6 +10,8 @@ public record CreateTeacherCommand : IRequest<Result<Guid>>, ITransactionalReque
 
     public required string Password { get; init; }
 
+    public required string Email { get; init; }
+
     public required string FirstName { get; init; }
 
     public string? MiddleName { get; init; }

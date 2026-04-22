@@ -1,4 +1,5 @@
 ﻿using EFlow.Booking.Domain.BookingRecords;
+using EFlow.Booking.Domain.Domain.Students;
 using EFlow.Booking.Domain.Students;
 using EFlow.Booking.Domain.SubmissionSlots;
 using Microsoft.EntityFrameworkCore;
@@ -42,5 +43,15 @@ public class BookingRecordConfiguration : IEntityTypeConfiguration<BookingRecord
         builder.HasIndex(b => new { b.StudentId, b.SlotId })
             .IsUnique()
             .HasDatabaseName("ix_booking_records_student_id_slot_id");
+
+        builder.HasOne<Student>()
+            .WithMany()
+            .HasForeignKey(bookingRecord => bookingRecord.StudentId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.HasOne<SubmissionSlot>()
+            .WithMany()
+            .HasForeignKey(bookingRecord => bookingRecord.SlotId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }

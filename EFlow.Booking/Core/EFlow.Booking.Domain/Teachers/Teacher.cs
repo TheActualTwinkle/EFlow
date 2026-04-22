@@ -22,6 +22,7 @@ public sealed class Teacher : Entity, IAggreagateRoot
     private Teacher() { }
     
     private Teacher(
+        TeacherId id,
         string firstName,
         string lastName,
         string? middleName,
@@ -43,7 +44,7 @@ public sealed class Teacher : Entity, IAggreagateRoot
 
         ThrowIfBroken(new CreationTimeMustBeInPastRule(createdAt, utcNow));
 
-        Id = new TeacherId(Guid.CreateVersion7());
+        Id = id;
         FirstName = trimmedFirstName;
         LastName = trimmedLastName;
         MiddleName = trimmedMiddleName;
@@ -52,6 +53,7 @@ public sealed class Teacher : Entity, IAggreagateRoot
     }
 
     public static Teacher Create(
+        TeacherId id,
         string firstName,
         string lastName,
         string? middleName,
@@ -60,6 +62,7 @@ public sealed class Teacher : Entity, IAggreagateRoot
         DateTime now)
     {
         var teacher = new Teacher(
+            id,
             firstName,
             lastName,
             middleName,

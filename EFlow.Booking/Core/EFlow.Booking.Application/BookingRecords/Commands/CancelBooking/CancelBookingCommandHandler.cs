@@ -8,10 +8,10 @@ using MediatR;
 
 namespace EFlow.Booking.Application.BookingRecords.Commands;
 
-public class DeleteBookingRecordCommandHandler(IUnitOfWork unitOfWork)
-    : IRequestHandler<DeleteBookingRecordCommand, Result>
+public class CancelBookingCommandHandler(IUnitOfWork unitOfWork)
+    : IRequestHandler<CancelBookingCommand, Result>
 {
-    public async Task<Result> Handle(DeleteBookingRecordCommand request, CancellationToken cancellationToken)
+    public async Task<Result> Handle(CancelBookingCommand request, CancellationToken cancellationToken)
     {
         var bookingRecordRepository = unitOfWork.GetRepository<IBookingRecordRepository>();
 

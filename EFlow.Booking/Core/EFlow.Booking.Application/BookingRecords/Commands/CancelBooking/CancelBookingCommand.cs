@@ -4,7 +4,7 @@ using MediatR;
 
 namespace EFlow.Booking.Application.BookingRecords.Commands;
 
-public record DeleteBookingRecordCommand : IRequest<Result>, ITransactionalRequest
+public record CancelBookingCommand : IRequest<Result>, ITransactionalRequest
 {
     public required Guid Id { get; init; }
 }

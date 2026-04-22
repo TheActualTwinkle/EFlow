@@ -18,6 +18,7 @@ public class CreateTeacherCommandValidatorTests
         {
             UserName = "teacher.boundary",
             Password = "StrongPass1!",
+            Email = "teacher@example.com",
             FirstName = "Ivan",
             LastName = "Petrov",
             BirthDate = DateOnly.FromDateTime(now.AddYears(-18))

@@ -19,7 +19,7 @@ public class BookingsController(ISender sender) : ControllerBase
     [Authorize(Roles = $"{Identity.Roles.Admin},{Identity.Roles.Student}")]
     public async Task<IActionResult> CreateBooking([FromBody] CreateBookingRequest request, CancellationToken cancellationToken)
     {
-        var command = new CreateBookingRecordCommand
+        var command = new BookToSlotCommand
         {
             StudentId = request.StudentId,
             SlotId = request.SlotId
@@ -142,7 +142,7 @@ public class BookingsController(ISender sender) : ControllerBase
                 );
         }
 
-        var result = await sender.Send(new DeleteBookingRecordCommand { Id = id }, cancellationToken);
+        var result = await sender.Send(new CancelBookingCommand { Id = id }, cancellationToken);
 
         return result.IsFailed ?
             result.Errors[0].ToProblemDetails() :

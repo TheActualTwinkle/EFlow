@@ -7,7 +7,7 @@ using MediatR;
 
 namespace EFlow.Booking.Application.Students.Commands.Update;
 
-public class UpdateStudentCommandHandler(IUnitOfWork unitOfWork, ISystemClock systemClock)
+public class UpdateStudentCommandHandler(IUnitOfWork unitOfWork)
     : IRequestHandler<UpdateStudentCommand, Result>
 {
     public async Task<Result> Handle(UpdateStudentCommand request, CancellationToken cancellationToken)

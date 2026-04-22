@@ -4,7 +4,6 @@ namespace EFlow.Booking.Application.SubmissionSlots.Commands.Update;
 
 public class UpdateSubmissionSlotCommandValidator : AbstractValidator<UpdateSubmissionSlotCommand>
 {
-    // TODO: добавить сюда бизнес валидацию о времени, брать время из базы и проверять что оно не пересекается с другими слотами и что время старта раньше чем уже записанное время конца и т.п.
     public UpdateSubmissionSlotCommandValidator()
     {
         When(
@@ -34,5 +33,9 @@ public class UpdateSubmissionSlotCommandValidator : AbstractValidator<UpdateSubm
         RuleFor(x => x.Location)
             .MaximumLength(127).When(x => !string.IsNullOrEmpty(x.Location))
             .WithMessage("Location must not exceed 127 characters");
+
+        RuleFor(x => x.Comment)
+            .MaximumLength(1023).When(x => !string.IsNullOrEmpty(x.Comment))
+            .WithMessage("Comment must not exceed 1023 characters");
     }
 }

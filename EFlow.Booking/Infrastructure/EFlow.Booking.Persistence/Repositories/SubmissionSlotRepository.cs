@@ -12,18 +12,32 @@ public class SubmissionSlotRepository(ApplicationDbContext context) :
         await context.SubmissionSlots.AddAsync(slot, cancellationToken);
 
     public async Task<IEnumerable<SubmissionSlot>> GetAllAsync(CancellationToken cancellationToken = new()) =>
-        await context.SubmissionSlots.ToListAsync(cancellationToken);
+        await context.SubmissionSlots
+            .Include(slot => slot.Admissions)
+            .Include(slot => slot.NotificationSettings)
+            .AsSplitQuery()
+            .ToListAsync(cancellationToken);
 
     public async Task<SubmissionSlot?> GetByIdAsync(SubmissionSlotId id, CancellationToken cancellationToken = new()) =>
-        await context.SubmissionSlots.FirstOrDefaultAsync(s => s.Id == id, cancellationToken);
+        await context.SubmissionSlots
+            .Include(slot => slot.Admissions)
+            .Include(slot => slot.NotificationSettings)
+            .AsSplitQuery()
+            .FirstOrDefaultAsync(s => s.Id == id, cancellationToken);
 
     public async Task<IEnumerable<SubmissionSlot>> GetBySubjectIdAsync(SubjectId subjectId, CancellationToken cancellationToken = new()) =>
         await context.SubmissionSlots
+            .Include(slot => slot.Admissions)
+            .Include(slot => slot.NotificationSettings)
+            .AsSplitQuery()
             .Where(s => s.SubjectId == subjectId)
             .ToListAsync(cancellationToken);
 
     public async Task<IEnumerable<SubmissionSlot>> GetAvailableSlotsAsync(DateTime fromDate, CancellationToken cancellationToken = new()) =>
         await context.SubmissionSlots
+            .Include(slot => slot.Admissions)
+            .Include(slot => slot.NotificationSettings)
+            .AsSplitQuery()
             .Where(s => s.StartTime >= fromDate)
             .ToListAsync(cancellationToken);
 

@@ -1,4 +1,7 @@
-﻿using EFlow.Booking.Domain.SubmissionSlots;
+﻿using EFlow.Booking.Application.Common.Errors;
+using EFlow.Booking.Application.Common.Errors.Abstractions;
+using EFlow.Booking.Domain.SubmissionSlots;
+using EFlow.Booking.Domain.Teachers;
 using EFlow.Common.Infrastructure;
 using FluentResults;
 using MediatR;

@@ -9,5 +9,6 @@ public class CreateAdminCommandValidator : AbstractValidator<CreateAdminCommand>
     {
         RuleFor(x => x.UserName).ValidateUsername();
         RuleFor(x => x.Password).ValidatePassword();
+        RuleFor(x => x.Email).ValidateEmail();
     }
 }

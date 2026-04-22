@@ -1,4 +1,5 @@
-﻿using EFlow.Booking.Application.SubmissionSlots.Commands;
+﻿using System.Security.Claims;
+using EFlow.Booking.Application.SubmissionSlots.Commands;
 using EFlow.Booking.Application.SubmissionSlots.Commands.Update;
 using EFlow.Booking.Application.SubmissionSlots.Queries;
 using EFlow.Booking.Domain;
@@ -21,12 +22,14 @@ public class SubmissionSlotsController(ISender sender) : ControllerBase
         var command = new CreateSubmissionSlotCommand
         {
             SubjectId = request.SubjectId,
+            TeacherId = request.TeacherId,
             StartTime = request.StartTime,
             EndTime = request.EndTime,
             MaxStudents = request.MaxStudents,
             AllowAllGroups = request.AllowAllGroups,
             AllowedGroupIds = request.AllowedGroupIds,
-            Location = request.Location
+            Location = request.Location,
+            Comment = request.Comment
         };
 
         var result = await sender.Send(command, cancellationToken);
@@ -81,20 +84,38 @@ public class SubmissionSlotsController(ISender sender) : ControllerBase
     }
 
     [HttpPatch("{id:guid}")]
-    [Authorize(Roles = Identity.Roles.Admin)]
+    [Authorize(Roles = $"{Identity.Roles.Admin},{Identity.Roles.Teacher}")]
     public async Task<IActionResult> UpdateSlot(
         Guid id,
         [FromBody] UpdateSubmissionSlotRequest request,
         CancellationToken cancellationToken)
     {
+        if (!User.IsInRole(Identity.Roles.Admin))
+        {
+            var getSlotResult = await sender.Send(new GetSubmissionSlotByIdQuery { Id = id }, cancellationToken);
+            
+            if (getSlotResult.IsFailed)
+                return getSlotResult.Errors[0].ToProblemDetails();
+            
+            if (getSlotResult.Value.TeacherId.ToString() != User.FindFirst(ClaimTypes.NameIdentifier)?.Value)
+                return Problem(
+                    title: "Forbidden",
+                    detail: "You can only update your own slots.",
+                    statusCode: StatusCodes.Status403Forbidden);
+        }
+        
         var command = new UpdateSubmissionSlotCommand
         {
             Id = id,
+            TeacherId = request.TeacherId,
             SubjectId = request.SubjectId,
             StartTime = request.StartTime,
             EndTime = request.EndTime,
             MaxStudents = request.MaxStudents,
-            Location = request.Location
+            AllowAllGroups = request.AllowAllGroups,
+            AllowedGroupIds = request.AllowedGroupIds,
+            Location = request.Location,
+            Comment = request.Comment
         };
 
         var result = await sender.Send(command, cancellationToken);
@@ -105,10 +126,125 @@ public class SubmissionSlotsController(ISender sender) : ControllerBase
     }
 
     [HttpDelete("{id:guid}")]
-    [Authorize(Roles = Identity.Roles.Admin)]
+    [Authorize(Roles = $"{Identity.Roles.Admin},{Identity.Roles.Teacher}")]
     public async Task<IActionResult> DeleteSlot(Guid id, CancellationToken cancellationToken)
     {
+        if (!User.IsInRole(Identity.Roles.Admin))
+        {
+            var getSlotResult = await sender.Send(new GetSubmissionSlotByIdQuery { Id = id }, cancellationToken);
+
+            if (getSlotResult.IsFailed)
+                return NoContent();
+            
+            if (getSlotResult.Value.TeacherId.ToString() != User.FindFirst(ClaimTypes.NameIdentifier)?.Value)
+                return Problem(
+                    title: "Forbidden",
+                    detail: "You can only delete your own slots.",
+                    statusCode: StatusCodes.Status403Forbidden);
+        }
+
         var result = await sender.Send(new DeleteSubmissionSlotCommand { Id = id }, cancellationToken);
+
+        return result.IsFailed ?
+            result.Errors[0].ToProblemDetails() :
+            NoContent();
+    }
+
+    [HttpPost("{id:guid}/admissions/{studentId:guid}")]
+    [Authorize(Roles = $"{Identity.Roles.Admin},{Identity.Roles.Teacher}")]
+    public async Task<IActionResult> AddAdmission(
+        Guid id,
+        Guid studentId,
+        CancellationToken cancellationToken)
+    {
+        if (!User.IsInRole(Identity.Roles.Admin))
+        {
+            var getSlotResult = await sender.Send(new GetSubmissionSlotByIdQuery { Id = id }, cancellationToken);
+
+            if (getSlotResult.IsFailed)
+                return getSlotResult.Errors[0].ToProblemDetails();
+            
+            if (getSlotResult.Value.TeacherId.ToString() != User.FindFirst(ClaimTypes.NameIdentifier)?.Value)
+                return Problem(
+                    title: "Forbidden",
+                    detail: "You can only add admissions to your own slots.",
+                    statusCode: StatusCodes.Status403Forbidden);
+        }
+        
+        var result = await sender.Send(
+            new AddAdmissionCommand
+            {
+                SlotId = id,
+                StudentId = studentId,
+            },
+            cancellationToken);
+
+        return result.IsFailed ?
+            result.Errors[0].ToProblemDetails() :
+            Ok(result.Value);
+    }
+
+    [HttpDelete("{id:guid}/admissions/{studentId:guid}")]
+    [Authorize(Roles = $"{Identity.Roles.Admin},{Identity.Roles.Teacher}")]
+    public async Task<IActionResult> RemoveAdmission(
+        Guid id,
+        Guid studentId,
+        CancellationToken cancellationToken)
+    {
+        if (!User.IsInRole(Identity.Roles.Admin))
+        {
+            var getSlotResult = await sender.Send(new GetSubmissionSlotByIdQuery { Id = id }, cancellationToken);
+
+            if (getSlotResult.IsFailed)
+                return getSlotResult.Errors[0].ToProblemDetails();
+            
+            if (getSlotResult.Value.TeacherId.ToString() != User.FindFirst(ClaimTypes.NameIdentifier)?.Value)
+                return Problem(
+                    title: "Forbidden",
+                    detail: "You can only remove admissions to your own slots.",
+                    statusCode: StatusCodes.Status403Forbidden);
+        }
+
+        var result = await sender.Send(
+            new RemoveAdmissionCommand
+            {
+                SlotId = id,
+                StudentId = studentId,
+            },
+            cancellationToken);
+
+        return result.IsFailed ?
+            result.Errors[0].ToProblemDetails() :
+            NoContent();
+    }
+
+    [HttpPut("{id:guid}/notification-settings")]
+    [Authorize]
+    public async Task<IActionResult> UpdateNotificationSettings(
+        Guid id,
+        [FromBody] UpdateSubmissionSlotNotificationSettingsRequest request,
+        CancellationToken cancellationToken)
+    {
+        if (!User.IsInRole(Identity.Roles.Admin))
+        {
+            var currentUserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (currentUserId != request.UserId.ToString())
+                return Problem(
+                    title: "Forbidden",
+                    detail: "You can only update your own notification settings.",
+                    statusCode: StatusCodes.Status403Forbidden);
+        }
+
+        var result = await sender.Send(
+            new UpdateNotificationSettingsCommand
+            {
+                SlotId = id,
+                UserId = request.UserId,
+                ReminderSchedule = request.ReminderSchedule,
+                BookingNotificationMode = request.BookingNotificationMode
+            },
+            cancellationToken);
 
         return result.IsFailed ?
             result.Errors[0].ToProblemDetails() :
