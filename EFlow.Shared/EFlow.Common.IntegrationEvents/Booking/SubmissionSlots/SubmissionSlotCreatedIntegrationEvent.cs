@@ -1,7 +1,7 @@
 ﻿using EFlow.Common.Markers;
 using MemoryPack;
 
-namespace EFlow.Booking.IntegrationEvents;
+namespace EFlow.Booking.IntegrationEvents.SubmissionSlots;
 
 [MemoryPackable]
 public partial record SubmissionSlotCreatedIntegrationEvent : IKafkaMessage

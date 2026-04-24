@@ -1,16 +1,9 @@
-﻿using EFlow.Booking.Domain.Notifications;
-using FluentValidation;
+﻿using FluentValidation;
 
 namespace EFlow.Booking.Application.SubmissionSlots.Commands;
 
 public class UpdateNotificationSettingsCommandValidator : AbstractValidator<UpdateNotificationSettingsCommand>
 {
-    private const ReminderSchedule AllReminderScheduleValues =
-        ReminderSchedule.TwoWeeks |
-        ReminderSchedule.OneWeek |
-        ReminderSchedule.TwoDays |
-        ReminderSchedule.FourHours;
-
     public UpdateNotificationSettingsCommandValidator()
     {
         RuleFor(x => x.SlotId)
@@ -19,8 +12,15 @@ public class UpdateNotificationSettingsCommandValidator : AbstractValidator<Upda
         RuleFor(x => x.UserId)
             .NotEmpty().WithMessage("User ID is required");
 
-        RuleFor(x => x.ReminderSchedule)
-            .Must(value => (value & ~AllReminderScheduleValues) == 0)
+        RuleFor(x => x.ReminderSchedules)
+            .NotNull().WithMessage("Reminder schedules are required");
+
+        RuleFor(x => x.ReminderSchedules)
+            .Must(schedules => schedules.Distinct().Count() == schedules.Length)
+            .WithMessage("Reminder schedules must not contain duplicates");
+
+        RuleForEach(x => x.ReminderSchedules)
+            .IsInEnum()
             .WithMessage("Reminder schedule is invalid");
 
         RuleFor(x => x.BookingNotificationMode)

@@ -45,17 +45,22 @@ public sealed class BookingRecord : Entity, IAggreagateRoot
         bookingRecord.AddDomainEvent(new BookingRecordCreatedDomainEvent
         {
             BookingRecordId = bookingRecord.Id,
+            StudentId = bookingRecord.StudentId,
+            SlotId = bookingRecord.SlotId,
             CreatedAt = createdAt
         });
         
         return bookingRecord;
     }
 
-    internal BookingRecordId Delete()
+    internal BookingRecordId Cancel(DateTime cancelledAt)
     {
         AddDomainEvent(new BookingRecordDeletedDomainEvent
         {
             BookingRecordId = Id,
+            StudentId = StudentId,
+            SlotId = SlotId,
+            CancelledAt = cancelledAt
         });
 
         return Id;

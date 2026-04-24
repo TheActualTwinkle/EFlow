@@ -3,4 +3,10 @@
 public static class KafkaTopics
 {
     public const string SubmissionSlotCreatedTopic = "eflow-submission-slot-created";
+    
+    public const string SubmissionSlotUpdatedTopic = "eflow-submission-slot-updated";
+
+    public const string BookingCreatedTopic = "eflow-booking-created";
+
+    public const string BookingCancelledTopic = "eflow-booking-cancelled";
 }

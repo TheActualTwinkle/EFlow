@@ -340,7 +340,7 @@ namespace EFlow.Booking.Persistence.Migrations
                     id = table.Column<Guid>(type: "uuid", nullable: false),
                     submission_slot_id = table.Column<Guid>(type: "uuid", nullable: false),
                     user_id = table.Column<Guid>(type: "uuid", nullable: false),
-                    reminder_schedule = table.Column<int>(type: "integer", nullable: false),
+                    reminder_schedules = table.Column<int[]>(type: "integer[]", nullable: false),
                     booking_notification_mode = table.Column<int>(type: "integer", nullable: true),
                     created_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },

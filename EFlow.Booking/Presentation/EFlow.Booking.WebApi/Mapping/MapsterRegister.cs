@@ -70,6 +70,7 @@ public class MapsterRegister : IRegister
         config.NewConfig<SubmissionSlot, SubmissionSlotDto>()
             .Map(dest => dest.Id, src => src.Id.Value)
             .Map(dest => dest.SubjectId, src => src.SubjectId.Value)
+            .Map(dest => dest.TeacherId, src => src.TeacherId.Value)
             .Map(dest => dest.StartTime, src => src.StartTime)
             .Map(dest => dest.EndTime, src => src.EndTime)
             .Map(dest => dest.MaxStudents, src => src.MaxStudents)

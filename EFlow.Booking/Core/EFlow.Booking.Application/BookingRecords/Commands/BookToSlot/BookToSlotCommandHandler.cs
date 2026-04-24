@@ -3,7 +3,6 @@ using EFlow.Booking.Application.Common.Errors.Abstractions;
 using EFlow.Booking.Domain.BookingRecords;
 using EFlow.Booking.Domain.Students;
 using EFlow.Booking.Domain.SubmissionSlots;
-using EFlow.Common.Domain.Exceptions;
 using EFlow.Common.Infrastructure;
 using FluentResults;
 using MediatR;

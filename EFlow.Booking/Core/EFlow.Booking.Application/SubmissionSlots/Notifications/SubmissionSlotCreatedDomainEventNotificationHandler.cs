@@ -1,13 +1,14 @@
-using EFlow.Booking.IntegrationEvents;
-using EFlow.Common.Domain.Entities;
+using EFlow.Booking.Application.Common.Outbox.Interfaces;
+using EFlow.Booking.IntegrationEvents.SubmissionSlots;
 using EFlow.Common.Domain.Repositories;
 using EFlow.Common.Infrastructure;
 using MediatR;
-using MemoryPack;
 
 namespace EFlow.Booking.Application.SubmissionSlots.Notifications;
 
-public sealed class SubmissionSlotCreatedDomainEventNotificationHandler(IUnitOfWork unitOfWork)
+public sealed class SubmissionSlotCreatedDomainEventNotificationHandler(
+    IUnitOfWork unitOfWork,
+    IOutboxMessageFactory outboxMessageFactory)
     : INotificationHandler<SubmissionSlotCreatedDomainEventNotification>
 {
     public async Task Handle(SubmissionSlotCreatedDomainEventNotification notification, CancellationToken cancellationToken)
@@ -27,14 +28,7 @@ public sealed class SubmissionSlotCreatedDomainEventNotificationHandler(IUnitOfW
         var outboxMessageRepository = unitOfWork.GetRepository<IOutboxMessageRepository>();
 
         await outboxMessageRepository.CreateAsync(
-            new OutboxMessage
-            {
-                Id = Guid.CreateVersion7(),
-                Type = typeof(SubmissionSlotCreatedIntegrationEvent).AssemblyQualifiedName
-                       ?? throw new InvalidOperationException($"Unable to resolve type name for {nameof(SubmissionSlotCreatedIntegrationEvent)}"),
-                Payload = MemoryPackSerializer.Serialize(integrationEvent),
-                CreatedAt = domainEvent.CreatedAt
-            },
+            outboxMessageFactory.Create(integrationEvent, domainEvent.CreatedAt),
             cancellationToken);
     }
 }

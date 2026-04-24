@@ -1,5 +1,7 @@
 ﻿using System.Reflection;
 using EFlow.Booking.Application.Common.Behaviors;
+using EFlow.Booking.Application.Common.Outbox;
+using EFlow.Booking.Application.Common.Outbox.Interfaces;
 using EFlow.Common.Infrastructure;
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
@@ -22,6 +24,8 @@ public static class DependencyInjection
         });
 
         services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
+
+        services.AddScoped<IOutboxMessageFactory, OutboxMessageFactory>();
 
         return services;
     }

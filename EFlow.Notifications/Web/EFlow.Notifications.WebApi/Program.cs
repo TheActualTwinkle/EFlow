@@ -18,7 +18,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddOpenApi();
 
 builder.Services.AddMessaging(builder.Configuration);
-builder.Services.AddNotificationServices();
+builder.Services.AddNotificationServices(builder.Configuration);
 
 var app = builder.Build();
 

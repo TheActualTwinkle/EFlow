@@ -61,6 +61,17 @@ public class SubmissionSlotsController(ISender sender) : ControllerBase
             Ok(result.Value);
     }
 
+    [HttpGet("reminder-snapshot")]
+    [AllowAnonymous]
+    public async Task<IActionResult> GetReminderSnapshot(CancellationToken cancellationToken)
+    {
+        var result = await sender.Send(new GetSubmissionSlotReminderSnapshotQuery(), cancellationToken);
+
+        return result.IsFailed ?
+            result.Errors[0].ToProblemDetails() :
+            Ok(result.Value);
+    }
+
     [HttpGet("by-subject/{subjectId:guid}")]
     [Authorize]
     public async Task<IActionResult> GetSlotsBySubject(Guid subjectId, CancellationToken cancellationToken)
@@ -241,7 +252,7 @@ public class SubmissionSlotsController(ISender sender) : ControllerBase
             {
                 SlotId = id,
                 UserId = request.UserId,
-                ReminderSchedule = request.ReminderSchedule,
+                ReminderSchedules = request.ReminderSchedules,
                 BookingNotificationMode = request.BookingNotificationMode
             },
             cancellationToken);

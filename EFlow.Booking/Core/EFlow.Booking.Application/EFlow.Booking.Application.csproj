@@ -12,8 +12,8 @@
 
     <ItemGroup>
         <ProjectReference Include="..\..\..\EFlow.Shared\EFlow.Common.Infrastructure\EFlow.Common.Infrastructure.csproj" />
+        <ProjectReference Include="..\..\..\EFlow.Shared\EFlow.Common.IntegrationEvents\EFlow.Common.IntegrationEvents.csproj" />
         <ProjectReference Include="..\EFlow.Booking.Domain\EFlow.Booking.Domain.csproj"/>
-        <ProjectReference Include="..\EFlow.Booking.IntegrationEvents\EFlow.Booking.IntegrationEvents.csproj"/>
     </ItemGroup>
 
 </Project>

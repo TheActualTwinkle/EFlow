@@ -1,6 +1,7 @@
-using EFlow.Booking.Domain;
+using EFlow.Booking.Domain.Notifications;
 using EFlow.Booking.Domain.SubmissionSlots;
 using EFlow.Booking.Domain.SubmissionSlots.NotificationSettings;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -28,9 +29,19 @@ public class SubmissionSlotNotificationSettingsConfiguration : IEntityTypeConfig
             .HasColumnName("user_id")
             .IsRequired();
 
-        builder.Property(settings => settings.ReminderSchedule)
-            .HasColumnName("reminder_schedule")
-            .HasConversion<int>()
+        builder.Property(settings => settings.ReminderSchedules)
+            .HasColumnName("reminder_schedules")
+            .HasColumnType("integer[]")
+            .HasConversion(
+                schedules => schedules.Select(schedule => (int)schedule).ToArray(),
+                schedules => schedules.Select(schedule => (ReminderSchedule)schedule).ToArray())
+            .Metadata.SetValueComparer(
+                new ValueComparer<ReminderSchedule[]>(
+                    (left, right) => left!.SequenceEqual(right!),
+                    schedules => schedules.Aggregate(0, HashCode.Combine),
+                    schedules => schedules.ToArray()));
+
+        builder.Property(settings => settings.ReminderSchedules)
             .IsRequired();
 
         builder.Property(settings => settings.BookingNotificationMode)

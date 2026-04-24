@@ -128,6 +128,29 @@ public sealed class SubmissionSlot : Entity
     public bool IsOwnedBy(TeacherId teacherId) =>
         TeacherId == teacherId;
 
+    public SubjectId GetSubjectId() =>
+        SubjectId;
+
+    public TeacherId GetTeacherId() =>
+        TeacherId;
+
+    public DateTime GetStartTime() =>
+        StartTime;
+
+    public DateTime GetEndTime() =>
+        EndTime;
+
+    public string? GetLocation() =>
+        Location;
+
+    public IReadOnlyCollection<SubmissionSlotNotificationRecipient> GetNotificationRecipients() =>
+        NotificationSettings
+            .Select(settings => new SubmissionSlotNotificationRecipient(
+                settings.UserId,
+                settings.ReminderSchedules,
+                settings.BookingNotificationMode))
+            .ToArray();
+
     // public void Update(SubmissionSlotPatch patch, DateTime utcNow)
     // {
     //     var updatedSlot = patch.ApplyTo(this).Entity;
@@ -158,8 +181,8 @@ public sealed class SubmissionSlot : Entity
         return BookingRecord.Create(student.Id, Id, nowUtc, nowUtc);
     }
 
-    public void CancelBooking(BookingRecord bookingRecord) =>
-        bookingRecord.Delete();
+    public void CancelBooking(BookingRecord bookingRecord, DateTime nowUtc) =>
+        bookingRecord.Cancel(nowUtc);
 
     public SubmissionSlotAdmission AddAdmission(StudentId studentId, DateTime nowUtc)
     {
@@ -187,7 +210,7 @@ public sealed class SubmissionSlot : Entity
 
     public void UpdateNotificationSettings(
         Guid userId,
-        ReminderSchedule reminderSchedule,
+        ReminderSchedule[] reminderSchedules,
         BookingNotificationMode? bookingNotificationMode,
         DateTime nowUtc)
     {
@@ -199,7 +222,7 @@ public sealed class SubmissionSlot : Entity
         var settings = SubmissionSlotNotificationSettings.Create(
             Id,
             userId,
-            reminderSchedule,
+            reminderSchedules,
             bookingNotificationMode,
             nowUtc,
             nowUtc);

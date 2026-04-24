@@ -1,5 +1,7 @@
 ﻿using Confluent.Kafka;
 using EFlow.Booking.IntegrationEvents;
+using EFlow.Booking.IntegrationEvents.BookingRecords;
+using EFlow.Booking.IntegrationEvents.SubmissionSlots;
 using EFlow.Booking.Messaging.Outbox;
 using EFlow.Booking.Messaging.Outbox.Interfaces;
 using EFlow.Booking.Messaging.Outbox.MessageProcessing;
@@ -159,6 +161,9 @@ public static class DependencyInjection
             var resolver = new TopicNameResolver();
 
             resolver.AddMapping(typeof(SubmissionSlotCreatedIntegrationEvent).AssemblyQualifiedName!, KafkaTopics.SubmissionSlotCreatedTopic);
+            resolver.AddMapping(typeof(BookingCreatedIntegrationEvent).AssemblyQualifiedName!, KafkaTopics.BookingCreatedTopic);
+            resolver.AddMapping(typeof(BookingCancelledIntegrationEvent).AssemblyQualifiedName!, KafkaTopics.BookingCancelledTopic);
+            resolver.AddMapping(typeof(SubmissionSlotUpdatedIntegrationEvent).AssemblyQualifiedName!, KafkaTopics.SubmissionSlotUpdatedTopic);
 
             return resolver;
         });

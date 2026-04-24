@@ -8,7 +8,7 @@ using MediatR;
 
 namespace EFlow.Booking.Application.BookingRecords.Commands;
 
-public class CancelBookingCommandHandler(IUnitOfWork unitOfWork)
+public class CancelBookingCommandHandler(IUnitOfWork unitOfWork, ISystemClock systemClock)
     : IRequestHandler<CancelBookingCommand, Result>
 {
     public async Task<Result> Handle(CancelBookingCommand request, CancellationToken cancellationToken)
@@ -30,7 +30,7 @@ public class CancelBookingCommandHandler(IUnitOfWork unitOfWork)
                     .WithMessage("Submission Slot not found")
                     .WithId(bookingRecord.GetSlotId().Value));
         
-        slot.CancelBooking(bookingRecord);
+        slot.CancelBooking(bookingRecord, systemClock.UtcNow);
         
         await bookingRecordRepository.DeleteAsync(bookingRecord);
 
