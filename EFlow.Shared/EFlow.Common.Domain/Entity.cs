@@ -1,4 +1,4 @@
-﻿using EFlow.Common.Domain.Exceptions;
+using EFlow.Common.Domain.Exceptions;
 
 namespace EFlow.Common.Domain;
 

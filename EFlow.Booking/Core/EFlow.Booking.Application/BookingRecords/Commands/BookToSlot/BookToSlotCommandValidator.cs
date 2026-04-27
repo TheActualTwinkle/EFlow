@@ -1,4 +1,4 @@
-﻿using FluentValidation;
+using FluentValidation;
 
 namespace EFlow.Booking.Application.BookingRecords.Commands;
 

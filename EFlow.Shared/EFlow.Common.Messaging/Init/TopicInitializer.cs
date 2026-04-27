@@ -1,4 +1,4 @@
-﻿using Confluent.Kafka;
+using Confluent.Kafka;
 using Confluent.Kafka.Admin;
 using EFlow.Common.Messaging.Settings;
 using Microsoft.Extensions.Logging;

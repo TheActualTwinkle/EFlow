@@ -1,4 +1,4 @@
-﻿using EFlow.Common.IntegrationEvents.Booking.Models;
+using EFlow.Common.IntegrationEvents.Booking.Models;
 using EFlow.Common.Markers;
 using MemoryPack;
 

@@ -1,4 +1,4 @@
-﻿namespace EFlow.Common.Domain.Entities;
+namespace EFlow.Common.Domain.Entities;
 
 public sealed class OutboxMessage : Entity
 {

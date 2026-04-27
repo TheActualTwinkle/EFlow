@@ -1,4 +1,4 @@
-﻿using EFlow.Common.OutboxProcessing.Outbox.MessageProcessing.Interfaces;
+using EFlow.Common.OutboxProcessing.Outbox.MessageProcessing.Interfaces;
 
 namespace EFlow.Common.OutboxProcessing.Outbox.MessageProcessing.Factories.Interfaces;
 

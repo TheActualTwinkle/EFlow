@@ -1,4 +1,4 @@
-﻿using EFlow.Common.Extensions;
+using EFlow.Common.Extensions;
 using EFlow.Common.IntegrationEvents.Booking.BookingRecords;
 using EFlow.Common.IntegrationEvents.Booking.SubmissionSlots;
 using EFlow.Common.Infrastructure;

@@ -1,4 +1,4 @@
-﻿using EFlow.Booking.Domain.Teachers;
+using EFlow.Booking.Domain.Teachers;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 

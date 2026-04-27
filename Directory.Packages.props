@@ -1,4 +1,4 @@
-﻿<Project>
+<Project>
   <ItemGroup>
     <PackageVersion Include="FluentPatcher" Version="0.1.5" />
     <PackageVersion Include="MemoryPack.Core" Version="1.21.4" />

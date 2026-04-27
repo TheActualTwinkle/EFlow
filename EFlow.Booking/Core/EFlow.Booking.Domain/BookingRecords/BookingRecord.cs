@@ -1,4 +1,4 @@
-﻿using EFlow.Booking.Domain.BookingRecords.Events;
+using EFlow.Booking.Domain.BookingRecords.Events;
 using EFlow.Booking.Domain.Common.BusinessRules;
 using EFlow.Booking.Domain.Students;
 using EFlow.Booking.Domain.SubmissionSlots;

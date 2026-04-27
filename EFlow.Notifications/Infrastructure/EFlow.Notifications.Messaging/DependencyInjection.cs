@@ -1,4 +1,4 @@
-﻿using Confluent.Kafka;
+using Confluent.Kafka;
 using EFlow.Common.Messaging.Factories;
 using EFlow.Common.Messaging.Init;
 using EFlow.Common.Messaging.Serialization;

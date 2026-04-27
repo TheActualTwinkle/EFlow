@@ -1,4 +1,4 @@
-﻿using System.Text;
+using System.Text;
 using EFlow.Booking.Domain;
 using EFlow.Booking.Persistence.DatabaseContext;
 using EFlow.Booking.WebApi.Mapping;

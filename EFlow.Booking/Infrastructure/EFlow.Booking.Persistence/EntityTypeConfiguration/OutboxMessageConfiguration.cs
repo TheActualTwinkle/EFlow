@@ -1,4 +1,4 @@
-﻿using EFlow.Common.Domain.Entities;
+using EFlow.Common.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 

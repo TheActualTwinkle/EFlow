@@ -1,4 +1,4 @@
-﻿using EFlow.Booking.Domain.Groups;
+using EFlow.Booking.Domain.Groups;
 using EFlow.Booking.Persistence.DatabaseContext;
 using Microsoft.EntityFrameworkCore;
 

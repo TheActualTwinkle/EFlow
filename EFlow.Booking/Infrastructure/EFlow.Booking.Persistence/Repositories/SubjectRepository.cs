@@ -1,4 +1,4 @@
-﻿using EFlow.Booking.Persistence.DatabaseContext;
+using EFlow.Booking.Persistence.DatabaseContext;
 using EFlow.Booking.Domain.Subjects;
 using EFlow.Booking.Domain.Teachers;
 using Microsoft.EntityFrameworkCore;

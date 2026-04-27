@@ -1,4 +1,4 @@
-﻿using EFlow.Booking.Application.Common.Markers;
+using EFlow.Booking.Application.Common.Markers;
 using EFlow.Booking.Domain.Notifications;
 using FluentResults;
 using MediatR;

@@ -1,4 +1,4 @@
-﻿namespace EFlow.Booking.Application.Subjects;
+namespace EFlow.Booking.Application.Subjects;
 
 public record SubjectDto
 {

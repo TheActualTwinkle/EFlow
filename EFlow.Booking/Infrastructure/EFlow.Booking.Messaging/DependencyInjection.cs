@@ -1,4 +1,4 @@
-﻿using Confluent.Kafka;
+using Confluent.Kafka;
 using EFlow.Common.Extensions;
 using EFlow.Common.IntegrationEvents.Booking;
 using EFlow.Common.IntegrationEvents.Booking.BookingRecords;

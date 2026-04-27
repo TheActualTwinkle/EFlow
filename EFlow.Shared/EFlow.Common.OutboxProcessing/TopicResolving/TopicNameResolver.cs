@@ -1,4 +1,4 @@
-﻿namespace EFlow.Common.OutboxProcessing.TopicResolving;
+namespace EFlow.Common.OutboxProcessing.TopicResolving;
 
 public class TopicNameResolver : ITopicNameResolver
 {

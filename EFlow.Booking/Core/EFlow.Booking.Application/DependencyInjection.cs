@@ -1,4 +1,4 @@
-﻿using System.Reflection;
+using System.Reflection;
 using EFlow.Booking.Application.Common.Behaviors;
 using EFlow.Booking.Application.Common.Outbox;
 using EFlow.Booking.Application.Common.Outbox.Interfaces;

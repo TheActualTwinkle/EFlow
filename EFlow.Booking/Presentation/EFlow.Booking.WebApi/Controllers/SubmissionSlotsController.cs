@@ -1,4 +1,4 @@
-﻿using System.Security.Claims;
+using System.Security.Claims;
 using EFlow.Booking.Application.SubmissionSlots.Commands;
 using EFlow.Booking.Application.SubmissionSlots.Commands.Update;
 using EFlow.Booking.Application.SubmissionSlots.Queries;

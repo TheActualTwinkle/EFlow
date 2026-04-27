@@ -1,4 +1,4 @@
-﻿using System.Data;
+using System.Data;
 using EFlow.Common.Domain;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;

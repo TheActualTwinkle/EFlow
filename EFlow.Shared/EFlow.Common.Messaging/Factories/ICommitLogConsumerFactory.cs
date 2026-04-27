@@ -1,4 +1,4 @@
-﻿using EFlow.Common.Messaging.Consumers;
+using EFlow.Common.Messaging.Consumers;
 using EFlow.Common.Messaging.Settings;
 
 namespace EFlow.Common.Messaging.Factories;

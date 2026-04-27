@@ -1,4 +1,4 @@
-﻿namespace EFlow.Booking.Application.SubmissionSlots;
+namespace EFlow.Booking.Application.SubmissionSlots;
 
 public record SubmissionSlotDto
 {

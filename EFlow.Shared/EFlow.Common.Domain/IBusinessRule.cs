@@ -1,4 +1,4 @@
-﻿namespace EFlow.Common.Domain;
+namespace EFlow.Common.Domain;
 
 /// <summary>
 /// Represents a business rule that can be checked for being broken.

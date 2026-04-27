@@ -1,4 +1,4 @@
-﻿namespace EFlow.Common.Domain;
+namespace EFlow.Common.Domain;
 
 public abstract class DomainEvent : IDomainEvent
 {

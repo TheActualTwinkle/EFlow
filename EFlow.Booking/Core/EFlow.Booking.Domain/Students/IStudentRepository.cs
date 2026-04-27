@@ -1,4 +1,4 @@
-﻿using EFlow.Common.Domain;
+using EFlow.Common.Domain;
 using EFlow.Booking.Domain.Groups;
 
 namespace EFlow.Booking.Domain.Students;

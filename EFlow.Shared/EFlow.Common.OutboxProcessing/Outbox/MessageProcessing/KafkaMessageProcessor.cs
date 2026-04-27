@@ -1,4 +1,4 @@
-﻿using EFlow.Common.Domain.Entities;
+using EFlow.Common.Domain.Entities;
 using EFlow.Common.Messaging.Producers;
 using EFlow.Common.OutboxProcessing.Outbox.MessageProcessing.Interfaces;
 using EFlow.Common.OutboxProcessing.TopicResolving;

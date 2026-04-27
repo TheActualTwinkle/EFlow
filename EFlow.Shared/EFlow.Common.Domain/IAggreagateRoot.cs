@@ -1,3 +1,3 @@
-﻿namespace EFlow.Common.Domain;
+namespace EFlow.Common.Domain;
 
 public interface IAggreagateRoot;

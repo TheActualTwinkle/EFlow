@@ -1,4 +1,4 @@
-﻿using FluentResults;
+using FluentResults;
 using MediatR;
 
 namespace EFlow.Booking.Application.Teachers.Queries;

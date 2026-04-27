@@ -1,4 +1,4 @@
-﻿namespace EFlow.Common.Messaging.Settings;
+namespace EFlow.Common.Messaging.Settings;
 
 public record KafkaSettings
 {

@@ -1,4 +1,4 @@
-﻿using EFlow.Booking.Domain.Admins.Events;
+using EFlow.Booking.Domain.Admins.Events;
 using EFlow.Booking.Domain.Common.BusinessRules;
 using EFlow.Common.Domain;
 

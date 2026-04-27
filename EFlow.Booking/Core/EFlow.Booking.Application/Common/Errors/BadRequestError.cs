@@ -1,4 +1,4 @@
-﻿using EFlow.Booking.Application.Common.Errors.Abstractions;
+using EFlow.Booking.Application.Common.Errors.Abstractions;
 using FluentResults;
 
 namespace EFlow.Booking.Application.Common.Errors;

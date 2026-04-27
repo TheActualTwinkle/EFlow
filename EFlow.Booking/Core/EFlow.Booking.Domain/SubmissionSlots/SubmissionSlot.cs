@@ -1,4 +1,4 @@
-﻿using EFlow.Booking.Domain.BookingRecords;
+using EFlow.Booking.Domain.BookingRecords;
 using EFlow.Booking.Domain.Groups;
 using EFlow.Booking.Domain.Notifications;
 using EFlow.Booking.Domain.Students;

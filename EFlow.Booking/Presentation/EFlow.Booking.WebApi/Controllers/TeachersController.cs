@@ -1,4 +1,4 @@
-﻿using System.Security.Claims;
+using System.Security.Claims;
 using EFlow.Booking.Application.Teachers.Commands;
 using EFlow.Booking.Application.Teachers.Queries;
 using EFlow.Booking.Domain;

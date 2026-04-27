@@ -1,4 +1,4 @@
-﻿using Confluent.Kafka;
+using Confluent.Kafka;
 using EFlow.Common.Messaging.Consumers;
 using EFlow.Common.Messaging.Settings;
 using Microsoft.Extensions.DependencyInjection;

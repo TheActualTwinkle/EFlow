@@ -1,4 +1,4 @@
-﻿using EFlow.Booking.Domain.Common.BusinessRules;
+using EFlow.Booking.Domain.Common.BusinessRules;
 using EFlow.Booking.Domain.Groups;
 using EFlow.Booking.Domain.Students.Events;
 using EFlow.Booking.Domain.Students.Rules;

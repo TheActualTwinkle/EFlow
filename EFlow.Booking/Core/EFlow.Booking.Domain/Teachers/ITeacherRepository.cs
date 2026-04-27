@@ -1,4 +1,4 @@
-﻿using EFlow.Common.Domain;
+using EFlow.Common.Domain;
 
 namespace EFlow.Booking.Domain.Teachers;
 

@@ -1,4 +1,4 @@
-﻿using EFlow.Common.Domain;
+using EFlow.Common.Domain;
 using EFlow.Booking.Domain.Subjects;
 
 namespace EFlow.Booking.Domain.SubmissionSlots;

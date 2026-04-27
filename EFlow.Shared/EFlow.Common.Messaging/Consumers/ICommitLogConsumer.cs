@@ -1,4 +1,4 @@
-﻿namespace EFlow.Common.Messaging.Consumers;
+namespace EFlow.Common.Messaging.Consumers;
 
 public interface ICommitLogConsumer<TKey, out TValue>
 {

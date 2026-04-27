@@ -1,4 +1,4 @@
-﻿namespace EFlow.Common.OutboxProcessing.Outbox.Interfaces;
+namespace EFlow.Common.OutboxProcessing.Outbox.Interfaces;
 
 public interface IOutboxProcessor
 {

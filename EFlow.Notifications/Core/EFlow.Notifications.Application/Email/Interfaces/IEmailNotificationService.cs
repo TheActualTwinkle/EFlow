@@ -1,4 +1,4 @@
-﻿using EFlow.Notifications.Application.Email.Models;
+using EFlow.Notifications.Application.Email.Models;
 
 namespace EFlow.Notifications.Application.Email.Interfaces;
 

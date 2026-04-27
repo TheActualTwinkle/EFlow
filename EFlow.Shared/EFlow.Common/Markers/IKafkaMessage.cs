@@ -1,4 +1,4 @@
-﻿namespace EFlow.Common.Markers;
+namespace EFlow.Common.Markers;
 
 /// <summary>
 /// Marker interface indicating that implementing types are recognized by various services

@@ -1,4 +1,4 @@
-﻿using EFlow.Common.Domain.Entities;
+using EFlow.Common.Domain.Entities;
 
 namespace EFlow.Common.OutboxProcessing.Outbox.MessageProcessing.Interfaces;
 

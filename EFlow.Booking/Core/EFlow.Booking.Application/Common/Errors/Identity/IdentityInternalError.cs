@@ -1,4 +1,4 @@
-﻿using FluentResults;
+using FluentResults;
 using Microsoft.AspNetCore.Identity;
 
 namespace EFlow.Booking.Application.Common.Errors.Identity;

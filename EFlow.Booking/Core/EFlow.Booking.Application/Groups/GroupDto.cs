@@ -1,4 +1,4 @@
-﻿using EFlow.Booking.Application.Students;
+using EFlow.Booking.Application.Students;
 
 namespace EFlow.Booking.Application.Groups;
 

@@ -1,4 +1,4 @@
-﻿using EFlow.Booking.Application.Common.Validation;
+using EFlow.Booking.Application.Common.Validation;
 using EFlow.Common.Infrastructure;
 using FluentValidation;
 

@@ -1,4 +1,4 @@
-﻿using System.Security.Claims;
+using System.Security.Claims;
 using EFlow.Booking.Application.BookingRecords.Commands;
 using EFlow.Booking.Application.BookingRecords.Commands.Update;
 using EFlow.Booking.Application.BookingRecords.Queries;

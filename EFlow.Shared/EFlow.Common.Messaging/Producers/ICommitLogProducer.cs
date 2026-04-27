@@ -1,4 +1,4 @@
-﻿namespace EFlow.Common.Messaging.Producers;
+namespace EFlow.Common.Messaging.Producers;
 
 public interface ICommitLogProducer<in TKey, in TValue>
 {
