@@ -87,6 +87,11 @@ public sealed class Student : Entity, IAggreagateRoot
         return student;
     }
 
+    public string GetFullName() =>
+        string.Join(
+            ' ',
+            new[] { LastName, FirstName, MiddleName }.Where(name => !string.IsNullOrWhiteSpace(name)));
+
     public StudentId Delete()
     {
         AddDomainEvent(

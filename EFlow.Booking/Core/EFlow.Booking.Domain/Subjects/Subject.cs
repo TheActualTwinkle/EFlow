@@ -38,6 +38,12 @@ public sealed class Subject : Entity, IAggreagateRoot
     public string GetName() =>
         Name;
 
+    public TeacherId GetTeacherId() =>
+        TeacherId;
+
+    public IReadOnlyCollection<GroupId> GetGroupIds() =>
+        GroupIds.ToArray();
+
     public static Subject Create(
         string name,
         TeacherId teacherId,

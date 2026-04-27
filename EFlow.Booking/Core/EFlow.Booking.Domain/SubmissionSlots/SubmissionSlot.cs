@@ -130,10 +130,14 @@ public sealed class SubmissionSlot : Entity
             {
                 SlotId = slot.Id,
                 SubjectId = slot.SubjectId,
+                TeacherId = slot.TeacherId,
                 StartTime = slot.StartTime,
                 EndTime = slot.EndTime,
                 MaxStudents = slot.MaxStudents,
                 Location = slot.Location,
+                Comment = slot.Comment,
+                AllowAllGroups = slot.AllowAllGroups,
+                AllowedGroupIds = slot.AllowedGroupIds,
                 CreatedAt = nowUtc
             });
 
