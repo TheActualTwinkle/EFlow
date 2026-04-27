@@ -5,14 +5,9 @@ using EFlow.Notifications.Templates.Rendering.Interfaces;
 
 namespace EFlow.Notifications.Templates.Notifications;
 
-public sealed class BookingNotificationTemplateService
+public sealed class BookingNotificationTemplateService(ITemplateRenderer templateRenderer)
     : IBookingNotificationTemplateService
 {
-    private readonly ITemplateRenderer _templateRenderer;
-    
-    private BookingNotificationTemplateService(ITemplateRenderer templateRenderer) =>
-        _templateRenderer = templateRenderer;
-
     public async Task<(string Subject, string Body)> CreateBookingCreatedAsync(
         BookingRecordModel bookingRecord,
         CancellationToken cancellationToken = new())
@@ -30,7 +25,7 @@ public sealed class BookingNotificationTemplateService
             Footer = "Проверьте список записей и при необходимости свяжитесь со студентом."
         };
 
-        var body = await _templateRenderer.RenderAsync("/EmailTemplates/BookingNotification.cshtml", model, cancellationToken);
+        var body = await templateRenderer.RenderAsync("/EmailTemplates/BookingNotification.cshtml", model, cancellationToken);
 
         return ("Новая запись на защиту", body);
     }
@@ -52,7 +47,7 @@ public sealed class BookingNotificationTemplateService
             Footer = "Если нужно, освободившееся место можно предложить другим студентам."
         };
 
-        var body = await _templateRenderer.RenderAsync("/EmailTemplates/BookingNotification.cshtml", model, cancellationToken);
+        var body = await templateRenderer.RenderAsync("/EmailTemplates/BookingNotification.cshtml", model, cancellationToken);
 
         return ("Отмена записи на защиту", body);
     }
@@ -74,7 +69,7 @@ public sealed class BookingNotificationTemplateService
             Comment = TemplateFormatter.FormatOptionalText(submissionSlot.Comment, "Комментарий отсутствует")
         };
 
-        var body = await _templateRenderer.RenderAsync("/EmailTemplates/SubmissionSlotCreated.cshtml", model, cancellationToken);
+        var body = await templateRenderer.RenderAsync("/EmailTemplates/SubmissionSlotCreated.cshtml", model, cancellationToken);
 
         return ($"Создан новый слот по предмету «{submissionSlot.SubjectName}»", body);
     }
@@ -94,7 +89,7 @@ public sealed class BookingNotificationTemplateService
             Changes = BuildChanges(oldSubmissionSlot, newSubmissionSlot)
         };
         
-        var body = await _templateRenderer.RenderAsync("/EmailTemplates/SubmissionSlotUpdated.cshtml", model, cancellationToken);
+        var body = await templateRenderer.RenderAsync("/EmailTemplates/SubmissionSlotUpdated.cshtml", model, cancellationToken);
 
         return ($"Изменения в слоте по предмету «{newSubmissionSlot.SubjectName}»", body);
     }
@@ -115,7 +110,7 @@ public sealed class BookingNotificationTemplateService
             Audience = TemplateFormatter.FormatAudience(submissionSlot.AllowAllGroups, submissionSlot.AllowedGroupNames)
         };
 
-        var body = await _templateRenderer.RenderAsync("/EmailTemplates/Reminder.cshtml", model, cancellationToken);
+        var body = await templateRenderer.RenderAsync("/EmailTemplates/Reminder.cshtml", model, cancellationToken);
 
         return ($"Напоминание: скоро защита по предмету «{submissionSlot.SubjectName}»", body);
     }

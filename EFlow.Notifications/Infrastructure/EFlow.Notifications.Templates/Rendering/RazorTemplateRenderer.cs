@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.Routing;
 
 namespace EFlow.Notifications.Templates.Rendering;
 
-internal sealed class RazorTemplateRenderer(
+public sealed class RazorTemplateRenderer(
     IRazorViewEngine razorViewEngine,
     ITempDataProvider tempDataProvider,
     IServiceProvider serviceProvider) : ITemplateRenderer

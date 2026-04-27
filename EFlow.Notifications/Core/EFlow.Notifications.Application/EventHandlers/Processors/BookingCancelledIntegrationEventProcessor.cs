@@ -18,14 +18,6 @@ public sealed class BookingCancelledIntegrationEventProcessor(
         var (subject, body) = await templateService.CreateBookingCancelledAsync(@event.BookingRecord, cancellationToken);
 
         foreach (var recipient in @event.NotificationRecipients)
-        {
-            if (recipient.Email is null)
-            {
-                logger.LogWarning("Recipient {UserId} does not have an email address. Skipping notification.", recipient.UserId);
-
-                continue;
-            }
-
             await notificationService.SendAsync(
                 new NotificationMessage
                 {
@@ -34,6 +26,5 @@ public sealed class BookingCancelledIntegrationEventProcessor(
                     RecipientEmail = recipient.Email
                 },
                 cancellationToken);
-        }
     }
 }

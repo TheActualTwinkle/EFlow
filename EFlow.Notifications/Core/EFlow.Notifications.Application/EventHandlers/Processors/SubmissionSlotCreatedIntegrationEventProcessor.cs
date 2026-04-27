@@ -10,7 +10,7 @@ namespace EFlow.Notifications.Application.EventHandlers.Processors;
 public sealed class SubmissionSlotCreatedIntegrationEventProcessor(
     IBookingNotificationTemplateService templateService,
     IEmailNotificationService notificationService,
-    Logger<BookingCancelledIntegrationEventProcessor> logger)
+    Logger<SubmissionSlotCreatedIntegrationEventProcessor> logger)
     : IIntegrationEventProcessor<SubmissionSlotCreatedIntegrationEvent>
 {
     public async Task ProcessAsync(SubmissionSlotCreatedIntegrationEvent @event, CancellationToken cancellationToken = new())
@@ -18,14 +18,6 @@ public sealed class SubmissionSlotCreatedIntegrationEventProcessor(
         var (subject, body) = await templateService.CreateSubmissionSlotCreatedAsync(@event.SubmissionSlot, cancellationToken);
 
         foreach (var recipient in @event.NotificationRecipients)
-        {
-            if (recipient.Email is null)
-            {
-                logger.LogWarning("Recipient {UserId} does not have an email address. Skipping notification.", recipient.UserId);
-
-                continue;
-            }
-
             await notificationService.SendAsync(
                 new NotificationMessage
                 {
@@ -34,6 +26,5 @@ public sealed class SubmissionSlotCreatedIntegrationEventProcessor(
                     RecipientEmail = recipient.Email
                 },
                 cancellationToken);
-        }
     }
 }

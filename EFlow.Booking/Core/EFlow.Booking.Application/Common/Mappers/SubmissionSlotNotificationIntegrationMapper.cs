@@ -18,11 +18,14 @@ internal static class SubmissionSlotNotificationIntegrationMapper
         {
             var user = await userManager.FindByIdAsync(recipient.UserId.ToString());
 
+            if (user?.Email is null)
+                continue;
+            
             result.Add(
                 new NotificationRecipient
                 {
                     UserId = recipient.UserId,
-                    Email = user?.Email
+                    Email = user.Email
                 });
         }
 

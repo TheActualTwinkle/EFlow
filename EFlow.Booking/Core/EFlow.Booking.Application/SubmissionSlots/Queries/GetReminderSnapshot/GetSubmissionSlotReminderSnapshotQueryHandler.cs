@@ -36,11 +36,14 @@ public sealed class GetSubmissionSlotReminderSnapshotQueryHandler(
             {
                 var user = await userManager.FindByIdAsync(recipient.UserId.ToString());
 
+                if (user?.Email is null)
+                    continue;
+
                 mappedRecipients.Add(
                     new SubmissionSlotReminderRecipientDto
                     {
                         UserId = recipient.UserId,
-                        Email = user?.Email
+                        Email = user.Email
                     });
             }
 
