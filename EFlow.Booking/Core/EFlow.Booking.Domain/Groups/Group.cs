@@ -35,6 +35,9 @@ public sealed class Group : Entity, IAggreagateRoot
         return group;
     }
 
+    public string GetName() =>
+        Name;
+
     public GroupId Delete()
     {
         AddDomainEvent(new GroupDeletedDomainEvent
@@ -54,7 +57,7 @@ public sealed class Group : Entity, IAggreagateRoot
     //     AddDomainEvent(new GroupUpdatedDomainEvent
     //     {
     //         GroupId = Id,
-    //         UpdatedAt = DateTime.UtcNow
+    //         UpdatedAt = 
     //     });
     // }
 }

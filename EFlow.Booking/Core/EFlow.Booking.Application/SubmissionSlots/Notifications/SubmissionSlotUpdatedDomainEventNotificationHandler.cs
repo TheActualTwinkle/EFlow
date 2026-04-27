@@ -1,4 +1,3 @@
-using EFlow.Booking.Application.Common.Mappers;
 using EFlow.Booking.Application.Common.Outbox.Interfaces;
 using EFlow.Booking.Domain;
 using EFlow.Booking.Domain.SubmissionSlots;

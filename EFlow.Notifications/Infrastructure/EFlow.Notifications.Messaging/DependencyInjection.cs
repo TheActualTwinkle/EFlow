@@ -39,9 +39,7 @@ public static class DependencyInjection
     {
         services.Configure<BookingReminderSettings>(configuration.GetSection(BookingReminderSettings.SectionName));
 
-        services.AddScoped<IBookingClient, BookingClient>();
-        
-        services.AddHttpClient<BookingClient>((serviceProvider, client) =>
+        services.AddHttpClient<IBookingClient, BookingClient>((serviceProvider, client) =>
         {
             var options = serviceProvider.GetRequiredService<IOptions<BookingReminderSettings>>().Value;
             

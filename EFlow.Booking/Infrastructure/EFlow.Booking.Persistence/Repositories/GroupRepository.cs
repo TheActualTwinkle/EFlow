@@ -13,6 +13,18 @@ public class GroupRepository(ApplicationDbContext context) :
     public async Task<IEnumerable<Group>> GetAllAsync(CancellationToken cancellationToken = new()) =>
         await context.Groups.ToListAsync(cancellationToken);
 
+    public async Task<IEnumerable<Group>> GetByIdsAsync(IEnumerable<GroupId> ids, CancellationToken cancellationToken = new())
+    {
+        var groupIds = ids.Distinct().ToArray();
+
+        if (groupIds.Length == 0)
+            return [];
+
+        return await context.Groups
+            .Where(group => groupIds.AsEnumerable().Contains(group.Id))
+            .ToListAsync(cancellationToken);
+    }
+
     public async Task<Group?> GetByIdAsync(GroupId id, CancellationToken cancellationToken = new()) =>
         await context.Groups.FirstOrDefaultAsync(s => s.Id == id, cancellationToken);
 

@@ -1,4 +1,5 @@
 ﻿using Confluent.Kafka;
+using EFlow.Common.Extensions;
 using EFlow.Common.IntegrationEvents.Booking;
 using EFlow.Common.IntegrationEvents.Booking.BookingRecords;
 using EFlow.Common.IntegrationEvents.Booking.SubmissionSlots;
@@ -82,7 +83,7 @@ public static class DependencyInjection
         recurringJobManager.AddOrUpdateDynamic<IOutboxProcessor>(
             "ProcessOutboxMessages",
             p => p.ProcessPendingAsync(settings.BatchSize, new CancellationTokenSource(TimeSpan.FromSeconds(30)).Token),
-            settings.ProcessIntervalCron,
+            settings.ProcessInterval.ToCronExpression(),
 #pragma warning disable CS0618 // Type or member is obsolete
             new DynamicRecurringJobOptions { QueueName = "eflow-outbox" });
 #pragma warning restore CS0618 // Type or member is obsolete
@@ -90,7 +91,7 @@ public static class DependencyInjection
         recurringJobManager.AddOrUpdateDynamic<IOutboxProcessor>(
             "DeleteOutboxMessages",
             p => p.DeleteProcessedAsync(settings.DeleteAfter, new CancellationTokenSource(TimeSpan.FromSeconds(30)).Token),
-            settings.DeleteIntervalCron,
+            settings.DeleteInterval.ToCronExpression(),
 #pragma warning disable CS0618 // Type or member is obsolete
             new DynamicRecurringJobOptions { QueueName = "eflow-outbox" });
 #pragma warning restore CS0618 // Type or member is obsolete
@@ -107,15 +108,13 @@ public static class DependencyInjection
         if (batchSize <= 0)
             throw new InvalidOperationException("Batch size must be greater than zero.");
 
-        var processIntervalCron = configuration
-                                      .GetRequiredSection("OutboxProcessorSettings")
-                                      .GetValue<string>("ProcessIntervalCron") ??
-                                  throw new InvalidOperationException("Process interval cron expression is not configured.");
+        var processInterval = configuration
+            .GetRequiredSection("OutboxProcessorSettings")
+            .GetValue<TimeSpan>("ProcessInterval");
 
-        var deleteIntervalCron = configuration
-                                     .GetRequiredSection("OutboxProcessorSettings")
-                                     .GetValue<string>("DeleteProcessedIntervalCron") ??
-                                 throw new InvalidOperationException("Delete interval cron expression is not configured.");
+        var deleteInterval = configuration
+            .GetRequiredSection("OutboxProcessorSettings")
+            .GetValue<TimeSpan>("DeleteProcessedInterval");
 
         var deleteAfter = configuration
             .GetRequiredSection("OutboxProcessorSettings")
@@ -124,8 +123,8 @@ public static class DependencyInjection
         services.AddSingleton<OutboxProcessorSettings>(_ => new OutboxProcessorSettings
         {
             BatchSize = batchSize,
-            ProcessIntervalCron = processIntervalCron,
-            DeleteIntervalCron = deleteIntervalCron,
+            ProcessInterval = processInterval,
+            DeleteInterval = deleteInterval,
             DeleteAfter = deleteAfter
         });
 

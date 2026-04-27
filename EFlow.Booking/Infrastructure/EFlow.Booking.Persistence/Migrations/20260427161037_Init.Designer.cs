@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace EFlow.Booking.Persistence.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260424063958_Init")]
+    [Migration("20260427161037_Init")]
     partial class Init
     {
         /// <inheritdoc />
@@ -69,47 +69,6 @@ namespace EFlow.Booking.Persistence.Migrations
                         .HasDatabaseName("ix_booking_records_student_id_slot_id");
 
                     b.ToTable("booking_records", (string)null);
-                });
-
-            modelBuilder.Entity("EFlow.Booking.Domain.Domain.Students.Student", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
-
-                    b.Property<DateOnly>("BirthDate")
-                        .HasColumnType("date")
-                        .HasColumnName("birth_date");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created_at");
-
-                    b.Property<string>("FirstName")
-                        .IsRequired()
-                        .HasMaxLength(31)
-                        .HasColumnType("character varying(31)")
-                        .HasColumnName("first_name");
-
-                    b.Property<Guid>("GroupId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("group_id");
-
-                    b.Property<string>("LastName")
-                        .IsRequired()
-                        .HasMaxLength(31)
-                        .HasColumnType("character varying(31)")
-                        .HasColumnName("last_name");
-
-                    b.Property<string>("MiddleName")
-                        .HasMaxLength(31)
-                        .HasColumnType("character varying(31)")
-                        .HasColumnName("middle_name");
-
-                    b.HasKey("Id")
-                        .HasName("pk_students");
-
-                    b.ToTable("students", (string)null);
                 });
 
             modelBuilder.Entity("EFlow.Booking.Domain.Groups.Group", b =>
@@ -195,6 +154,47 @@ namespace EFlow.Booking.Persistence.Migrations
                     b.ToTable("AspNetUsers", "identity");
                 });
 
+            modelBuilder.Entity("EFlow.Booking.Domain.Students.Student", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateOnly>("BirthDate")
+                        .HasColumnType("date")
+                        .HasColumnName("birth_date");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("FirstName")
+                        .IsRequired()
+                        .HasMaxLength(31)
+                        .HasColumnType("character varying(31)")
+                        .HasColumnName("first_name");
+
+                    b.Property<Guid>("GroupId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("group_id");
+
+                    b.Property<string>("LastName")
+                        .IsRequired()
+                        .HasMaxLength(31)
+                        .HasColumnType("character varying(31)")
+                        .HasColumnName("last_name");
+
+                    b.Property<string>("MiddleName")
+                        .HasMaxLength(31)
+                        .HasColumnType("character varying(31)")
+                        .HasColumnName("middle_name");
+
+                    b.HasKey("Id")
+                        .HasName("pk_students");
+
+                    b.ToTable("students", (string)null);
+                });
+
             modelBuilder.Entity("EFlow.Booking.Domain.Subjects.Subject", b =>
                 {
                     b.Property<Guid>("Id")
@@ -264,7 +264,7 @@ namespace EFlow.Booking.Persistence.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at");
 
-                    b.Property<int[]>("ReminderSchedules")
+                    b.Property<int[]>("SubmissionRemindTimes")
                         .IsRequired()
                         .HasColumnType("integer[]")
                         .HasColumnName("reminder_schedules");
@@ -550,7 +550,7 @@ namespace EFlow.Booking.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("EFlow.Booking.Domain.Domain.Students.Student", null)
+                    b.HasOne("EFlow.Booking.Domain.Students.Student", null)
                         .WithMany()
                         .HasForeignKey("StudentId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -559,7 +559,7 @@ namespace EFlow.Booking.Persistence.Migrations
 
             modelBuilder.Entity("EFlow.Booking.Domain.SubmissionSlots.Admissions.SubmissionSlotAdmission", b =>
                 {
-                    b.HasOne("EFlow.Booking.Domain.Domain.Students.Student", null)
+                    b.HasOne("EFlow.Booking.Domain.Students.Student", null)
                         .WithMany()
                         .HasForeignKey("StudentId")
                         .OnDelete(DeleteBehavior.Cascade)

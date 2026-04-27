@@ -3,14 +3,12 @@ using EFlow.Notifications.Application.Email.Interfaces;
 using EFlow.Notifications.Application.Email.Models;
 using EFlow.Notifications.Application.EventHandlers.Processors.Interfaces;
 using EFlow.Notifications.Templates.Notifications.Interfaces;
-using Microsoft.Extensions.Logging;
 
 namespace EFlow.Notifications.Application.EventHandlers.Processors;
 
 public sealed class BookingCreatedIntegrationEventProcessor(
     IBookingNotificationTemplateService templateService,
-    IEmailNotificationService notificationService,
-    Logger<BookingCreatedIntegrationEventProcessor> logger)
+    IEmailNotificationService notificationService)
     : IIntegrationEventProcessor<BookingCreatedIntegrationEvent>
 {
     public async Task ProcessAsync(BookingCreatedIntegrationEvent @event, CancellationToken cancellationToken = new())

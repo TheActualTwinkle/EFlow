@@ -36,7 +36,7 @@ public class SubmissionSlotNotificationSettingsConfiguration : IEntityTypeConfig
                 schedules => schedules.Select(schedule => (int)schedule).ToArray(),
                 schedules => schedules.Select(schedule => (SubmissionRemindTime)schedule).ToArray())
             .Metadata.SetValueComparer(
-                new ValueComparer<SubmissionRemindTime[]>(
+                new ValueComparer<ICollection<SubmissionRemindTime>>(
                     (left, right) => left!.SequenceEqual(right!),
                     schedules => schedules.Aggregate(0, HashCode.Combine),
                     schedules => schedules.ToArray()));

@@ -16,7 +16,7 @@ public class UpdateNotificationSettingsCommandValidator : AbstractValidator<Upda
             .NotNull().WithMessage("Reminder schedules are required");
 
         RuleFor(x => x.SubmissionRemindTimes)
-            .Must(schedules => schedules.Distinct().Count() == schedules.Length)
+            .Must(schedules => schedules.Distinct().Count() == schedules.Count)
             .WithMessage("Reminder schedules must not contain duplicates");
 
         RuleForEach(x => x.SubmissionRemindTimes)

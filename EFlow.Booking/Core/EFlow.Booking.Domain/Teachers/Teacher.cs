@@ -76,9 +76,14 @@ public sealed class Teacher : Entity, IAggreagateRoot
                 TeacherId = teacher.Id,
                 CreatedAt = teacher.CreatedAt
             });
-        
+
         return teacher;
     }
+
+    public string GetFullName() =>
+        string.Join(
+            ' ',
+            new[] { LastName, FirstName, MiddleName }.Where(name => !string.IsNullOrWhiteSpace(name)));
 
     public TeacherId Delete()
     {

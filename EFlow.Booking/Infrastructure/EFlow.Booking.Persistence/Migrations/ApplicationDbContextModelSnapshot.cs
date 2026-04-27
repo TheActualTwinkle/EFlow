@@ -68,47 +68,6 @@ namespace EFlow.Booking.Persistence.Migrations
                     b.ToTable("booking_records", (string)null);
                 });
 
-            modelBuilder.Entity("EFlow.Booking.Domain.Domain.Students.Student", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
-
-                    b.Property<DateOnly>("BirthDate")
-                        .HasColumnType("date")
-                        .HasColumnName("birth_date");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created_at");
-
-                    b.Property<string>("FirstName")
-                        .IsRequired()
-                        .HasMaxLength(31)
-                        .HasColumnType("character varying(31)")
-                        .HasColumnName("first_name");
-
-                    b.Property<Guid>("GroupId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("group_id");
-
-                    b.Property<string>("LastName")
-                        .IsRequired()
-                        .HasMaxLength(31)
-                        .HasColumnType("character varying(31)")
-                        .HasColumnName("last_name");
-
-                    b.Property<string>("MiddleName")
-                        .HasMaxLength(31)
-                        .HasColumnType("character varying(31)")
-                        .HasColumnName("middle_name");
-
-                    b.HasKey("Id")
-                        .HasName("pk_students");
-
-                    b.ToTable("students", (string)null);
-                });
-
             modelBuilder.Entity("EFlow.Booking.Domain.Groups.Group", b =>
                 {
                     b.Property<Guid>("Id")
@@ -190,6 +149,47 @@ namespace EFlow.Booking.Persistence.Migrations
                         .HasDatabaseName("UserNameIndex");
 
                     b.ToTable("AspNetUsers", "identity");
+                });
+
+            modelBuilder.Entity("EFlow.Booking.Domain.Students.Student", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateOnly>("BirthDate")
+                        .HasColumnType("date")
+                        .HasColumnName("birth_date");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("FirstName")
+                        .IsRequired()
+                        .HasMaxLength(31)
+                        .HasColumnType("character varying(31)")
+                        .HasColumnName("first_name");
+
+                    b.Property<Guid>("GroupId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("group_id");
+
+                    b.Property<string>("LastName")
+                        .IsRequired()
+                        .HasMaxLength(31)
+                        .HasColumnType("character varying(31)")
+                        .HasColumnName("last_name");
+
+                    b.Property<string>("MiddleName")
+                        .HasMaxLength(31)
+                        .HasColumnType("character varying(31)")
+                        .HasColumnName("middle_name");
+
+                    b.HasKey("Id")
+                        .HasName("pk_students");
+
+                    b.ToTable("students", (string)null);
                 });
 
             modelBuilder.Entity("EFlow.Booking.Domain.Subjects.Subject", b =>
@@ -547,7 +547,7 @@ namespace EFlow.Booking.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("EFlow.Booking.Domain.Domain.Students.Student", null)
+                    b.HasOne("EFlow.Booking.Domain.Students.Student", null)
                         .WithMany()
                         .HasForeignKey("StudentId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -556,7 +556,7 @@ namespace EFlow.Booking.Persistence.Migrations
 
             modelBuilder.Entity("EFlow.Booking.Domain.SubmissionSlots.Admissions.SubmissionSlotAdmission", b =>
                 {
-                    b.HasOne("EFlow.Booking.Domain.Domain.Students.Student", null)
+                    b.HasOne("EFlow.Booking.Domain.Students.Student", null)
                         .WithMany()
                         .HasForeignKey("StudentId")
                         .OnDelete(DeleteBehavior.Cascade)

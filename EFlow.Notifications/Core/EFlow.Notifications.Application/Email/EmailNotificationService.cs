@@ -11,7 +11,7 @@ public class EmailNotificationService(ILogger<EmailNotificationService> logger) 
         // TODO
         logger.LogInformation(
             "Email notification to {RecipientEmail}. Subject: {Subject}. Body: {Body}",
-            message.RecipientEmail ?? "unknown-email",
+            message.RecipientEmail,
             message.Subject,
             message.Body);
 

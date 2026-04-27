@@ -14,6 +14,7 @@
     <Folder Name="/EFlow.Booking/Tests/">
         <Project Path="EFlow.Booking/Tests/EFlow.Booking.ArchitectureTests/EFlow.Booking.ArchitectureTests.csproj" />
         <Project Path="EFlow.Booking/Tests/EFlow.Booking.UnitTests/EFlow.Booking.UnitTests.csproj" />
+        <Project Path="EFlow.Shared/EFlow.Common.UnitTests/EFlow.Common.UnitTests.csproj" />
     </Folder>
     <Folder Name="/EFlow.Notifications/" />
     <Folder Name="/EFlow.Notifications/Core/">

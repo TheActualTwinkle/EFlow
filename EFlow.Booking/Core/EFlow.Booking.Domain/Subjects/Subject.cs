@@ -35,6 +35,9 @@ public sealed class Subject : Entity, IAggreagateRoot
         GroupIds = groupIds;
     }
 
+    public string GetName() =>
+        Name;
+
     public static Subject Create(
         string name,
         TeacherId teacherId,
@@ -51,7 +54,7 @@ public sealed class Subject : Entity, IAggreagateRoot
 
         return subject;
     }
-    
+
     public SubjectId Delete()
     {
         AddDomainEvent(new SubjectDeletedDomainEvent
@@ -71,7 +74,7 @@ public sealed class Subject : Entity, IAggreagateRoot
     //     AddDomainEvent(new SubjectUpdatedDomainEvent
     //     {
     //         SubjectId = Id,
-    //         UpdatedAt = DateTime.UtcNow
+    //         UpdatedAt = 
     //     });
     // }
 }

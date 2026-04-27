@@ -89,6 +89,18 @@ public sealed class SubmissionSlot : Entity
 
     public string? GetLocation() =>
         Location;
+
+    public int GetMaxStudents() =>
+        MaxStudents;
+
+    public bool GetAllowAllGroups() =>
+        AllowAllGroups;
+
+    public IReadOnlyCollection<GroupId> GetAllowedGroupIds() =>
+        AllowedGroupIds.ToArray();
+
+    public string? GetComment() =>
+        Comment;
     
     public static SubmissionSlot Create(
         SubjectId subjectId,
