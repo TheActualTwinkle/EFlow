@@ -14,7 +14,7 @@ public sealed class DomainEventDispatcher(
 {
     private static readonly Lazy<IReadOnlyDictionary<Type, IReadOnlyList<Type>>> NotificationMappings = new(BuildNotificationMappings);
 
-    public async Task DispatchEventsAsync(CancellationToken cancellationToken = default)
+    public async Task DispatchEventsAsync(CancellationToken cancellationToken = new())
     {
         var domainEvents = context.ChangeTracker
             .Entries<Entity>()

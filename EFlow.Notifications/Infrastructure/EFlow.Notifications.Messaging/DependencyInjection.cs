@@ -3,6 +3,9 @@ using EFlow.Common.Messaging.Factories;
 using EFlow.Common.Messaging.Init;
 using EFlow.Common.Messaging.Serialization;
 using EFlow.Common.Messaging.Settings;
+using EFlow.Notifications.Messaging.Booking;
+using EFlow.Notifications.Messaging.Booking.Interfaces;
+using EFlow.Notifications.Messaging.Booking.Settings;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -29,6 +32,22 @@ public static class DependencyInjection
 
         services.AddScoped(typeof(IDeserializer<>), typeof(DefaultSerializer<>));
 
+        return services;
+    }
+
+    public static IServiceCollection AddBookingClient(this IServiceCollection services, IConfiguration configuration)
+    {
+        services.Configure<BookingReminderSettings>(configuration.GetSection(BookingReminderSettings.SectionName));
+
+        services.AddScoped<IBookingClient, BookingClient>();
+        
+        services.AddHttpClient<IBookingClient>((serviceProvider, client) =>
+        {
+            var options = serviceProvider.GetRequiredService<IOptions<BookingReminderSettings>>().Value;
+            
+            client.BaseAddress = new Uri(options.BookingApiBaseUrl);
+        });
+        
         return services;
     }
 }

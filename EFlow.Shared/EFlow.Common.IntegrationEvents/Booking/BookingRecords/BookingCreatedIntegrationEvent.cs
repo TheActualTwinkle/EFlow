@@ -1,23 +1,13 @@
+using EFlow.Common.IntegrationEvents.Booking.Models;
 using EFlow.Common.Markers;
 using MemoryPack;
-using EFlow.Booking.IntegrationEvents.SubmissionSlots.Notifications;
 
-namespace EFlow.Booking.IntegrationEvents.BookingRecords;
+namespace EFlow.Common.IntegrationEvents.Booking.BookingRecords;
 
 [MemoryPackable]
-public partial record BookingCreatedIntegrationEvent : IKafkaMessage
+public sealed partial record BookingCreatedIntegrationEvent : IKafkaMessage
 {
-    public required Guid BookingRecordId { get; init; }
+    public required BookingRecordModel BookingRecord { get; init; }
 
-    public required Guid SlotId { get; init; }
-
-    public required Guid StudentId { get; init; }
-
-    public required DateTime SlotStartTime { get; init; }
-
-    public required DateTime SlotEndTime { get; init; }
-
-    public string? Location { get; init; }
-
-    public required SubmissionSlotNotificationRecipientIntegration[] Recipients { get; init; }
+    public required IEnumerable<NotificationRecipient> NotificationRecipients { get; init; }
 }

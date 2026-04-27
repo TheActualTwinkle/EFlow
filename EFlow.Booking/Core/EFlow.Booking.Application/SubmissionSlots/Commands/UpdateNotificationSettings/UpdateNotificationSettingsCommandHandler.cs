@@ -36,7 +36,7 @@ public class UpdateNotificationSettingsCommandHandler(
 
         slot.UpdateNotificationSettings(
             request.UserId,
-            request.ReminderSchedules,
+            request.SubmissionRemindTimes,
             request.BookingNotificationMode,
             systemClock.UtcNow);
 

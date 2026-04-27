@@ -1,0 +1,29 @@
+@model EFlow.Notifications.Templates.Models.ReminderEmailTemplateModel
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8" />
+    <title>@Model.Title</title>
+</head>
+<body style="margin:0;padding:24px;background:#fff7ed;font-family:'Segoe UI',Arial,sans-serif;color:#292524;">
+    <div style="max-width:720px;margin:0 auto;background:#ffffff;border-radius:24px;overflow:hidden;border:1px solid #fed7aa;box-shadow:0 24px 64px rgba(154,52,18,.08);">
+        <div style="padding:34px 36px;background:linear-gradient(135deg,#c2410c 0%,#ea580c 100%);color:#fff;">
+            <div style="display:inline-block;padding:8px 14px;border-radius:999px;background:rgba(255,255,255,.16);font-size:12px;letter-spacing:.08em;text-transform:uppercase;">Напоминание</div>
+            <h1 style="margin:18px 0 10px;font-size:30px;line-height:1.15;">@Model.Title</h1>
+            <p style="margin:0;font-size:16px;line-height:1.65;color:rgba(255,255,255,.88);">@Model.Lead</p>
+        </div>
+        <div style="padding:28px 36px 32px;">
+            <div style="padding:22px;border-radius:20px;background:#fffaf5;border:1px solid #fed7aa;">
+                <div style="font-size:22px;font-weight:700;color:#7c2d12;">@Model.SubjectName</div>
+                <div style="margin-top:8px;font-size:16px;color:#44403c;">@Model.TeacherName</div>
+                <div style="margin-top:20px;font-size:14px;color:#78716c;">Время</div>
+                <div style="margin-top:6px;font-size:18px;font-weight:700;">@Model.TimeRange</div>
+                <div style="margin-top:18px;font-size:14px;color:#78716c;">Место</div>
+                <div style="margin-top:6px;font-size:16px;">@Model.Location</div>
+                <div style="margin-top:18px;font-size:14px;color:#78716c;">Доступ</div>
+                <div style="margin-top:6px;font-size:16px;">@Model.Audience</div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

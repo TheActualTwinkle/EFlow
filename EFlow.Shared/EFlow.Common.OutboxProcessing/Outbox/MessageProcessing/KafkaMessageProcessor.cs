@@ -1,15 +1,15 @@
-﻿using EFlow.Booking.Messaging.Outbox.MessageProcessing.Interfaces;
-using EFlow.Booking.Messaging.TopicResolving;
-using EFlow.Common.Domain.Entities;
+﻿using EFlow.Common.Domain.Entities;
 using EFlow.Common.Messaging.Producers;
+using EFlow.Common.OutboxProcessing.Outbox.MessageProcessing.Interfaces;
+using EFlow.Common.OutboxProcessing.TopicResolving;
 
-namespace EFlow.Booking.Messaging.Outbox.MessageProcessing;
+namespace EFlow.Common.OutboxProcessing.Outbox.MessageProcessing;
 
 /// <summary>
 /// Outbox message processor for Kafka messages.
 /// <see cref="OutboxMessage" /> will be produced to Kafka.
 /// </summary>
-public class KafkaMessageProcessor(ICommitLogProducer<Guid, byte[]> producer, ITopicNameResolver topicNameResolver) : IOutboxMessageProcessor
+public sealed class KafkaMessageProcessor(ICommitLogProducer<Guid, byte[]> producer, ITopicNameResolver topicNameResolver) : IOutboxMessageProcessor
 {
     public async Task ProcessAsync(OutboxMessage message, CancellationToken cancellationToken = new())
     {

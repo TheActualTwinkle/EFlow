@@ -1,5 +1,5 @@
 using EFlow.Booking.Application.Common.Outbox.Interfaces;
-using EFlow.Booking.IntegrationEvents.SubmissionSlots;
+using EFlow.Common.IntegrationEvents.Booking.SubmissionSlots;
 using EFlow.Common.Domain.Repositories;
 using EFlow.Common.Infrastructure;
 using MediatR;
@@ -17,12 +17,8 @@ public sealed class SubmissionSlotCreatedDomainEventNotificationHandler(
 
         var integrationEvent = new SubmissionSlotCreatedIntegrationEvent
         {
-            Id = domainEvent.SlotId.Value,
-            SubjectId = domainEvent.SubjectId.Value,
-            StartTime = domainEvent.StartTime,
-            EndTime = domainEvent.EndTime,
-            MaxStudents = domainEvent.MaxStudents,
-            Location = domainEvent.Location
+            SubmissionSlot = null!, // TODO
+            NotificationRecipients = [] 
         };
 
         var outboxMessageRepository = unitOfWork.GetRepository<IOutboxMessageRepository>();

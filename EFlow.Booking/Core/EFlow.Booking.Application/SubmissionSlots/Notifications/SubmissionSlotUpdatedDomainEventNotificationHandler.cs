@@ -2,7 +2,7 @@ using EFlow.Booking.Application.Common.Mappers;
 using EFlow.Booking.Application.Common.Outbox.Interfaces;
 using EFlow.Booking.Domain;
 using EFlow.Booking.Domain.SubmissionSlots;
-using EFlow.Booking.IntegrationEvents.SubmissionSlots;
+using EFlow.Common.IntegrationEvents.Booking.SubmissionSlots;
 using EFlow.Common.Domain.Repositories;
 using EFlow.Common.Infrastructure;
 using MediatR;
@@ -29,14 +29,9 @@ public sealed class SubmissionSlotUpdatedDomainEventNotificationHandler(
 
         var integrationEvent = new SubmissionSlotUpdatedIntegrationEvent
         {
-            SlotId = domainEvent.SlotId.Value,
-            SubjectId = slot.GetSubjectId().Value,
-            TeacherId = slot.GetTeacherId().Value,
-            SlotStartTime = slot.GetStartTime(),
-            SlotEndTime = slot.GetEndTime(),
-            Location = slot.GetLocation(),
-            UpdatedAt = domainEvent.UpdatedAt,
-            Recipients = await SubmissionSlotNotificationIntegrationMapper.MapRecipientsAsync(slot, userManager)
+            NewSubmissionSlot = null!, // TODO
+            OldSubmissionSlot = null!,
+            NotificationRecipients = [] 
         };
 
         await unitOfWork

@@ -12,14 +12,14 @@ public class UpdateNotificationSettingsCommandValidator : AbstractValidator<Upda
         RuleFor(x => x.UserId)
             .NotEmpty().WithMessage("User ID is required");
 
-        RuleFor(x => x.ReminderSchedules)
+        RuleFor(x => x.SubmissionRemindTimes)
             .NotNull().WithMessage("Reminder schedules are required");
 
-        RuleFor(x => x.ReminderSchedules)
+        RuleFor(x => x.SubmissionRemindTimes)
             .Must(schedules => schedules.Distinct().Count() == schedules.Length)
             .WithMessage("Reminder schedules must not contain duplicates");
 
-        RuleForEach(x => x.ReminderSchedules)
+        RuleForEach(x => x.SubmissionRemindTimes)
             .IsInEnum()
             .WithMessage("Reminder schedule is invalid");
 

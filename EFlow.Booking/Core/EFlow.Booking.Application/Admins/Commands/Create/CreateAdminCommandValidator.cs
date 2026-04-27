@@ -1,4 +1,4 @@
-﻿using EFlow.Booking.Application.Common.Validators;
+﻿using EFlow.Booking.Application.Common.Validation;
 using FluentValidation;
 
 namespace EFlow.Booking.Application.Admins.Commands;

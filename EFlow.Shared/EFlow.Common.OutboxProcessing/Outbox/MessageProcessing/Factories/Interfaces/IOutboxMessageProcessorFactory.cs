@@ -1,6 +1,6 @@
-﻿using EFlow.Booking.Messaging.Outbox.MessageProcessing.Interfaces;
+﻿using EFlow.Common.OutboxProcessing.Outbox.MessageProcessing.Interfaces;
 
-namespace EFlow.Booking.Messaging.Outbox.MessageProcessing.Factories.Interfaces;
+namespace EFlow.Common.OutboxProcessing.Outbox.MessageProcessing.Factories.Interfaces;
 
 public interface IOutboxMessageProcessorFactory
 {

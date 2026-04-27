@@ -1,4 +1,3 @@
-using EFlow.Booking.Domain.Domain.Students;
 using EFlow.Booking.Domain.Students;
 using EFlow.Booking.Domain.SubmissionSlots;
 using EFlow.Booking.Domain.SubmissionSlots.Admissions;

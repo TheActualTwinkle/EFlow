@@ -261,7 +261,7 @@ namespace EFlow.Booking.Persistence.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at");
 
-                    b.Property<int[]>("ReminderSchedules")
+                    b.Property<int[]>("SubmissionRemindTimes")
                         .IsRequired()
                         .HasColumnType("integer[]")
                         .HasColumnName("reminder_schedules");

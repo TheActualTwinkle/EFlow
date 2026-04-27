@@ -1,4 +1,4 @@
-﻿namespace EFlow.Booking.Messaging.Outbox;
+﻿namespace EFlow.Common.OutboxProcessing.Outbox;
 
 public record OutboxProcessorSettings
 {

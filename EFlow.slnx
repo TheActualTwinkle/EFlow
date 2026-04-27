@@ -17,10 +17,11 @@
     </Folder>
     <Folder Name="/EFlow.Notifications/" />
     <Folder Name="/EFlow.Notifications/Core/">
-        <Project Path="EFlow.Notifications/Core/EFlow.Notifications.Services/EFlow.Notifications.Services.csproj" />
+        <Project Path="EFlow.Notifications\Core\EFlow.Notifications.Application\EFlow.Notifications.Application.csproj" />
     </Folder>
     <Folder Name="/EFlow.Notifications/Infrastructure/">
         <Project Path="EFlow.Notifications/Infrastructure/EFlow.Notifications.Messaging/EFlow.Notifications.Messaging.csproj" />
+        <Project Path="EFlow.Notifications/Infrastructure/EFlow.Notifications.Templates/EFlow.Notifications.Templates.csproj" />
     </Folder>
     <Folder Name="/EFlow.Notifications/Presentation/">
         <Project Path="EFlow.Notifications/Web/EFlow.Notifications.WebApi/EFlow.Notifications.WebApi.csproj" />

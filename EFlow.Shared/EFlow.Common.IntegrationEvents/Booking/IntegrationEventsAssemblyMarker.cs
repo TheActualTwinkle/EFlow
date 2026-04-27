@@ -1,3 +1,3 @@
-namespace EFlow.Booking.IntegrationEvents;
+namespace EFlow.Common.IntegrationEvents.Booking;
 
 public sealed class IntegrationEventsAssemblyMarker;

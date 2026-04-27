@@ -31,6 +31,7 @@ public sealed class BookingRecord : Entity, IAggreagateRoot
         SlotId = slotId;
         CreatedAt = createdAt;
     }
+    
     public SubmissionSlotId GetSlotId() => 
         SlotId;
     

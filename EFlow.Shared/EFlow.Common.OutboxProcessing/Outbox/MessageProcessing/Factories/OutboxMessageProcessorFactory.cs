@@ -1,8 +1,8 @@
-﻿using EFlow.Booking.Messaging.Outbox.MessageProcessing.Factories.Interfaces;
-using EFlow.Booking.Messaging.Outbox.MessageProcessing.Interfaces;
+﻿using EFlow.Common.OutboxProcessing.Outbox.MessageProcessing.Factories.Interfaces;
+using EFlow.Common.OutboxProcessing.Outbox.MessageProcessing.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace EFlow.Booking.Messaging.Outbox.MessageProcessing.Factories;
+namespace EFlow.Common.OutboxProcessing.Outbox.MessageProcessing.Factories;
 
 public class OutboxMessageProcessorFactory(IServiceProvider serviceProvider) : IOutboxMessageProcessorFactory
 {

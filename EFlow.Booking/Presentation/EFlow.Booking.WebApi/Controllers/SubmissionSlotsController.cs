@@ -252,7 +252,7 @@ public class SubmissionSlotsController(ISender sender) : ControllerBase
             {
                 SlotId = id,
                 UserId = request.UserId,
-                ReminderSchedules = request.ReminderSchedules,
+                SubmissionRemindTimes = request.SubmissionRemindTimes,
                 BookingNotificationMode = request.BookingNotificationMode
             },
             cancellationToken);

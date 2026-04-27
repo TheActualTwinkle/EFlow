@@ -5,7 +5,7 @@ using EFlow.Booking.Domain.Students.Events;
 using EFlow.Booking.Domain.Students.Rules;
 using EFlow.Common.Domain;
 
-namespace EFlow.Booking.Domain.Domain.Students;
+namespace EFlow.Booking.Domain.Students;
 
 public sealed class Student : Entity, IAggreagateRoot
 {

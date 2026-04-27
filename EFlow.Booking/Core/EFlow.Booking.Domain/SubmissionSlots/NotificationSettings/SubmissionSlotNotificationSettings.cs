@@ -12,7 +12,7 @@ public sealed class SubmissionSlotNotificationSettings : Entity
 
     internal Guid UserId { get; private set; }
 
-    internal ReminderSchedule[] ReminderSchedules { get; private set; } = [];
+    internal SubmissionRemindTime[] SubmissionRemindTimes { get; private set; } = [];
 
     internal BookingNotificationMode? BookingNotificationMode { get; private set; }
 
@@ -23,7 +23,7 @@ public sealed class SubmissionSlotNotificationSettings : Entity
     private SubmissionSlotNotificationSettings(
         SubmissionSlotId submissionSlotId,
         Guid userId,
-        ReminderSchedule[] reminderSchedules,
+        SubmissionRemindTime[] submissionRemindTimes,
         BookingNotificationMode? bookingNotificationMode,
         DateTime createdAt,
         DateTime utcNow)
@@ -33,7 +33,7 @@ public sealed class SubmissionSlotNotificationSettings : Entity
         Id = new SubmissionSlotNotificationSettingsId(Guid.CreateVersion7());
         SubmissionSlotId = submissionSlotId;
         UserId = userId;
-        ReminderSchedules = reminderSchedules.Distinct().ToArray();
+        SubmissionRemindTimes = submissionRemindTimes.Distinct().ToArray();
         BookingNotificationMode = bookingNotificationMode;
         CreatedAt = createdAt;
     }
@@ -41,9 +41,9 @@ public sealed class SubmissionSlotNotificationSettings : Entity
     internal static SubmissionSlotNotificationSettings Create(
         SubmissionSlotId submissionSlotId,
         Guid userId,
-        ReminderSchedule[] reminderSchedules,
+        SubmissionRemindTime[] submissionRemindTime,
         BookingNotificationMode? bookingNotificationMode,
         DateTime createdAt,
         DateTime utcNow) =>
-        new(submissionSlotId, userId, reminderSchedules, bookingNotificationMode, createdAt, utcNow);
+        new(submissionSlotId, userId, submissionRemindTime, bookingNotificationMode, createdAt, utcNow);
 }

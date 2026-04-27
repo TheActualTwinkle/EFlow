@@ -1,0 +1,22 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+    <PropertyGroup>
+        <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    </ItemGroup>
+    
+    <ItemGroup>
+      <ProjectReference Include="..\..\..\EFlow.Shared\EFlow.Common.IntegrationEvents\EFlow.Common.IntegrationEvents.csproj" />
+    </ItemGroup>
+    
+    <ItemGroup>
+      <None Include="EmailTemplates\BookingNotification.cshtml" />
+      <None Include="EmailTemplates\Reminder.cshtml" />
+      <None Include="EmailTemplates\SubmissionSlotCreated.cshtml" />
+      <None Include="EmailTemplates\SubmissionSlotUpdated.cshtml" />
+    </ItemGroup>
+    
+</Project>

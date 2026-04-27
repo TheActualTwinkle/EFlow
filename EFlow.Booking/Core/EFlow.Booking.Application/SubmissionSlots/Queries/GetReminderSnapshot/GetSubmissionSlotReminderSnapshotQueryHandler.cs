@@ -1,6 +1,6 @@
 using EFlow.Booking.Domain;
+using EFlow.Booking.Domain.Notifications;
 using EFlow.Booking.Domain.SubmissionSlots;
-using EFlow.Booking.IntegrationEvents.SubmissionSlots.Notifications;
 using EFlow.Common.Infrastructure;
 using FluentResults;
 using MediatR;
@@ -40,10 +40,7 @@ public sealed class GetSubmissionSlotReminderSnapshotQueryHandler(
                     new SubmissionSlotReminderRecipientDto
                     {
                         UserId = recipient.UserId,
-                        Email = user?.Email,
-                        ReminderSchedules = recipient.ReminderSchedules
-                            .Select(schedule => (ReminderScheduleIntegration)(int)schedule)
-                            .ToArray()
+                        Email = user?.Email
                     });
             }
 

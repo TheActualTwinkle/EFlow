@@ -29,19 +29,19 @@ public class SubmissionSlotNotificationSettingsConfiguration : IEntityTypeConfig
             .HasColumnName("user_id")
             .IsRequired();
 
-        builder.Property(settings => settings.ReminderSchedules)
+        builder.Property(settings => settings.SubmissionRemindTimes)
             .HasColumnName("reminder_schedules")
             .HasColumnType("integer[]")
             .HasConversion(
                 schedules => schedules.Select(schedule => (int)schedule).ToArray(),
-                schedules => schedules.Select(schedule => (ReminderSchedule)schedule).ToArray())
+                schedules => schedules.Select(schedule => (SubmissionRemindTime)schedule).ToArray())
             .Metadata.SetValueComparer(
-                new ValueComparer<ReminderSchedule[]>(
+                new ValueComparer<SubmissionRemindTime[]>(
                     (left, right) => left!.SequenceEqual(right!),
                     schedules => schedules.Aggregate(0, HashCode.Combine),
                     schedules => schedules.ToArray()));
 
-        builder.Property(settings => settings.ReminderSchedules)
+        builder.Property(settings => settings.SubmissionRemindTimes)
             .IsRequired();
 
         builder.Property(settings => settings.BookingNotificationMode)

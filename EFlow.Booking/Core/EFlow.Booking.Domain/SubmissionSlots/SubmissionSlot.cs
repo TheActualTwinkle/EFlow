@@ -1,6 +1,5 @@
 ﻿using EFlow.Booking.Domain.BookingRecords;
 using EFlow.Booking.Domain.Groups;
-using EFlow.Booking.Domain.Domain.Students;
 using EFlow.Booking.Domain.Notifications;
 using EFlow.Booking.Domain.Students;
 using EFlow.Booking.Domain.SubmissionSlots.Admissions;
@@ -76,6 +75,21 @@ public sealed class SubmissionSlot : Entity
         Comment = comment?.Trim();
     }
 
+    public SubjectId GetSubjectId() =>
+        SubjectId;
+
+    public TeacherId GetTeacherId() =>
+        TeacherId;
+
+    public DateTime GetStartTime() =>
+        StartTime;
+
+    public DateTime GetEndTime() =>
+        EndTime;
+
+    public string? GetLocation() =>
+        Location;
+    
     public static SubmissionSlot Create(
         SubjectId subjectId,
         TeacherId teacherId,
@@ -125,29 +139,11 @@ public sealed class SubmissionSlot : Entity
         return Id;
     }
 
-    public bool IsOwnedBy(TeacherId teacherId) =>
-        TeacherId == teacherId;
-
-    public SubjectId GetSubjectId() =>
-        SubjectId;
-
-    public TeacherId GetTeacherId() =>
-        TeacherId;
-
-    public DateTime GetStartTime() =>
-        StartTime;
-
-    public DateTime GetEndTime() =>
-        EndTime;
-
-    public string? GetLocation() =>
-        Location;
-
     public IReadOnlyCollection<SubmissionSlotNotificationRecipient> GetNotificationRecipients() =>
         NotificationSettings
             .Select(settings => new SubmissionSlotNotificationRecipient(
                 settings.UserId,
-                settings.ReminderSchedules,
+                settings.SubmissionRemindTimes,
                 settings.BookingNotificationMode))
             .ToArray();
 
@@ -210,7 +206,7 @@ public sealed class SubmissionSlot : Entity
 
     public void UpdateNotificationSettings(
         Guid userId,
-        ReminderSchedule[] reminderSchedules,
+        SubmissionRemindTime[] bookingRecordRemindTime,
         BookingNotificationMode? bookingNotificationMode,
         DateTime nowUtc)
     {
@@ -222,7 +218,7 @@ public sealed class SubmissionSlot : Entity
         var settings = SubmissionSlotNotificationSettings.Create(
             Id,
             userId,
-            reminderSchedules,
+            bookingRecordRemindTime,
             bookingNotificationMode,
             nowUtc,
             nowUtc);

@@ -1,6 +1,7 @@
 using EFlow.Common.Messaging.Init;
+using EFlow.Notifications.Application;
 using EFlow.Notifications.Messaging;
-using EFlow.Notifications.Services;
+using EFlow.Notifications.Templates;
 using Scalar.AspNetCore;
 using Serilog;
 
@@ -19,6 +20,7 @@ builder.Services.AddOpenApi();
 
 builder.Services.AddMessaging(builder.Configuration);
 builder.Services.AddNotificationServices(builder.Configuration);
+builder.Services.AddNotificationsTemplates();
 
 var app = builder.Build();
 

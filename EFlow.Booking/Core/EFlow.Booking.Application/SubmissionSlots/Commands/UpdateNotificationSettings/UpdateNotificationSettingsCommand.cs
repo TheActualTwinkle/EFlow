@@ -11,7 +11,7 @@ public record UpdateNotificationSettingsCommand : IRequest<Result>, ITransaction
 
     public required Guid UserId { get; init; }
 
-    public required ReminderSchedule[] ReminderSchedules { get; init; }
+    public required SubmissionRemindTime[] SubmissionRemindTimes { get; init; }
 
     public BookingNotificationMode? BookingNotificationMode { get; init; }
 }
