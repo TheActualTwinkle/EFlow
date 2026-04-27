@@ -12,7 +12,7 @@ public sealed class SubmissionSlotNotificationSettings : Entity
 
     internal Guid UserId { get; private set; }
 
-    internal SubmissionRemindTime[] SubmissionRemindTimes { get; private set; } = [];
+    internal ICollection<SubmissionRemindTime> SubmissionRemindTimes { get; private set; } = [];
 
     internal BookingNotificationMode? BookingNotificationMode { get; private set; }
 
@@ -23,7 +23,7 @@ public sealed class SubmissionSlotNotificationSettings : Entity
     private SubmissionSlotNotificationSettings(
         SubmissionSlotId submissionSlotId,
         Guid userId,
-        SubmissionRemindTime[] submissionRemindTimes,
+        ICollection<SubmissionRemindTime> submissionRemindTimes,
         BookingNotificationMode? bookingNotificationMode,
         DateTime createdAt,
         DateTime utcNow)
@@ -41,7 +41,7 @@ public sealed class SubmissionSlotNotificationSettings : Entity
     internal static SubmissionSlotNotificationSettings Create(
         SubmissionSlotId submissionSlotId,
         Guid userId,
-        SubmissionRemindTime[] submissionRemindTime,
+        ICollection<SubmissionRemindTime> submissionRemindTime,
         BookingNotificationMode? bookingNotificationMode,
         DateTime createdAt,
         DateTime utcNow) =>

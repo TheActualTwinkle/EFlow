@@ -12,7 +12,7 @@ public sealed record SubmissionSlotUpdatedEmailTemplateModel
 
     public required string CurrentTimeRange { get; init; }
 
-    public required ChangedItem[] Changes { get; init; }
+    public required IEnumerable<ChangedItem> Changes { get; init; }
     
     public sealed record ChangedItem
     {

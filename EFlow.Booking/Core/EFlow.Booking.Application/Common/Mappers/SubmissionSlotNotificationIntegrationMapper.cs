@@ -7,7 +7,7 @@ namespace EFlow.Booking.Application.Common.Mappers;
 
 internal static class SubmissionSlotNotificationIntegrationMapper
 {
-    internal static async Task<NotificationRecipient[]> MapRecipientsAsync(
+    internal static async Task<IEnumerable<NotificationRecipient>> MapRecipientsAsync(
         SubmissionSlot slot,
         UserManager<Identity> userManager)
     {

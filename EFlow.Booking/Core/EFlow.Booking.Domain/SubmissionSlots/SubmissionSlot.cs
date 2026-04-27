@@ -206,7 +206,7 @@ public sealed class SubmissionSlot : Entity
 
     public void UpdateNotificationSettings(
         Guid userId,
-        SubmissionRemindTime[] bookingRecordRemindTime,
+        ICollection<SubmissionRemindTime> bookingRecordRemindTime,
         BookingNotificationMode? bookingNotificationMode,
         DateTime nowUtc)
     {

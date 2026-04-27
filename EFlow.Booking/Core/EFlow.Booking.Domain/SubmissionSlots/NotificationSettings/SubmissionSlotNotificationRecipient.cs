@@ -4,5 +4,5 @@ namespace EFlow.Booking.Domain.SubmissionSlots.NotificationSettings;
 
 public sealed record SubmissionSlotNotificationRecipient(
     Guid UserId,
-    SubmissionRemindTime[] SubmissionRemindTimes,
+    IEnumerable<SubmissionRemindTime> SubmissionRemindTimes,
     BookingNotificationMode? BookingNotificationMode);

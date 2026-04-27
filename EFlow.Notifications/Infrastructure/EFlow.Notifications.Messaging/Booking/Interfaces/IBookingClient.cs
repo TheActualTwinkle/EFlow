@@ -4,5 +4,5 @@ namespace EFlow.Notifications.Messaging.Booking.Interfaces;
 
 public interface IBookingClient
 {
-    public Task<SubmissionSlotReminderSnapshot[]> GetReminderSnapshotAsync(CancellationToken cancellationToken);
+    public Task<IEnumerable<SubmissionSlotReminderSnapshot>> GetReminderSnapshotAsync(CancellationToken cancellationToken);
 }

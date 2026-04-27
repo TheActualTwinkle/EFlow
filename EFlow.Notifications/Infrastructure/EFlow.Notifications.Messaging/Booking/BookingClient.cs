@@ -6,13 +6,13 @@ namespace EFlow.Notifications.Messaging.Booking;
 
 public sealed class BookingClient(HttpClient httpClient) : IBookingClient
 {
-    public async Task<SubmissionSlotReminderSnapshot[]> GetReminderSnapshotAsync(CancellationToken cancellationToken)
+    public async Task<IEnumerable<SubmissionSlotReminderSnapshot>> GetReminderSnapshotAsync(CancellationToken cancellationToken)
     {
         var response = await httpClient.GetAsync("api/submission-slots/reminder-snapshot", cancellationToken);
         
         response.EnsureSuccessStatusCode();
 
-        return await response.Content.ReadFromJsonAsync<SubmissionSlotReminderSnapshot[]>(cancellationToken) ?? 
+        return await response.Content.ReadFromJsonAsync<IEnumerable<SubmissionSlotReminderSnapshot>>(cancellationToken) ?? 
                throw new InvalidOperationException("Unable to get reminder snapshot.");
     }
 }
