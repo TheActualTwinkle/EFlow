@@ -17,8 +17,4 @@
         <ProjectReference Include="..\..\Infrastructure\EFlow.Notifications.Templates\EFlow.Notifications.Templates.csproj" />
     </ItemGroup>
 
-    <ItemGroup>
-      <Folder Include="Email\Settings\" />
-    </ItemGroup>
-
 </Project>
