@@ -12,7 +12,9 @@
         <Project Path="EFlow.Booking/Presentation/EFlow.Booking.WebApi/EFlow.Booking.WebApi.csproj" />
     </Folder>
     <Folder Name="/EFlow.Booking/Tests/">
+        <Project Path="EFlow.Booking/Tests/EFlow.Booking.ApiTests/EFlow.Booking.ApiTests.csproj" />
         <Project Path="EFlow.Booking/Tests/EFlow.Booking.ArchitectureTests/EFlow.Booking.ArchitectureTests.csproj" />
+        <Project Path="EFlow.Booking/Tests/EFlow.Booking.IntegrationTests/EFlow.Booking.IntegrationTests.csproj" />
         <Project Path="EFlow.Booking/Tests/EFlow.Booking.UnitTests/EFlow.Booking.UnitTests.csproj" />
         <Project Path="EFlow.Shared/EFlow.Common.UnitTests/EFlow.Common.UnitTests.csproj" />
     </Folder>
@@ -26,6 +28,9 @@
     </Folder>
     <Folder Name="/EFlow.Notifications/Presentation/">
         <Project Path="EFlow.Notifications/Web/EFlow.Notifications.WebApi/EFlow.Notifications.WebApi.csproj" />
+    </Folder>
+    <Folder Name="/EFlow.Notifications/Tests/">
+        <Project Path="EFlow.Notifications/Tests/EFlow.Notifications.UnitTests/EFlow.Notifications.UnitTests.csproj" />
     </Folder>
     <Folder Name="/Eflow.Shared/">
         <Project Path="EFlow.Shared/EFlow.Common.Domain/EFlow.Common.Domain.csproj" />

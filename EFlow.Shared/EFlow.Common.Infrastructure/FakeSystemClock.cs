@@ -1,6 +1,4 @@
-using EFlow.Common.Infrastructure;
-
-namespace EFlow.Booking.UnitTests.Common;
+namespace EFlow.Common.Infrastructure;
 
 public sealed class FakeSystemClock(DateTime utcNow) : ISystemClock
 {
