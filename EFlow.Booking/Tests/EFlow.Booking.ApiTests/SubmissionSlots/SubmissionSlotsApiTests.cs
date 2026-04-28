@@ -244,13 +244,11 @@ public sealed class SubmissionSlotsApiTests(ApiTestStackFixture fixture)
 
     private static async Task<SubmissionSlotFixture> CreateSubmissionSlotFixtureAsync(ApiScenario scenario, ApiSession adminSession)
     {
-        // Arrange
         var groupName = $"Group {scenario.Suffix}";
         var subjectName = $"Subject {scenario.Suffix}";
         var groupId = await scenario.CreateGroupAsync(adminSession, groupName);
         var teacherUsername = $"teacher_{scenario.Suffix}";
 
-        // Act
         var teacherId = await scenario.CreateTeacherAsync(
             adminSession,
             teacherUsername,
@@ -275,7 +273,6 @@ public sealed class SubmissionSlotsApiTests(ApiTestStackFixture fixture)
         var teacherSession = await scenario.LoginAsync(teacherUsername, "Teacher123!");
         var studentSession = await scenario.LoginAsync(studentUsername, "Student123!");
 
-        // Assert
         return new SubmissionSlotFixture(
             adminSession,
             teacherSession,

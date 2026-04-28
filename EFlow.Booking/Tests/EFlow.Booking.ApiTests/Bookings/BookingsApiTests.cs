@@ -165,23 +165,19 @@ public sealed class BookingsApiTests(ApiTestStackFixture fixture)
     private Task WithTwoBookingsAsync(Func<ApiScenario, BookingsFixture, Task> assertion) =>
         WithBookingsFixtureAsync(async (scenario, context) =>
         {
-            // Act
             context.Booking1Id = await scenario.CreateBookingAsync(context.AdminSession, context.Student1Id, context.SlotId);
             context.Booking2Id = await scenario.CreateBookingAsync(context.AdminSession, context.Student2Id, context.SlotId);
             context.AddCleanup(ApiScenario.DeleteBooking(context.Booking1Id));
             context.AddCleanup(ApiScenario.DeleteBooking(context.Booking2Id));
-
-            // Assert
+            
             await assertion(scenario, context);
         });
 
     private static async Task<BookingsFixture> CreateBookingsFixtureAsync(ApiScenario scenario, ApiSession adminSession)
     {
-        // Arrange
         var groupId = await scenario.CreateGroupAsync(adminSession, $"Group {scenario.Suffix}");
         var teacherUsername = $"teacher_{scenario.Suffix}";
-
-        // Act
+        
         var teacherId = await scenario.CreateTeacherAsync(
             adminSession,
             teacherUsername,
@@ -213,8 +209,7 @@ public sealed class BookingsApiTests(ApiTestStackFixture fixture)
         await scenario.AddAdmissionAsync(adminSession, slotId, student1Id);
         await scenario.AddAdmissionAsync(adminSession, slotId, student2Id);
         var student1Session = await scenario.LoginAsync(student1Username, "Student123!");
-
-        // Assert
+        
         return new BookingsFixture(adminSession, student1Session, groupId, teacherId, subjectId, slotId, student1Id, student2Id);
     }
 }

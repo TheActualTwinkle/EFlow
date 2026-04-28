@@ -158,7 +158,6 @@ public sealed class CatalogApiTests(ApiTestStackFixture fixture)
 
     private async Task WithCatalogFixtureAsync(Func<ApiScenario, CatalogFixture, Task> assertion)
     {
-        // Arrange
         var scenario = new ApiScenario(fixture);
         var (adminSession, _) = await scenario.CreateAdminSessionAsync();
 
@@ -179,11 +178,9 @@ public sealed class CatalogApiTests(ApiTestStackFixture fixture)
 
     private static async Task<CatalogFixture> CreateCatalogFixtureAsync(ApiScenario scenario, ApiSession adminSession)
     {
-        // Arrange
         var groupName = $"Group {scenario.Suffix}";
         var subjectName = $"Subject {scenario.Suffix}";
 
-        // Act
         var groupId = await scenario.CreateGroupAsync(adminSession, groupName);
 
         var teacherId = await scenario.CreateTeacherAsync(
@@ -203,7 +200,6 @@ public sealed class CatalogApiTests(ApiTestStackFixture fixture)
 
         var subjectId = await scenario.CreateSubjectAsync(adminSession, teacherId, groupId, subjectName);
 
-        // Assert
         return new CatalogFixture(adminSession, scenario.Suffix, groupId, groupName, teacherId, studentId, subjectId, subjectName);
     }
 }
