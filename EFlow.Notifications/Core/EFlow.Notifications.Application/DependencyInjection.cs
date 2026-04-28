@@ -19,41 +19,44 @@ namespace EFlow.Notifications.Application;
 
 public static class DependencyInjection
 {
-    public static IServiceCollection AddNotificationServices(this IServiceCollection services, IConfiguration configuration)
+    extension(IServiceCollection services)
     {
-        services.AddSingleton<ISystemClock, SystemClock>();
-        
-        // TODO: add settings
-        services.AddScoped<IEmailNotificationService, EmailNotificationService>();
-        
-        services.AddScoped<IIntegrationEventProcessor<SubmissionSlotCreatedIntegrationEvent>, SubmissionSlotCreatedIntegrationEventProcessor>();
-        services.AddScoped<IIntegrationEventProcessor<SubmissionSlotUpdatedIntegrationEvent>, SubmissionSlotUpdatedIntegrationEventProcessor>();
-        services.AddScoped<IIntegrationEventProcessor<BookingCreatedIntegrationEvent>, BookingCreatedIntegrationEventProcessor>();
-        services.AddScoped<IIntegrationEventProcessor<BookingCancelledIntegrationEvent>, BookingCancelledIntegrationEventProcessor>();
-        services.AddScoped<BookingReminderJob>();
-
-        return services;
-    }
-
-    public static IServiceCollection AddJobScheduler(this IServiceCollection services, IConfiguration configuration)
-    {
-        var hangfireConnectionString = configuration.GetConnectionString("HangfireDb") ??
-                                       throw new InvalidOperationException("Hangfire connection string is not configured.");
-
-        services.AddHangfire(c =>
-            c.UseDynamicJobs()
-                .UseSimpleAssemblyNameTypeSerializer()
-                .UseRecommendedSerializerSettings()
-                .UsePostgreSqlStorage(o => o.UseNpgsqlConnection(hangfireConnectionString))
-                .UseFilter(new AutomaticRetryAttribute { Attempts = 3 }));
-
-        services.AddHangfireServer(o =>
+        public IServiceCollection AddNotificationServices(IConfiguration configuration)
         {
-            o.Queues = ["eflow-reminders"];
-            o.SchedulePollingInterval = TimeSpan.FromSeconds(10);
-        });
+            services.AddSingleton<ISystemClock, SystemClock>();
+        
+            // TODO: add settings
+            services.AddScoped<IEmailNotificationService, EmailNotificationService>();
+        
+            services.AddScoped<IIntegrationEventProcessor<SubmissionSlotCreatedIntegrationEvent>, SubmissionSlotCreatedIntegrationEventProcessor>();
+            services.AddScoped<IIntegrationEventProcessor<SubmissionSlotUpdatedIntegrationEvent>, SubmissionSlotUpdatedIntegrationEventProcessor>();
+            services.AddScoped<IIntegrationEventProcessor<BookingCreatedIntegrationEvent>, BookingCreatedIntegrationEventProcessor>();
+            services.AddScoped<IIntegrationEventProcessor<BookingCancelledIntegrationEvent>, BookingCancelledIntegrationEventProcessor>();
+            services.AddScoped<BookingReminderJob>();
 
-        return services;
+            return services;
+        }
+
+        public IServiceCollection AddJobScheduler(IConfiguration configuration)
+        {
+            var hangfireConnectionString = configuration.GetConnectionString("HangfireDb") ??
+                                           throw new InvalidOperationException("Hangfire connection string is not configured.");
+
+            services.AddHangfire(c =>
+                c.UseDynamicJobs()
+                    .UseSimpleAssemblyNameTypeSerializer()
+                    .UseRecommendedSerializerSettings()
+                    .UsePostgreSqlStorage(o => o.UseNpgsqlConnection(hangfireConnectionString))
+                    .UseFilter(new AutomaticRetryAttribute { Attempts = 3 }));
+
+            services.AddHangfireServer(o =>
+            {
+                o.Queues = ["eflow-reminders"];
+                o.SchedulePollingInterval = TimeSpan.FromSeconds(10);
+            });
+
+            return services;
+        }
     }
 
     public static IApplicationBuilder UseBookingReminders(this WebApplication app)

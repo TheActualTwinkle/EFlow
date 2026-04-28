@@ -57,6 +57,9 @@ services:
         condition: service_healthy
     environment:
       ASPNETCORE_ENVIRONMENT: Production
+      AdminConfiguration__Username: ${ADMIN_USERNAME?ADMIN_USERNAME is required}
+      AdminConfiguration__Password: ${ADMIN_PASSWORD?ADMIN_PASSWORD is required}
+      AdminConfiguration__Email: ${ADMIN_EMAIL?ADMIN_EMAIL is required}
       Jwt__Key: ${JWT_KEY:?JWT_KEY is required}
       Jwt__Issuer: ${JWT_ISSUER:-http://localhost:8081}
       Jwt__Audience: ${JWT_AUDIENCE:-http://localhost:8081}

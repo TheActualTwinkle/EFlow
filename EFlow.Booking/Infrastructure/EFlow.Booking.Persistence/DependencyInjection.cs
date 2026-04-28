@@ -19,53 +19,56 @@ namespace EFlow.Booking.Persistence;
 
 public static class DependencyInjection
 {
-    public static IServiceCollection AddPersistence(this IServiceCollection services, IConfiguration configuration)
+    extension(IServiceCollection services)
     {
-        services.AddScoped<IUnitOfWorkFactory, UnitOfWorkFactory>();
-
-        services.AddScoped<IUnitOfWork, UnitOfWork>();
-
-        var connectionString = configuration.GetConnectionString("Database");
-
-        services.AddDbContext<ApplicationDbContext>(options =>
-            options.UseNpgsql(
-                connectionString,
-                builder => builder.MigrationsAssembly(typeof(ApplicationDbContext).Assembly.FullName)));
-        
-        services.AddScoped<DbContext>(sp => sp.GetRequiredService<ApplicationDbContext>());
-
-        services.AddScoped<IAdminRepository, AdminRepository>();
-        services.AddScoped<ITeacherRepository, TeacherRepository>();
-        services.AddScoped<IStudentRepository, StudentRepository>();
-        services.AddScoped<IGroupRepository, GroupRepository>();
-        services.AddScoped<ISubjectRepository, SubjectRepository>();
-        services.AddScoped<ISubmissionSlotRepository, SubmissionSlotRepository>();
-        services.AddScoped<IBookingRecordRepository, BookingRecordRepository>();
-        services.AddScoped<IOutboxMessageRepository, OutboxMessageRepository>();
-        
-        services.AddScoped<IDomainEventDispatcher, DomainEventDispatcher>();
-
-        return services;
-    }
-
-    public static IServiceCollection AddJobScheduler(this IServiceCollection services, IConfiguration configuration)
-    {
-        var hangfireConnectionString = configuration.GetConnectionString("HangfireDb") ??
-                                       throw new InvalidOperationException("Hangfire connection string is not configured.");
-
-        services.AddHangfire(c =>
-            c.UseDynamicJobs()
-                .UseSimpleAssemblyNameTypeSerializer()
-                .UseRecommendedSerializerSettings()
-                .UsePostgreSqlStorage(o => o.UseNpgsqlConnection(hangfireConnectionString))
-                .UseFilter(new AutomaticRetryAttribute { Attempts = 3 }));
-
-        services.AddHangfireServer(o =>
+        public IServiceCollection AddPersistence(IConfiguration configuration)
         {
-            o.Queues = ["eflow-outbox"];
-            o.SchedulePollingInterval = TimeSpan.FromSeconds(10);
-        });
+            services.AddScoped<IUnitOfWorkFactory, UnitOfWorkFactory>();
 
-        return services;
+            services.AddScoped<IUnitOfWork, UnitOfWork>();
+
+            var connectionString = configuration.GetConnectionString("Database");
+
+            services.AddDbContext<ApplicationDbContext>(options =>
+                options.UseNpgsql(
+                    connectionString,
+                    builder => builder.MigrationsAssembly(typeof(ApplicationDbContext).Assembly.FullName)));
+        
+            services.AddScoped<DbContext>(sp => sp.GetRequiredService<ApplicationDbContext>());
+
+            services.AddScoped<IAdminRepository, AdminRepository>();
+            services.AddScoped<ITeacherRepository, TeacherRepository>();
+            services.AddScoped<IStudentRepository, StudentRepository>();
+            services.AddScoped<IGroupRepository, GroupRepository>();
+            services.AddScoped<ISubjectRepository, SubjectRepository>();
+            services.AddScoped<ISubmissionSlotRepository, SubmissionSlotRepository>();
+            services.AddScoped<IBookingRecordRepository, BookingRecordRepository>();
+            services.AddScoped<IOutboxMessageRepository, OutboxMessageRepository>();
+        
+            services.AddScoped<IDomainEventDispatcher, DomainEventDispatcher>();
+
+            return services;
+        }
+
+        public IServiceCollection AddJobScheduler(IConfiguration configuration)
+        {
+            var hangfireConnectionString = configuration.GetConnectionString("HangfireDb") ??
+                                           throw new InvalidOperationException("Hangfire connection string is not configured.");
+
+            services.AddHangfire(c =>
+                c.UseDynamicJobs()
+                    .UseSimpleAssemblyNameTypeSerializer()
+                    .UseRecommendedSerializerSettings()
+                    .UsePostgreSqlStorage(o => o.UseNpgsqlConnection(hangfireConnectionString))
+                    .UseFilter(new AutomaticRetryAttribute { Attempts = 3 }));
+
+            services.AddHangfireServer(o =>
+            {
+                o.Queues = ["eflow-outbox"];
+                o.SchedulePollingInterval = TimeSpan.FromSeconds(10);
+            });
+
+            return services;
+        }
     }
 }

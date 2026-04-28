@@ -1,4 +1,5 @@
 using System.Net.Sockets;
+using EFlow.Booking.Application.Services.AdminInitialing.Interfaces;
 using EFlow.Booking.Persistence.DatabaseContext;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
@@ -8,49 +9,61 @@ namespace EFlow.Booking.WebApi.Extensions;
 
 public static class StartupExtensions
 {
-    public static async Task ApplyDbMigrations(this WebApplication webApplication)
+    extension(WebApplication webApplication)
     {
-        const int maxAttempts = 10;
-        var delay = TimeSpan.FromSeconds(2);
+        public async Task ApplyDbMigrationsAsync()
+        {
+            const int maxAttempts = 10;
+            var delay = TimeSpan.FromSeconds(2);
 
-        for (var attempt = 1; attempt <= maxAttempts; attempt++)
-            try
-            {
-                using var scope = webApplication.Services.CreateScope();
-
-                var databaseContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-
-                await databaseContext.Database.MigrateAsync();
-
-                Log.Information("Database migrations applied successfully");
-
-                return;
-            }
-            catch (Exception e) when (
-                e is NpgsqlException or SocketException ||
-                e.InnerException is NpgsqlException or SocketException)
-            {
-                if (attempt == maxAttempts)
+            for (var attempt = 1; attempt <= maxAttempts; attempt++)
+                try
                 {
-                    Log.Error(e, "Error on DB migration after {Attempts} attempts", maxAttempts);
+                    using var scope = webApplication.Services.CreateScope();
+
+                    var databaseContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+
+                    await databaseContext.Database.MigrateAsync();
+
+                    Log.Information("Database migrations applied successfully");
+
+                    return;
+                }
+                catch (Exception e) when (
+                    e is NpgsqlException or SocketException ||
+                    e.InnerException is NpgsqlException or SocketException)
+                {
+                    if (attempt == maxAttempts)
+                    {
+                        Log.Error(e, "Error on DB migration after {Attempts} attempts", maxAttempts);
+
+                        throw;
+                    }
+
+                    Log.Warning(
+                        e,
+                        "Transient DB migration error on attempt {Attempt}/{MaxAttempts}. Retrying in {DelaySeconds}s",
+                        attempt,
+                        maxAttempts,
+                        delay.TotalSeconds);
+
+                    await Task.Delay(delay);
+                }
+                catch (Exception e)
+                {
+                    Log.Fatal(e, "Error on DB migration: {Message}", e.Message);
 
                     throw;
                 }
+        }
 
-                Log.Warning(
-                    e,
-                    "Transient DB migration error on attempt {Attempt}/{MaxAttempts}. Retrying in {DelaySeconds}s",
-                    attempt,
-                    maxAttempts,
-                    delay.TotalSeconds);
+        public async Task InitAdminsAsync()
+        {
+            await using var scope = webApplication.Services.CreateAsyncScope();
 
-                await Task.Delay(delay);
-            }
-            catch (Exception e)
-            {
-                Log.Fatal(e, "Error on DB migration: {Message}", e.Message);
+            var adminInitializer = scope.ServiceProvider.GetRequiredService<IAdminInitializer>();
 
-                throw;
-            }
+            await adminInitializer.InitializeAsync();
+        }
     }
 }

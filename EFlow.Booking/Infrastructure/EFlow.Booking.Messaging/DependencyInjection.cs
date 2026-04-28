@@ -25,53 +25,56 @@ namespace EFlow.Booking.Messaging;
 
 public static class DependencyInjection
 {
-    public static IServiceCollection AddMessaging(this IServiceCollection services, IConfiguration configuration)
+    extension(IServiceCollection services)
     {
-        services.AddScoped<TopicInitializer>();
-
-        services.Configure<KafkaSettings>(configuration.GetRequiredSection("KafkaSettings"));
-        services.Configure<KafkaTopicsSettings>(configuration.GetRequiredSection("KafkaSettings"));
-
-        services.AddScoped(typeof(ICommitLogProducer<,>), typeof(CommitLogProducer<,>));
-
-        services.AddSingleton<ProducerConfig>(serviceProvider =>
+        public IServiceCollection AddMessaging(IConfiguration configuration)
         {
-            var settings = serviceProvider.GetRequiredService<IOptions<KafkaSettings>>().Value;
+            services.AddScoped<TopicInitializer>();
 
-            return new ProducerConfig
+            services.Configure<KafkaSettings>(configuration.GetRequiredSection("KafkaSettings"));
+            services.Configure<KafkaTopicsSettings>(configuration.GetRequiredSection("KafkaSettings"));
+
+            services.AddScoped(typeof(ICommitLogProducer<,>), typeof(CommitLogProducer<,>));
+
+            services.AddSingleton<ProducerConfig>(serviceProvider =>
             {
-                BootstrapServers = settings.BootstrapServers,
-                AllowAutoCreateTopics = false,
-                ReconnectBackoffMs = 1000,
-                MessageSendMaxRetries = settings.Retries,
-                MessageTimeoutMs = settings.MessageTimeoutMs
-            };
-        });
+                var settings = serviceProvider.GetRequiredService<IOptions<KafkaSettings>>().Value;
 
-        services.AddScoped(typeof(ISerializer<>), typeof(DefaultSerializer<>));
+                return new ProducerConfig
+                {
+                    BootstrapServers = settings.BootstrapServers,
+                    AllowAutoCreateTopics = false,
+                    ReconnectBackoffMs = 1000,
+                    MessageSendMaxRetries = settings.Retries,
+                    MessageTimeoutMs = settings.MessageTimeoutMs
+                };
+            });
 
-        services.AddSingleton<IAdminClient>(serviceProvider =>
+            services.AddScoped(typeof(ISerializer<>), typeof(DefaultSerializer<>));
+
+            services.AddSingleton<IAdminClient>(serviceProvider =>
+            {
+                var settings = serviceProvider.GetRequiredService<IOptions<KafkaSettings>>().Value;
+
+                return new AdminClientBuilder(new AdminClientConfig { BootstrapServers = settings.BootstrapServers })
+                    .Build();
+            });
+
+            AddTopicResolving(services);
+
+            return services;
+        }
+
+        public IServiceCollection AddOutbox(IConfiguration configuration)
         {
-            var settings = serviceProvider.GetRequiredService<IOptions<KafkaSettings>>().Value;
+            services.AddOutboxProcessor(configuration);
 
-            return new AdminClientBuilder(new AdminClientConfig { BootstrapServers = settings.BootstrapServers })
-                .Build();
-        });
+            services.AddOutboxMessageProcessor<IKafkaMessage, KafkaMessageProcessor>();
 
-        AddTopicResolving(services);
+            services.AddScoped<IOutboxMessageProcessorFactory, OutboxMessageProcessorFactory>();
 
-        return services;
-    }
-
-    public static IServiceCollection AddOutbox(this IServiceCollection services, IConfiguration configuration)
-    {
-        services.AddOutboxProcessor(configuration);
-
-        services.AddOutboxMessageProcessor<IKafkaMessage, KafkaMessageProcessor>();
-
-        services.AddScoped<IOutboxMessageProcessorFactory, OutboxMessageProcessorFactory>();
-
-        return services;
+            return services;
+        }
     }
 
     public static IApplicationBuilder UseOutbox(this WebApplication app)
@@ -99,59 +102,62 @@ public static class DependencyInjection
         return app;
     }
 
-    private static IServiceCollection AddOutboxProcessor(this IServiceCollection services, IConfiguration configuration)
+    extension(IServiceCollection services)
     {
-        var batchSize = configuration
-            .GetRequiredSection("OutboxProcessorSettings")
-            .GetValue<int>("BatchSize");
-
-        if (batchSize <= 0)
-            throw new InvalidOperationException("Batch size must be greater than zero.");
-
-        var processInterval = configuration
-            .GetRequiredSection("OutboxProcessorSettings")
-            .GetValue<TimeSpan>("ProcessInterval");
-
-        var deleteInterval = configuration
-            .GetRequiredSection("OutboxProcessorSettings")
-            .GetValue<TimeSpan>("DeleteProcessedInterval");
-
-        var deleteAfter = configuration
-            .GetRequiredSection("OutboxProcessorSettings")
-            .GetValue<TimeSpan>("DeleteAfter");
-
-        services.AddSingleton<OutboxProcessorSettings>(_ => new OutboxProcessorSettings
+        private IServiceCollection AddOutboxProcessor(IConfiguration configuration)
         {
-            BatchSize = batchSize,
-            ProcessInterval = processInterval,
-            DeleteInterval = deleteInterval,
-            DeleteAfter = deleteAfter
-        });
+            var batchSize = configuration
+                .GetRequiredSection("OutboxProcessorSettings")
+                .GetValue<int>("BatchSize");
 
-        services.AddScoped<IOutboxProcessor, OutboxProcessor>();
+            if (batchSize <= 0)
+                throw new InvalidOperationException("Batch size must be greater than zero.");
 
-        return services;
-    }
+            var processInterval = configuration
+                .GetRequiredSection("OutboxProcessorSettings")
+                .GetValue<TimeSpan>("ProcessInterval");
 
-    private static IServiceCollection AddOutboxMessageProcessor<TMessage, TMessageProcessor>(this IServiceCollection services)
-        where TMessageProcessor : class, IOutboxMessageProcessor
-    {
-        var messageType = typeof(TMessage);
+            var deleteInterval = configuration
+                .GetRequiredSection("OutboxProcessorSettings")
+                .GetValue<TimeSpan>("DeleteProcessedInterval");
 
-        var assemblies = new[]
+            var deleteAfter = configuration
+                .GetRequiredSection("OutboxProcessorSettings")
+                .GetValue<TimeSpan>("DeleteAfter");
+
+            services.AddSingleton<OutboxProcessorSettings>(_ => new OutboxProcessorSettings
+            {
+                BatchSize = batchSize,
+                ProcessInterval = processInterval,
+                DeleteInterval = deleteInterval,
+                DeleteAfter = deleteAfter
+            });
+
+            services.AddScoped<IOutboxProcessor, OutboxProcessor>();
+
+            return services;
+        }
+
+        private IServiceCollection AddOutboxMessageProcessor<TMessage, TMessageProcessor>()
+            where TMessageProcessor : class, IOutboxMessageProcessor
         {
-            typeof(IntegrationEventsAssemblyMarker).Assembly
-        };
+            var messageType = typeof(TMessage);
 
-        var messageTypes = assemblies
-            .SelectMany(a => a.GetTypes())
-            .Where(type => messageType.IsAssignableFrom(type) && !type.IsAbstract)
-            .ToList();
+            var assemblies = new[]
+            {
+                typeof(IntegrationEventsAssemblyMarker).Assembly
+            };
 
-        foreach (var type in messageTypes)
-            services.AddKeyedScoped<IOutboxMessageProcessor, TMessageProcessor>(type);
+            var messageTypes = assemblies
+                .SelectMany(a => a.GetTypes())
+                .Where(type => messageType.IsAssignableFrom(type) && !type.IsAbstract)
+                .ToList();
 
-        return services;
+            foreach (var type in messageTypes)
+                services.AddKeyedScoped<IOutboxMessageProcessor, TMessageProcessor>(type);
+
+            return services;
+        }
     }
 
     private static void AddTopicResolving(IServiceCollection services) =>
