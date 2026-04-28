@@ -25,7 +25,15 @@ public sealed class SubmissionSlotsApiTests(ApiTestStackFixture fixture)
     public Task GetSubmissionSlots_WhenSlotExists_ShouldReturnCreatedSlot() =>
         WithSubmissionSlotFixtureAsync(async (scenario, context) =>
         {
+            // Arrange
             var slot = await scenario.GetSlotAsync(context.AdminSession, context.SlotId);
+
+            // Act
+            var bySubjectResponse = await context.AdminSession.GetAsync($"/api/submission-slots/by-subject/{context.SubjectId}");
+            var availableResponse = await context.AdminSession.GetAsync(
+                $"/api/submission-slots/available?fromDate={Uri.EscapeDataString(DateTime.UtcNow.Date.ToString("O"))}");
+
+            // Assert
             slot.Id.Should().Be(context.SlotId);
             slot.SubjectId.Should().Be(context.SubjectId);
             slot.TeacherId.Should().Be(context.TeacherId);
@@ -34,17 +42,11 @@ public sealed class SubmissionSlotsApiTests(ApiTestStackFixture fixture)
             slot.MaxStudents.Should().Be(5);
             slot.Location.Should().Be("A-101");
             slot.Comment.Should().Be("API test slot");
-
-            var bySubjectResponse = await context.AdminSession.GetAsync($"/api/submission-slots/by-subject/{context.SubjectId}");
             bySubjectResponse.StatusCode.Should().Be(HttpStatusCode.OK);
-            var slotsBySubject = (await context.AdminSession.ReadAsync<SubmissionSlotDto[]>(bySubjectResponse))!;
-            slotsBySubject.Should().Contain(x => x.Id == context.SlotId && x.SubjectId == context.SubjectId);
-
-            var availableResponse = await context.AdminSession.GetAsync(
-                $"/api/submission-slots/available?fromDate={Uri.EscapeDataString(DateTime.UtcNow.Date.ToString("O"))}");
-
             availableResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+            var slotsBySubject = (await context.AdminSession.ReadAsync<SubmissionSlotDto[]>(bySubjectResponse))!;
             var availableSlots = (await context.AdminSession.ReadAsync<SubmissionSlotDto[]>(availableResponse))!;
+            slotsBySubject.Should().Contain(x => x.Id == context.SlotId && x.SubjectId == context.SubjectId);
             availableSlots.Should().Contain(x => x.Id == context.SlotId);
         });
 
@@ -55,9 +57,11 @@ public sealed class SubmissionSlotsApiTests(ApiTestStackFixture fixture)
     public Task AddAdmission_WhenUserIsAssignedTeacher_ShouldSucceed() =>
         WithSubmissionSlotFixtureAsync(async (_, context) =>
         {
+            // Act
             var response = await context.TeacherSession.PostAsync<object?>(
                 $"/api/submission-slots/{context.SlotId}/admissions/{context.StudentId}", null);
 
+            // Assert
             response.StatusCode.Should().Be(HttpStatusCode.OK);
             var admissionId = await context.TeacherSession.ReadAsync<Guid>(response);
             admissionId.Should().NotBeEmpty();
@@ -70,6 +74,7 @@ public sealed class SubmissionSlotsApiTests(ApiTestStackFixture fixture)
     public Task AddAdmission_WhenUserIsAnotherTeacher_ShouldReturnForbidden() =>
         WithSubmissionSlotFixtureAsync(async (scenario, context) =>
         {
+            // Arrange
             var foreignTeacherId = await scenario.CreateTeacherAsync(
                 context.AdminSession,
                 $"teacher_foreign_{context.Suffix}",
@@ -83,9 +88,11 @@ public sealed class SubmissionSlotsApiTests(ApiTestStackFixture fixture)
 
             using (foreignTeacherSession)
             {
+                // Act
                 var response = await foreignTeacherSession.PostAsync<object?>(
                     $"/api/submission-slots/{context.SlotId}/admissions/{context.StudentId}", null);
 
+                // Assert
                 await foreignTeacherSession.AssertProblemAsync(response, HttpStatusCode.Forbidden, "Forbidden", "own slots");
             }
         });
@@ -97,6 +104,7 @@ public sealed class SubmissionSlotsApiTests(ApiTestStackFixture fixture)
     public Task UpdateNotificationSettings_WhenStudentTargetsSelf_ShouldSucceed() =>
         WithSubmissionSlotFixtureAsync(async (_, context) =>
         {
+            // Act
             var response = await context.StudentSession.PutAsync(
                 $"/api/submission-slots/{context.SlotId}/notification-settings",
                 new
@@ -106,6 +114,7 @@ public sealed class SubmissionSlotsApiTests(ApiTestStackFixture fixture)
                     bookingNotificationMode = BookingNotificationMode.OnlyNewBooking
                 });
 
+            // Assert
             response.StatusCode.Should().Be(HttpStatusCode.NoContent);
         });
 
@@ -116,6 +125,7 @@ public sealed class SubmissionSlotsApiTests(ApiTestStackFixture fixture)
     public Task UpdateNotificationSettings_WhenStudentTargetsAnotherUser_ShouldReturnForbidden() =>
         WithSubmissionSlotFixtureAsync(async (_, context) =>
         {
+            // Act
             var response = await context.StudentSession.PutAsync(
                 $"/api/submission-slots/{context.SlotId}/notification-settings",
                 new
@@ -125,6 +135,7 @@ public sealed class SubmissionSlotsApiTests(ApiTestStackFixture fixture)
                     bookingNotificationMode = BookingNotificationMode.All
                 });
 
+            // Assert
             await context.StudentSession.AssertProblemAsync(response, HttpStatusCode.Forbidden, "Forbidden", "own notification settings");
         });
 
@@ -135,6 +146,7 @@ public sealed class SubmissionSlotsApiTests(ApiTestStackFixture fixture)
     public Task UpdateNotificationSettings_WhenReminderTimesContainDuplicates_ShouldReturnValidationError() =>
         WithSubmissionSlotFixtureAsync(async (_, context) =>
         {
+            // Act
             var response = await context.AdminSession.PutAsync(
                 $"/api/submission-slots/{context.SlotId}/notification-settings",
                 new
@@ -144,6 +156,7 @@ public sealed class SubmissionSlotsApiTests(ApiTestStackFixture fixture)
                     bookingNotificationMode = BookingNotificationMode.All
                 });
 
+            // Assert
             await context.AdminSession.AssertProblemAsync(
                 response, HttpStatusCode.UnprocessableEntity, "Validation Error", "Reminder schedules must not contain duplicates");
         });
@@ -155,6 +168,7 @@ public sealed class SubmissionSlotsApiTests(ApiTestStackFixture fixture)
     public Task GetReminderSnapshot_WhenNotificationSettingsExist_ShouldReturnExpectedRecipients() =>
         WithSubmissionSlotFixtureAsync(async (_, context) =>
         {
+            // Arrange
             await context.StudentSession.PutAsync(
                 $"/api/submission-slots/{context.SlotId}/notification-settings",
                 new
@@ -164,8 +178,10 @@ public sealed class SubmissionSlotsApiTests(ApiTestStackFixture fixture)
                     bookingNotificationMode = BookingNotificationMode.OnlyNewBooking
                 });
 
+            // Act
             var response = await context.AdminSession.GetAsync("/api/submission-slots/reminder-snapshot");
 
+            // Assert
             response.StatusCode.Should().Be(HttpStatusCode.OK);
             var snapshot = (await context.AdminSession.ReadAsync<SubmissionSlotReminderSnapshotDto[]>(response))!;
             var slotSnapshot = snapshot.Should().ContainSingle(x => x.SubmissionSlot.Id == context.SlotId).Subject;
@@ -188,18 +204,22 @@ public sealed class SubmissionSlotsApiTests(ApiTestStackFixture fixture)
     public Task RemoveAdmission_WhenUserIsAssignedTeacher_ShouldSucceed() =>
         WithSubmissionSlotFixtureAsync(async (_, context) =>
         {
+            // Arrange
             var addResponse = await context.TeacherSession.PostAsync<object?>(
                 $"/api/submission-slots/{context.SlotId}/admissions/{context.StudentId}", null);
 
             addResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
+            // Act
             var removeResponse = await context.TeacherSession.DeleteAsync($"/api/submission-slots/{context.SlotId}/admissions/{context.StudentId}");
 
+            // Assert
             removeResponse.StatusCode.Should().Be(HttpStatusCode.NoContent);
         });
 
     private async Task WithSubmissionSlotFixtureAsync(Func<ApiScenario, SubmissionSlotFixture, Task> assertion)
     {
+        // Arrange
         var scenario = new ApiScenario(fixture);
         var (adminSession, _) = await scenario.CreateAdminSessionAsync();
 
@@ -224,11 +244,13 @@ public sealed class SubmissionSlotsApiTests(ApiTestStackFixture fixture)
 
     private static async Task<SubmissionSlotFixture> CreateSubmissionSlotFixtureAsync(ApiScenario scenario, ApiSession adminSession)
     {
+        // Arrange
         var groupName = $"Group {scenario.Suffix}";
         var subjectName = $"Subject {scenario.Suffix}";
         var groupId = await scenario.CreateGroupAsync(adminSession, groupName);
         var teacherUsername = $"teacher_{scenario.Suffix}";
 
+        // Act
         var teacherId = await scenario.CreateTeacherAsync(
             adminSession,
             teacherUsername,
@@ -253,6 +275,7 @@ public sealed class SubmissionSlotsApiTests(ApiTestStackFixture fixture)
         var teacherSession = await scenario.LoginAsync(teacherUsername, "Teacher123!");
         var studentSession = await scenario.LoginAsync(studentUsername, "Student123!");
 
+        // Assert
         return new SubmissionSlotFixture(
             adminSession,
             teacherSession,

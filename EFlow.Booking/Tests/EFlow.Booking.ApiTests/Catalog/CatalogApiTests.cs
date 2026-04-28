@@ -26,11 +26,15 @@ public sealed class CatalogApiTests(ApiTestStackFixture fixture)
     public Task GetGroups_WhenGroupExists_ShouldReturnCreatedGroup() =>
         WithCatalogFixtureAsync(async (scenario, context) =>
         {
+            // Arrange
             var group = await scenario.GetGroupAsync(context.AdminSession, context.GroupId);
+
+            // Act
+            var response = await context.AdminSession.GetAsync("/api/groups");
+
+            // Assert
             group.Id.Should().Be(context.GroupId);
             group.Name.Should().Be(context.GroupName);
-
-            var response = await context.AdminSession.GetAsync("/api/groups");
             response.StatusCode.Should().Be(HttpStatusCode.OK);
             var groups = (await context.AdminSession.ReadAsync<GroupDto[]>(response))!;
             groups.Should().Contain(x => x.Id == context.GroupId && x.Name == context.GroupName);
@@ -43,15 +47,19 @@ public sealed class CatalogApiTests(ApiTestStackFixture fixture)
     public Task GetTeachers_WhenTeacherExists_ShouldReturnCreatedTeacher() =>
         WithCatalogFixtureAsync(async (scenario, context) =>
         {
+            // Arrange
             var teacher = await scenario.GetTeacherAsync(context.AdminSession, context.TeacherId);
+
+            // Act
+            var response = await context.AdminSession.GetAsync("/api/teachers");
+
+            // Assert
             teacher.Id.Should().Be(context.TeacherId);
             teacher.FirstName.Should().Be("Ivan");
             teacher.LastName.Should().Be("Petrov");
             teacher.MiddleName.Should().Be("M");
             teacher.BirthDate.Should().Be(new DateOnly(1990, 01, 01));
             teacher.CreatedAt.Should().NotBeNull();
-
-            var response = await context.AdminSession.GetAsync("/api/teachers");
             response.StatusCode.Should().Be(HttpStatusCode.OK);
             var teachers = (await context.AdminSession.ReadAsync<TeacherDto[]>(response))!;
             teachers.Should().Contain(x => x.Id == context.TeacherId && x.FirstName == "Ivan" && x.LastName == "Petrov");
@@ -64,7 +72,13 @@ public sealed class CatalogApiTests(ApiTestStackFixture fixture)
     public Task GetStudents_WhenStudentExists_ShouldReturnCreatedStudent() =>
         WithCatalogFixtureAsync(async (scenario, context) =>
         {
+            // Arrange
             var student = await scenario.GetStudentAsync(context.AdminSession, context.StudentId);
+
+            // Act
+            var response = await context.AdminSession.GetAsync("/api/students");
+
+            // Assert
             student.Id.Should().Be(context.StudentId);
             student.GroupId.Should().Be(context.GroupId);
             student.FirstName.Should().Be("Petr");
@@ -72,8 +86,6 @@ public sealed class CatalogApiTests(ApiTestStackFixture fixture)
             student.MiddleName.Should().Be("M");
             student.BirthDate.Should().Be(new DateOnly(2004, 01, 01));
             student.CreatedAt.Should().BeAfter(DateTime.UtcNow.AddMinutes(-10));
-
-            var response = await context.AdminSession.GetAsync("/api/students");
             response.StatusCode.Should().Be(HttpStatusCode.OK);
             var students = (await context.AdminSession.ReadAsync<StudentDto[]>(response))!;
             students.Should().Contain(x => x.Id == context.StudentId && x.GroupId == context.GroupId);
@@ -86,13 +98,17 @@ public sealed class CatalogApiTests(ApiTestStackFixture fixture)
     public Task GetSubjects_WhenSubjectExists_ShouldReturnCreatedSubject() =>
         WithCatalogFixtureAsync(async (scenario, context) =>
         {
+            // Arrange
             var subject = await scenario.GetSubjectAsync(context.AdminSession, context.SubjectId);
+
+            // Act
+            var response = await context.AdminSession.GetAsync($"/api/subjects/by-teacher/{context.TeacherId}");
+
+            // Assert
             subject.Id.Should().Be(context.SubjectId);
             subject.Name.Should().Be(context.SubjectName);
             subject.TeacherId.Should().Be(context.TeacherId);
             subject.GroupIds.Should().BeEquivalentTo([context.GroupId]);
-
-            var response = await context.AdminSession.GetAsync($"/api/subjects/by-teacher/{context.TeacherId}");
             response.StatusCode.Should().Be(HttpStatusCode.OK);
             var subjects = (await context.AdminSession.ReadAsync<SubjectDto[]>(response))!;
             subjects.Should().Contain(x => x.Id == context.SubjectId && x.TeacherId == context.TeacherId);
@@ -105,8 +121,10 @@ public sealed class CatalogApiTests(ApiTestStackFixture fixture)
     public Task CreateGroup_WhenNameIsEmpty_ShouldReturnValidationError() =>
         WithCatalogFixtureAsync(async (_, context) =>
         {
+            // Act
             var response = await context.AdminSession.PostAsync("/api/groups", new { Name = string.Empty });
 
+            // Assert
             await context.AdminSession.AssertProblemAsync(response, HttpStatusCode.UnprocessableEntity, "Validation Error", "Group name is required");
         });
 
@@ -117,6 +135,7 @@ public sealed class CatalogApiTests(ApiTestStackFixture fixture)
     public Task CreateTeacher_WhenPayloadIsInvalid_ShouldReturnValidationError() =>
         WithCatalogFixtureAsync(async (_, context) =>
         {
+            // Act
             var response = await context.AdminSession.PostAsync(
                 "/api/teachers",
                 new
@@ -130,6 +149,7 @@ public sealed class CatalogApiTests(ApiTestStackFixture fixture)
                     birthDate = "2012-01-01"
                 });
 
+            // Assert
             await context.AdminSession.AssertProblemAsync(response, HttpStatusCode.UnprocessableEntity, "Validation Error");
             var errorText = await context.AdminSession.ReadTextAsync(response);
             errorText.Should().Contain("Email must be valid");
@@ -138,6 +158,7 @@ public sealed class CatalogApiTests(ApiTestStackFixture fixture)
 
     private async Task WithCatalogFixtureAsync(Func<ApiScenario, CatalogFixture, Task> assertion)
     {
+        // Arrange
         var scenario = new ApiScenario(fixture);
         var (adminSession, _) = await scenario.CreateAdminSessionAsync();
 
@@ -158,8 +179,11 @@ public sealed class CatalogApiTests(ApiTestStackFixture fixture)
 
     private static async Task<CatalogFixture> CreateCatalogFixtureAsync(ApiScenario scenario, ApiSession adminSession)
     {
+        // Arrange
         var groupName = $"Group {scenario.Suffix}";
         var subjectName = $"Subject {scenario.Suffix}";
+
+        // Act
         var groupId = await scenario.CreateGroupAsync(adminSession, groupName);
 
         var teacherId = await scenario.CreateTeacherAsync(
@@ -179,6 +203,7 @@ public sealed class CatalogApiTests(ApiTestStackFixture fixture)
 
         var subjectId = await scenario.CreateSubjectAsync(adminSession, teacherId, groupId, subjectName);
 
+        // Assert
         return new CatalogFixture(adminSession, scenario.Suffix, groupId, groupName, teacherId, studentId, subjectId, subjectName);
     }
 }

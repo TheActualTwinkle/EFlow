@@ -48,12 +48,24 @@ public sealed class ApiTestStackFixture : IAsyncLifetime
         }
 
         BaseUri = new Uri(baseUrl, UriKind.Absolute);
+        AdminUsername = Environment.GetEnvironmentVariable("ADMIN_USERNAME")
+                        ?? env.GetValueOrDefault("ADMIN_USERNAME", "admin");
+        AdminPassword = Environment.GetEnvironmentVariable("ADMIN_PASSWORD")
+                        ?? env.GetValueOrDefault("ADMIN_PASSWORD", "admin123");
+        AdminEmail = Environment.GetEnvironmentVariable("ADMIN_EMAIL")
+                     ?? env.GetValueOrDefault("ADMIN_EMAIL", "admin@eflow.ru");
     }
 
     /// <summary>
     /// Gets the base address of the Booking API instance used by the tests.
     /// </summary>
     private Uri BaseUri { get; }
+
+    public string AdminUsername { get; }
+
+    public string AdminPassword { get; }
+
+    public string AdminEmail { get; }
 
     /// <summary>
     /// Starts the dockerized API stack when the fixture is configured to manage it automatically.
