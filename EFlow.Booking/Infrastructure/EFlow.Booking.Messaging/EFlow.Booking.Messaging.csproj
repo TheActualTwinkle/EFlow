@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
     <ItemGroup>
         <PackageReference Include="Hangfire"/>
@@ -12,9 +12,10 @@
     </ItemGroup>
 
     <ItemGroup>
+        <ProjectReference Include="..\..\..\EFlow.Shared\EFlow.Common.IntegrationEvents\EFlow.Common.IntegrationEvents.csproj" />
         <ProjectReference Include="..\..\..\EFlow.Shared\EFlow.Common.Messaging\EFlow.Common.Messaging.csproj"/>
         <ProjectReference Include="..\..\..\EFlow.Shared\EFlow.Common.OutboxProcessing\EFlow.Common.OutboxProcessing.csproj" />
-        <ProjectReference Include="..\..\Core\EFlow.Booking.IntegrationEvents\EFlow.Booking.IntegrationEvents.csproj"/>
+        <ProjectReference Include="..\..\..\EFlow.Shared\EFlow.Common\EFlow.Common.csproj" />
     </ItemGroup>
 
 </Project>

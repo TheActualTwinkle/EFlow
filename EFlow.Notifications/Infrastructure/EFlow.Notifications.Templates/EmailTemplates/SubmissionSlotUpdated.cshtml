@@ -1,0 +1,43 @@
+@model EFlow.Notifications.Templates.Models.SubmissionSlotUpdatedEmailTemplateModel
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8" />
+    <title>@Model.Title</title>
+</head>
+<body style="margin:0;padding:24px;background:#f6f2ff;font-family:'Segoe UI',Arial,sans-serif;color:#1f1b2d;">
+    <div style="max-width:760px;margin:0 auto;background:#ffffff;border-radius:24px;overflow:hidden;border:1px solid #e7defd;box-shadow:0 24px 60px rgba(76,29,149,.08);">
+        <div style="padding:34px 36px;background:linear-gradient(135deg,#4c1d95 0%,#7c3aed 100%);color:#fff;">
+            <div style="display:inline-block;padding:8px 14px;border-radius:999px;background:rgba(255,255,255,.16);font-size:12px;letter-spacing:.08em;text-transform:uppercase;">Обновление</div>
+            <h1 style="margin:18px 0 10px;font-size:30px;line-height:1.15;">@Model.Title</h1>
+            <p style="margin:0;font-size:16px;line-height:1.65;color:rgba(255,255,255,.86);">@Model.Lead</p>
+        </div>
+        <div style="padding:28px 36px 8px;">
+            <div style="padding:20px;border-radius:18px;background:#faf7ff;border:1px solid #ede9fe;">
+                <div style="font-size:12px;color:#6b7280;text-transform:uppercase;letter-spacing:.06em;">Актуальное состояние</div>
+                <div style="margin-top:10px;font-size:18px;font-weight:700;">@Model.SubjectName</div>
+                <div style="margin-top:6px;font-size:15px;color:#4b5563;">@Model.TeacherName</div>
+                <div style="margin-top:6px;font-size:15px;color:#4b5563;">@Model.CurrentTimeRange</div>
+            </div>
+        </div>
+        <div style="padding:0 36px 32px;">
+            @foreach (var change in Model.Changes)
+            {
+                <div style="margin-top:16px;padding:18px 20px;border-radius:18px;background:#ffffff;border:1px solid #e5e7eb;">
+                    <div style="font-size:14px;font-weight:700;color:#111827;">@change.Label</div>
+                    <table style="width:100%;margin-top:14px;border-collapse:separate;border-spacing:0 12px;">
+                        <tr>
+                            <td style="width:72px;font-size:12px;color:#6b7280;text-transform:uppercase;">Было</td>
+                            <td style="font-size:15px;color:#7f1d1d;background:#fef2f2;border-radius:12px;padding:12px 14px;">@change.OldValue</td>
+                        </tr>
+                        <tr>
+                            <td style="font-size:12px;color:#6b7280;text-transform:uppercase;">Стало</td>
+                            <td style="font-size:15px;color:#14532d;background:#f0fdf4;border-radius:12px;padding:12px 14px;">@change.NewValue</td>
+                        </tr>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+</body>
+</html>

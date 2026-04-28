@@ -1,4 +1,4 @@
-﻿using EFlow.Booking.Application.Common.Markers;
+using EFlow.Booking.Application.Common.Markers;
 using FluentResults;
 using MediatR;
 
@@ -9,6 +9,8 @@ public record CreateStudentCommand : IRequest<Result<Guid>>, ITransactionalReque
     public required string UserName { get; init; }
 
     public required string Password { get; init; }
+
+    public required string Email { get; init; }
 
     public required Guid GroupId { get; init; }
 

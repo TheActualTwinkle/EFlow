@@ -1,4 +1,4 @@
-﻿namespace EFlow.Booking.Application.Admins;
+namespace EFlow.Booking.Application.Admins;
 
 public record AdminDto
 {

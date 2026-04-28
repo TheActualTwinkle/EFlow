@@ -1,4 +1,4 @@
-﻿using EFlow.Booking.Domain.Groups;
+using EFlow.Booking.Domain.Groups;
 using EFlow.Booking.Domain.Subjects;
 using FluentPatcher;
 using FluentPatcher.Attributes;

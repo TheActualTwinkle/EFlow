@@ -1,4 +1,4 @@
-﻿using System.Security.Claims;
+using System.Security.Claims;
 using EFlow.Booking.Application.Teachers.Commands;
 using EFlow.Booking.Application.Teachers.Queries;
 using EFlow.Booking.Domain;
@@ -22,6 +22,7 @@ public class TeachersController(ISender sender) : ControllerBase
         {
             UserName = request.UserName,
             Password = request.Password,
+            Email = request.Email,
             FirstName = request.FirstName,
             MiddleName = request.MiddleName,
             LastName = request.LastName,

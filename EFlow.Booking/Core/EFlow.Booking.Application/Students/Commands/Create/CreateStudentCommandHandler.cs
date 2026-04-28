@@ -1,7 +1,6 @@
-﻿using EFlow.Booking.Application.Common.Errors.Abstractions;
+using EFlow.Booking.Application.Common.Errors.Abstractions;
 using EFlow.Booking.Application.Common.Errors.Identity;
 using EFlow.Booking.Domain;
-using EFlow.Booking.Domain.Domain.Students;
 using EFlow.Booking.Domain.Groups;
 using EFlow.Booking.Domain.Students;
 using EFlow.Common.Infrastructure;
@@ -19,7 +18,13 @@ public class CreateStudentCommandHandler(
 {
     public async Task<Result<Guid>> Handle(CreateStudentCommand request, CancellationToken cancellationToken)
     {
-        var identity = new Identity { UserName = request.UserName };
+        var identity = new Identity
+        {
+            Id = Guid.NewGuid(),
+            UserName = request.UserName,
+            Email = request.Email
+        };
+
         var createUserResult = await userManager.CreateAsync(identity, request.Password);
 
         if (!createUserResult.Succeeded)
@@ -37,8 +42,9 @@ public class CreateStudentCommandHandler(
                     .WithIdentityErrors(addToRoleResult.Errors));
 
         var nowUtc = systemClock.UtcNow;
-        
+
         var student = Student.Create(
+            new StudentId(identity.Id),
             new GroupId(request.GroupId),
             request.FirstName,
             request.LastName,

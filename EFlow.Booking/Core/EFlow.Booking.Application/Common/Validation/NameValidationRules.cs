@@ -1,6 +1,6 @@
 using FluentValidation;
 
-namespace EFlow.Booking.Application.Common.Validators;
+namespace EFlow.Booking.Application.Common.Validation;
 
 public static class NameValidationRules
 {

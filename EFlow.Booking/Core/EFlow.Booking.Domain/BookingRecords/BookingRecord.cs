@@ -1,4 +1,4 @@
-﻿using EFlow.Booking.Domain.BookingRecords.Events;
+using EFlow.Booking.Domain.BookingRecords.Events;
 using EFlow.Booking.Domain.Common.BusinessRules;
 using EFlow.Booking.Domain.Students;
 using EFlow.Booking.Domain.SubmissionSlots;
@@ -31,6 +31,7 @@ public sealed class BookingRecord : Entity, IAggreagateRoot
         SlotId = slotId;
         CreatedAt = createdAt;
     }
+    
     public SubmissionSlotId GetSlotId() => 
         SlotId;
     
@@ -45,17 +46,22 @@ public sealed class BookingRecord : Entity, IAggreagateRoot
         bookingRecord.AddDomainEvent(new BookingRecordCreatedDomainEvent
         {
             BookingRecordId = bookingRecord.Id,
+            StudentId = bookingRecord.StudentId,
+            SlotId = bookingRecord.SlotId,
             CreatedAt = createdAt
         });
         
         return bookingRecord;
     }
 
-    internal BookingRecordId Delete()
+    internal BookingRecordId Cancel(DateTime cancelledAt)
     {
         AddDomainEvent(new BookingRecordDeletedDomainEvent
         {
             BookingRecordId = Id,
+            StudentId = StudentId,
+            SlotId = SlotId,
+            CancelledAt = cancelledAt
         });
 
         return Id;

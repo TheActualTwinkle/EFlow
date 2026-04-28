@@ -1,5 +1,5 @@
 using EFlow.Booking.Application.Teachers.Commands;
-using EFlow.Booking.UnitTests.Common;
+using EFlow.Common.Infrastructure;
 using FluentAssertions;
 
 namespace EFlow.Booking.UnitTests.Application.Teachers;
@@ -18,6 +18,7 @@ public class CreateTeacherCommandValidatorTests
         {
             UserName = "teacher.boundary",
             Password = "StrongPass1!",
+            Email = "teacher@example.com",
             FirstName = "Ivan",
             LastName = "Petrov",
             BirthDate = DateOnly.FromDateTime(now.AddYears(-18))

@@ -1,4 +1,4 @@
-﻿using EFlow.Booking.Application.Common.Errors;
+using EFlow.Booking.Application.Common.Errors;
 using EFlow.Booking.Application.Common.Errors.Abstractions;
 using EFlow.Booking.Domain.Students;
 using EFlow.Common.Infrastructure;

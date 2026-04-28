@@ -1,4 +1,4 @@
-﻿using System.Data;
+using System.Data;
 using EFlow.Common.Domain;
 
 namespace EFlow.Common.Infrastructure;

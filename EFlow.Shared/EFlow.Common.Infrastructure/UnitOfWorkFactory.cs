@@ -1,4 +1,4 @@
-﻿using System.Data;
+using System.Data;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace EFlow.Common.Infrastructure;

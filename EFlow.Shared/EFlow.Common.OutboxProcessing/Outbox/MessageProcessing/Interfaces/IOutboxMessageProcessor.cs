@@ -1,6 +1,6 @@
-﻿using EFlow.Common.Domain.Entities;
+using EFlow.Common.Domain.Entities;
 
-namespace EFlow.Booking.Messaging.Outbox.MessageProcessing.Interfaces;
+namespace EFlow.Common.OutboxProcessing.Outbox.MessageProcessing.Interfaces;
 
 public interface IOutboxMessageProcessor
 {

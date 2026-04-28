@@ -1,4 +1,4 @@
-﻿using EFlow.Common.Domain;
+using EFlow.Common.Domain;
 
 namespace EFlow.Booking.Domain.Groups;
 
@@ -7,6 +7,8 @@ public interface IGroupRepository : IRepository
     public Task CreateAsync(Group group, CancellationToken cancellationToken = new());
 
     public Task<IEnumerable<Group>> GetAllAsync(CancellationToken cancellationToken = new());
+
+    public Task<IEnumerable<Group>> GetByIdsAsync(IEnumerable<GroupId> ids, CancellationToken cancellationToken = new());
 
     public Task<Group?> GetByIdAsync(GroupId id, CancellationToken cancellationToken = new());
 

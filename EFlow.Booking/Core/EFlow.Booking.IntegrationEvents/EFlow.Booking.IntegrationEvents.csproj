@@ -1,7 +1,0 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-
-    <ItemGroup>
-        <ProjectReference Include="..\..\..\EFlow.Shared\EFlow.Common\EFlow.Common.csproj"/>
-    </ItemGroup>
-
-</Project>

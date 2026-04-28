@@ -3,6 +3,8 @@ namespace EFlow.Booking.WebApi.Contracts.SubmissionSlots;
 public record CreateSubmissionSlotRequest
 {
     public required Guid SubjectId { get; init; }
+    
+    public required Guid TeacherId { get; init; }
 
     public required DateTime StartTime { get; init; }
 
@@ -15,4 +17,6 @@ public record CreateSubmissionSlotRequest
     public ICollection<Guid>? AllowedGroupIds { get; init; }
 
     public string? Location { get; init; }
+
+    public string? Comment { get; init; }
 }

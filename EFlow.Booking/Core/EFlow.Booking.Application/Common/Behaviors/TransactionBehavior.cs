@@ -1,4 +1,4 @@
-﻿using System.Data;
+using System.Data;
 using EFlow.Booking.Application.Common.Markers;
 using EFlow.Common.Infrastructure;
 using MediatR;

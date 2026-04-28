@@ -1,4 +1,4 @@
-﻿using EFlow.Booking.Application.Common.Markers;
+using EFlow.Booking.Application.Common.Markers;
 using FluentResults;
 using MediatR;
 
@@ -7,6 +7,8 @@ namespace EFlow.Booking.Application.SubmissionSlots.Commands;
 public record CreateSubmissionSlotCommand : IRequest<Result<Guid>>, ITransactionalRequest
 {
     public required Guid SubjectId { get; init; }
+    
+    public required Guid TeacherId { get; init; }
 
     public required DateTime StartTime { get; init; }
 
@@ -19,4 +21,6 @@ public record CreateSubmissionSlotCommand : IRequest<Result<Guid>>, ITransaction
     public ICollection<Guid>? AllowedGroupIds { get; init; }
 
     public string? Location { get; init; }
+
+    public string? Comment { get; init; }
 }

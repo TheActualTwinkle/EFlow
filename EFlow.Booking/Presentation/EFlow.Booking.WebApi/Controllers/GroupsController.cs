@@ -1,4 +1,4 @@
-﻿using EFlow.Booking.Application.Groups.Commands;
+using EFlow.Booking.Application.Groups.Commands;
 using EFlow.Booking.Application.Groups.Commands.Update;
 using EFlow.Booking.Application.Groups.Queries;
 using EFlow.Booking.Domain;

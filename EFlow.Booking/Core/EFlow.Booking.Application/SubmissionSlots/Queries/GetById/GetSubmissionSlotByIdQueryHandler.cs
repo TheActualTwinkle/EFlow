@@ -1,4 +1,4 @@
-﻿using EFlow.Booking.Application.Common.Errors;
+using EFlow.Booking.Application.Common.Errors;
 using EFlow.Booking.Application.Common.Errors.Abstractions;
 using EFlow.Booking.Domain.SubmissionSlots;
 using EFlow.Common.Infrastructure;

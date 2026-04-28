@@ -12,7 +12,10 @@
     </ItemGroup>
 
     <ItemGroup>
+        <ProjectReference Include="..\..\..\EFlow.Shared\EFlow.Common.Messaging\EFlow.Common.Messaging.csproj" />
         <ProjectReference Include="..\..\Infrastructure\EFlow.Notifications.Messaging\EFlow.Notifications.Messaging.csproj"/>
+        <ProjectReference Include="..\..\Infrastructure\EFlow.Notifications.Templates\EFlow.Notifications.Templates.csproj"/>
+        <ProjectReference Include="..\..\Core\EFlow.Notifications.Application\EFlow.Notifications.Application.csproj"/>
     </ItemGroup>
 
     <ItemGroup>

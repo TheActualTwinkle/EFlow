@@ -1,4 +1,4 @@
-﻿using EFlow.Booking.Domain;
+using EFlow.Booking.Domain;
 using EFlow.Common.Domain;
 using FluentAssertions;
 using NetArchTest.Rules;

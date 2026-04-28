@@ -6,6 +6,8 @@ public record CreateStudentRequest
 
     public required string Password { get; init; }
 
+    public required string Email { get; init; }
+
     public required Guid GroupId { get; init; }
 
     public required string FirstName { get; init; }

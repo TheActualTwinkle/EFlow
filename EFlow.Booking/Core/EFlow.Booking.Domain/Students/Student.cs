@@ -1,11 +1,10 @@
-﻿using EFlow.Booking.Domain.Common.BusinessRules;
+using EFlow.Booking.Domain.Common.BusinessRules;
 using EFlow.Booking.Domain.Groups;
-using EFlow.Booking.Domain.Students;
 using EFlow.Booking.Domain.Students.Events;
 using EFlow.Booking.Domain.Students.Rules;
 using EFlow.Common.Domain;
 
-namespace EFlow.Booking.Domain.Domain.Students;
+namespace EFlow.Booking.Domain.Students;
 
 public sealed class Student : Entity, IAggreagateRoot
 {
@@ -26,6 +25,7 @@ public sealed class Student : Entity, IAggreagateRoot
     private Student() { }
     
     public Student(
+        StudentId id,
         GroupId groupId,
         string firstName,
         string lastName,
@@ -48,16 +48,17 @@ public sealed class Student : Entity, IAggreagateRoot
         
         ThrowIfBroken(new CreationTimeMustBeInPastRule(createdAt, utcNow));
         
-        Id = new StudentId(Guid.CreateVersion7());
+        Id = id;
         GroupId = groupId;
-        FirstName = firstName;
-        LastName = lastName;
-        MiddleName = middleName;
+        FirstName = trimmedFirstName;
+        LastName = trimmedLastName;
+        MiddleName = trimmedMiddleName;
         BirthDate = birthDate;
         CreatedAt = createdAt;
     }
     
     public static Student Create(
+        StudentId id,
         GroupId groupId,
         string firstName,
         string lastName,
@@ -67,6 +68,7 @@ public sealed class Student : Entity, IAggreagateRoot
         DateTime now)
     {
         var student = new Student(
+            id,
             groupId,
             firstName,
             lastName,
@@ -84,6 +86,11 @@ public sealed class Student : Entity, IAggreagateRoot
 
         return student;
     }
+
+    public string GetFullName() =>
+        string.Join(
+            ' ',
+            new[] { LastName, FirstName, MiddleName }.Where(name => !string.IsNullOrWhiteSpace(name)));
 
     public StudentId Delete()
     {

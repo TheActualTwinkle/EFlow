@@ -73,10 +73,13 @@ services:
       dockerfile: EFlow.Notifications/Web/EFlow.Notifications.WebApi/Dockerfile
     restart: unless-stopped
     depends_on:
+      postgres:
+        condition: service_healthy
       kafka:
         condition: service_healthy
     environment:
       ASPNETCORE_ENVIRONMENT: Production
+      ConnectionStrings__HangfireDb: Host=postgres;Port=5432;Database=${POSTGRES_DB:-eflow};Username=${POSTGRES_USER:-postgres};Password=${POSTGRES_PASSWORD:-123456789}
       KafkaSettings__BootstrapServers: kafka:9092
     ports:
       - "${NOTIFICATIONS_API_PORT:-8082}:8082"

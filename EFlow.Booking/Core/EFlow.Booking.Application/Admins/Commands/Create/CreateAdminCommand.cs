@@ -1,4 +1,4 @@
-﻿using EFlow.Booking.Application.Common.Markers;
+using EFlow.Booking.Application.Common.Markers;
 using FluentResults;
 using MediatR;
 
@@ -9,4 +9,6 @@ public record CreateAdminCommand : IRequest<Result<Guid>>, ITransactionalRequest
     public required string UserName { get; init; }
 
     public required string Password { get; init; }
+
+    public required string Email { get; init; }
 }

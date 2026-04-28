@@ -1,6 +1,7 @@
-﻿using EFlow.Booking.Domain.Groups;
+using EFlow.Booking.Domain.Groups;
 using EFlow.Booking.Domain.SubmissionSlots;
 using EFlow.Booking.Domain.Subjects;
+using EFlow.Booking.Domain.Teachers;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -32,6 +33,11 @@ public class SubmissionSlotConfiguration : IEntityTypeConfiguration<SubmissionSl
             .HasColumnName("subject_id")
             .IsRequired();
 
+        builder.Property(s => s.TeacherId)
+            .HasConversion(id => id.Value, value => new TeacherId(value))
+            .HasColumnName("teacher_id")
+            .IsRequired();
+
         builder.Property(s => s.StartTime)
             .HasColumnName("start_time")
             .IsRequired();
@@ -47,6 +53,10 @@ public class SubmissionSlotConfiguration : IEntityTypeConfiguration<SubmissionSl
         builder.Property(s => s.Location)
             .HasColumnName("location")
             .HasMaxLength(127);
+
+        builder.Property(s => s.Comment)
+            .HasColumnName("comment")
+            .HasMaxLength(1023);
 
         builder.Property(s => s.AllowAllGroups)
             .HasColumnName("allow_all_groups")

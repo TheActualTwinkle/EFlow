@@ -1,4 +1,4 @@
-﻿namespace EFlow.Common.Domain.Exceptions;
+namespace EFlow.Common.Domain.Exceptions;
 
 public sealed class BusinessRuleValidationException : Exception
 {

@@ -3,7 +3,6 @@
     <Folder Name="/EFlow.Booking/Core/">
         <Project Path="EFlow.Booking/Core/EFlow.Booking.Application/EFlow.Booking.Application.csproj" />
         <Project Path="EFlow.Booking/Core/EFlow.Booking.Domain/EFlow.Booking.Domain.csproj" />
-        <Project Path="EFlow.Booking/Core/EFlow.Booking.IntegrationEvents/EFlow.Booking.IntegrationEvents.csproj" />
     </Folder>
     <Folder Name="/EFlow.Booking/Infrastructure/">
         <Project Path="EFlow.Booking/Infrastructure/EFlow.Booking.Messaging/EFlow.Booking.Messaging.csproj" />
@@ -13,22 +12,30 @@
         <Project Path="EFlow.Booking/Presentation/EFlow.Booking.WebApi/EFlow.Booking.WebApi.csproj" />
     </Folder>
     <Folder Name="/EFlow.Booking/Tests/">
+        <Project Path="EFlow.Booking/Tests/EFlow.Booking.ApiTests/EFlow.Booking.ApiTests.csproj" />
         <Project Path="EFlow.Booking/Tests/EFlow.Booking.ArchitectureTests/EFlow.Booking.ArchitectureTests.csproj" />
+        <Project Path="EFlow.Booking/Tests/EFlow.Booking.IntegrationTests/EFlow.Booking.IntegrationTests.csproj" />
         <Project Path="EFlow.Booking/Tests/EFlow.Booking.UnitTests/EFlow.Booking.UnitTests.csproj" />
+        <Project Path="EFlow.Shared/EFlow.Common.UnitTests/EFlow.Common.UnitTests.csproj" />
     </Folder>
     <Folder Name="/EFlow.Notifications/" />
     <Folder Name="/EFlow.Notifications/Core/">
-        <Project Path="EFlow.Notifications/Core/EFlow.Notifications.Services/EFlow.Notifications.Services.csproj" />
+        <Project Path="EFlow.Notifications\Core\EFlow.Notifications.Application\EFlow.Notifications.Application.csproj" />
     </Folder>
     <Folder Name="/EFlow.Notifications/Infrastructure/">
         <Project Path="EFlow.Notifications/Infrastructure/EFlow.Notifications.Messaging/EFlow.Notifications.Messaging.csproj" />
+        <Project Path="EFlow.Notifications/Infrastructure/EFlow.Notifications.Templates/EFlow.Notifications.Templates.csproj" />
     </Folder>
     <Folder Name="/EFlow.Notifications/Presentation/">
         <Project Path="EFlow.Notifications/Web/EFlow.Notifications.WebApi/EFlow.Notifications.WebApi.csproj" />
     </Folder>
+    <Folder Name="/EFlow.Notifications/Tests/">
+        <Project Path="EFlow.Notifications/Tests/EFlow.Notifications.UnitTests/EFlow.Notifications.UnitTests.csproj" />
+    </Folder>
     <Folder Name="/Eflow.Shared/">
         <Project Path="EFlow.Shared/EFlow.Common.Domain/EFlow.Common.Domain.csproj" />
         <Project Path="EFlow.Shared/EFlow.Common.Infrastructure/EFlow.Common.Infrastructure.csproj" />
+        <Project Path="EFlow.Shared/EFlow.Common.IntegrationEvents/EFlow.Common.IntegrationEvents.csproj" />
         <Project Path="EFlow.Shared/EFlow.Common.Messaging/EFlow.Common.Messaging.csproj" />
         <Project Path="EFlow.Shared/EFlow.Common.OutboxProcessing/EFlow.Common.OutboxProcessing.csproj" />
         <Project Path="EFlow.Shared/EFlow.Common/EFlow.Common.csproj" />

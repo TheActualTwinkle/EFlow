@@ -6,6 +6,8 @@ public record CreateTeacherRequest
 
     public required string Password { get; init; }
 
+    public required string Email { get; init; }
+
     public required string FirstName { get; init; }
 
     public string? MiddleName { get; init; }

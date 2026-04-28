@@ -1,4 +1,4 @@
-﻿using EFlow.Booking.Domain.Admins.Events;
+using EFlow.Booking.Domain.Admins.Events;
 using EFlow.Booking.Domain.Common.BusinessRules;
 using EFlow.Common.Domain;
 
@@ -11,18 +11,18 @@ public sealed class Admin : Entity, IAggreagateRoot
     internal DateTime CreatedAt { get; private set; }
 
     private Admin() { }
-    
-    private Admin(DateTime createdAt, DateTime utcNow)
+
+    private Admin(AdminId id, DateTime createdAt, DateTime utcNow)
     {
         ThrowIfBroken(new CreationTimeMustBeInPastRule(utcNow, createdAt));
 
-        Id = new AdminId(Guid.CreateVersion7());
+        Id = id;
         CreatedAt = createdAt;
     }
 
-    public static Admin Create(DateTime createdAt, DateTime utcNow)
+    public static Admin Create(AdminId id, DateTime createdAt, DateTime utcNow)
     {
-        var admin = new Admin(createdAt, utcNow);
+        var admin = new Admin(id, createdAt, utcNow);
 
         admin.AddDomainEvent(new AdminCreatedDomainEvent
         {

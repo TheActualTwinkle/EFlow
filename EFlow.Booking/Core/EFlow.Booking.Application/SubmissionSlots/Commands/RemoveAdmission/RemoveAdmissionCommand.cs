@@ -1,0 +1,12 @@
+using EFlow.Booking.Application.Common.Markers;
+using FluentResults;
+using MediatR;
+
+namespace EFlow.Booking.Application.SubmissionSlots.Commands;
+
+public record RemoveAdmissionCommand : IRequest<Result>, ITransactionalRequest
+{
+    public required Guid SlotId { get; init; }
+
+    public required Guid StudentId { get; init; }
+}

@@ -1,0 +1,31 @@
+@model EFlow.Notifications.Templates.Models.BookingEmailTemplateModel
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8" />
+    <title>@Model.Title</title>
+</head>
+<body style="margin:0;padding:24px;background:#f3efe7;font-family:'Segoe UI',Arial,sans-serif;color:#1f2937;">
+    <div style="max-width:720px;margin:0 auto;background:linear-gradient(135deg,#fffaf3 0%,#ffffff 45%,#f8fbff 100%);border:1px solid #e5ded1;border-radius:24px;overflow:hidden;box-shadow:0 20px 50px rgba(15,23,42,.08);">
+        <div style="padding:32px 36px;background:radial-gradient(circle at top right,#f59e0b 0,#f59e0b 12%,transparent 12%),linear-gradient(135deg,#111827 0%,#1f2937 100%);color:#fff;">
+            <div style="display:inline-block;padding:8px 14px;border-radius:999px;background:rgba(255,255,255,.14);font-size:12px;letter-spacing:.08em;text-transform:uppercase;">@Model.AccentLabel</div>
+            <h1 style="margin:18px 0 10px;font-size:30px;line-height:1.15;">@Model.Title</h1>
+            <p style="margin:0;font-size:16px;line-height:1.65;color:rgba(255,255,255,.86);">@Model.Lead</p>
+        </div>
+        <div style="padding:28px 36px 10px;">
+            <table style="width:100%;border-collapse:separate;border-spacing:0 12px;">
+                <tr><td style="width:180px;color:#6b7280;font-size:14px;">Предмет</td><td style="font-size:15px;font-weight:600;">@Model.SubjectName</td></tr>
+                <tr><td style="color:#6b7280;font-size:14px;">Преподаватель</td><td style="font-size:15px;font-weight:600;">@Model.TeacherName</td></tr>
+                <tr><td style="color:#6b7280;font-size:14px;">Студент</td><td style="font-size:15px;font-weight:600;">@Model.StudentFullName</td></tr>
+                <tr><td style="color:#6b7280;font-size:14px;">Время</td><td style="font-size:15px;">@Model.TimeRange</td></tr>
+                <tr><td style="color:#6b7280;font-size:14px;">Место</td><td style="font-size:15px;">@Model.Location</td></tr>
+            </table>
+        </div>
+        <div style="padding:0 36px 32px;">
+            <div style="padding:18px 20px;border-radius:18px;background:#f8fafc;border:1px solid #e5e7eb;font-size:14px;line-height:1.7;color:#475569;">
+                @Model.Footer
+            </div>
+        </div>
+    </div>
+</body>
+</html>

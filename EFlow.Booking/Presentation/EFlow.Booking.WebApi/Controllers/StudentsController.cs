@@ -1,4 +1,4 @@
-﻿using System.Security.Claims;
+using System.Security.Claims;
 using EFlow.Booking.Application.Students.Commands;
 using EFlow.Booking.Application.Students.Commands.Update;
 using EFlow.Booking.Application.Students.Queries;
@@ -23,6 +23,7 @@ public class StudentsController(ISender sender) : ControllerBase
         {
             UserName = request.UserName,
             Password = request.Password,
+            Email = request.Email,
             GroupId = request.GroupId,
             FirstName = request.FirstName,
             MiddleName = request.MiddleName,

@@ -1,4 +1,4 @@
-﻿namespace EFlow.Booking.Application.Teachers;
+namespace EFlow.Booking.Application.Teachers;
 
 public record TeacherDto
 {

@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
     <ItemGroup>
         <PackageReference Include="Hangfire"/>
@@ -11,12 +11,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\..\Core\EFlow.Booking.Domain\EFlow.Booking.Domain.csproj"/>
-        <ProjectReference Include="..\..\Core\EFlow.Booking.IntegrationEvents\EFlow.Booking.IntegrationEvents.csproj"/>
         <ProjectReference Include="..\..\..\EFlow.Shared\EFlow.Common.Infrastructure\EFlow.Common.Infrastructure.csproj"/>
-    </ItemGroup>
-
-    <ItemGroup>
-      <Folder Include="Migrations\" />
     </ItemGroup>
 
 </Project>

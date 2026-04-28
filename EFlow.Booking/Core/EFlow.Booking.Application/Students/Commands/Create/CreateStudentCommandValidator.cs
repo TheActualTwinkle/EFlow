@@ -1,4 +1,4 @@
-﻿using EFlow.Booking.Application.Common.Validators;
+using EFlow.Booking.Application.Common.Validation;
 using EFlow.Common.Infrastructure;
 using FluentValidation;
 
@@ -10,6 +10,7 @@ public class CreateStudentCommandValidator : AbstractValidator<CreateStudentComm
     {
         RuleFor(x => x.UserName).ValidateUsername();
         RuleFor(x => x.Password).ValidatePassword();
+        RuleFor(x => x.Email).ValidateEmail();
 
         RuleFor(x => x.GroupId)
             .NotEmpty().WithMessage("Group ID is required");

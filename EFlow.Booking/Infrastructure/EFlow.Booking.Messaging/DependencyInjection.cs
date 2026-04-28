@@ -1,17 +1,20 @@
-﻿using Confluent.Kafka;
-using EFlow.Booking.IntegrationEvents;
-using EFlow.Booking.Messaging.Outbox;
-using EFlow.Booking.Messaging.Outbox.Interfaces;
-using EFlow.Booking.Messaging.Outbox.MessageProcessing;
-using EFlow.Booking.Messaging.Outbox.MessageProcessing.Factories;
-using EFlow.Booking.Messaging.Outbox.MessageProcessing.Factories.Interfaces;
-using EFlow.Booking.Messaging.Outbox.MessageProcessing.Interfaces;
-using EFlow.Booking.Messaging.TopicResolving;
+using Confluent.Kafka;
+using EFlow.Common.Extensions;
+using EFlow.Common.IntegrationEvents.Booking;
+using EFlow.Common.IntegrationEvents.Booking.BookingRecords;
+using EFlow.Common.IntegrationEvents.Booking.SubmissionSlots;
+using EFlow.Common.OutboxProcessing.Outbox;
+using EFlow.Common.OutboxProcessing.Outbox.Interfaces;
+using EFlow.Common.OutboxProcessing.Outbox.MessageProcessing;
+using EFlow.Common.OutboxProcessing.Outbox.MessageProcessing.Factories;
+using EFlow.Common.OutboxProcessing.Outbox.MessageProcessing.Factories.Interfaces;
+using EFlow.Common.OutboxProcessing.Outbox.MessageProcessing.Interfaces;
 using EFlow.Common.Markers;
 using EFlow.Common.Messaging.Init;
 using EFlow.Common.Messaging.Producers;
 using EFlow.Common.Messaging.Serialization;
 using EFlow.Common.Messaging.Settings;
+using EFlow.Common.OutboxProcessing.TopicResolving;
 using Hangfire;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
@@ -80,7 +83,7 @@ public static class DependencyInjection
         recurringJobManager.AddOrUpdateDynamic<IOutboxProcessor>(
             "ProcessOutboxMessages",
             p => p.ProcessPendingAsync(settings.BatchSize, new CancellationTokenSource(TimeSpan.FromSeconds(30)).Token),
-            settings.ProcessIntervalCron,
+            settings.ProcessInterval.ToCronExpression(),
 #pragma warning disable CS0618 // Type or member is obsolete
             new DynamicRecurringJobOptions { QueueName = "eflow-outbox" });
 #pragma warning restore CS0618 // Type or member is obsolete
@@ -88,7 +91,7 @@ public static class DependencyInjection
         recurringJobManager.AddOrUpdateDynamic<IOutboxProcessor>(
             "DeleteOutboxMessages",
             p => p.DeleteProcessedAsync(settings.DeleteAfter, new CancellationTokenSource(TimeSpan.FromSeconds(30)).Token),
-            settings.DeleteIntervalCron,
+            settings.DeleteInterval.ToCronExpression(),
 #pragma warning disable CS0618 // Type or member is obsolete
             new DynamicRecurringJobOptions { QueueName = "eflow-outbox" });
 #pragma warning restore CS0618 // Type or member is obsolete
@@ -105,15 +108,13 @@ public static class DependencyInjection
         if (batchSize <= 0)
             throw new InvalidOperationException("Batch size must be greater than zero.");
 
-        var processIntervalCron = configuration
-                                      .GetRequiredSection("OutboxProcessorSettings")
-                                      .GetValue<string>("ProcessIntervalCron") ??
-                                  throw new InvalidOperationException("Process interval cron expression is not configured.");
+        var processInterval = configuration
+            .GetRequiredSection("OutboxProcessorSettings")
+            .GetValue<TimeSpan>("ProcessInterval");
 
-        var deleteIntervalCron = configuration
-                                     .GetRequiredSection("OutboxProcessorSettings")
-                                     .GetValue<string>("DeleteProcessedIntervalCron") ??
-                                 throw new InvalidOperationException("Delete interval cron expression is not configured.");
+        var deleteInterval = configuration
+            .GetRequiredSection("OutboxProcessorSettings")
+            .GetValue<TimeSpan>("DeleteProcessedInterval");
 
         var deleteAfter = configuration
             .GetRequiredSection("OutboxProcessorSettings")
@@ -122,8 +123,8 @@ public static class DependencyInjection
         services.AddSingleton<OutboxProcessorSettings>(_ => new OutboxProcessorSettings
         {
             BatchSize = batchSize,
-            ProcessIntervalCron = processIntervalCron,
-            DeleteIntervalCron = deleteIntervalCron,
+            ProcessInterval = processInterval,
+            DeleteInterval = deleteInterval,
             DeleteAfter = deleteAfter
         });
 
@@ -159,6 +160,9 @@ public static class DependencyInjection
             var resolver = new TopicNameResolver();
 
             resolver.AddMapping(typeof(SubmissionSlotCreatedIntegrationEvent).AssemblyQualifiedName!, KafkaTopics.SubmissionSlotCreatedTopic);
+            resolver.AddMapping(typeof(BookingCreatedIntegrationEvent).AssemblyQualifiedName!, KafkaTopics.BookingCreatedTopic);
+            resolver.AddMapping(typeof(BookingCancelledIntegrationEvent).AssemblyQualifiedName!, KafkaTopics.BookingCancelledTopic);
+            resolver.AddMapping(typeof(SubmissionSlotUpdatedIntegrationEvent).AssemblyQualifiedName!, KafkaTopics.SubmissionSlotUpdatedTopic);
 
             return resolver;
         });

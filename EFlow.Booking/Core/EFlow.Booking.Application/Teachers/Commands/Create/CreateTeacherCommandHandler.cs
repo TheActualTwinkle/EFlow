@@ -1,4 +1,4 @@
-﻿using EFlow.Booking.Application.Common.Errors.Abstractions;
+using EFlow.Booking.Application.Common.Errors.Abstractions;
 using EFlow.Booking.Application.Common.Errors.Identity;
 using EFlow.Booking.Domain;
 using EFlow.Booking.Domain.Teachers;
@@ -17,7 +17,13 @@ public class CreateTeacherCommandHandler(
 {
     public async Task<Result<Guid>> Handle(CreateTeacherCommand request, CancellationToken cancellationToken)
     {
-        var identity = new Identity { UserName = request.UserName };
+        var identity = new Identity
+        {
+            Id = Guid.NewGuid(),
+            UserName = request.UserName,
+            Email = request.Email
+        };
+
         var createUserResult = await userManager.CreateAsync(identity, request.Password);
 
         if (!createUserResult.Succeeded)
@@ -35,8 +41,9 @@ public class CreateTeacherCommandHandler(
                     .WithIdentityErrors(addToRoleResult.Errors));
 
         var nowUtc = systemClock.UtcNow;
-        
+
         var teacher = Teacher.Create(
+            new TeacherId(identity.Id),
             request.FirstName,
             request.LastName,
             request.MiddleName,

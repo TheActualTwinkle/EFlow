@@ -15,6 +15,7 @@ on:
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -28,7 +29,19 @@ jobs:
         run: dotnet restore
 
       - name: Build
-        run: dotnet build --no-restore --configuration Release
+        run: dotnet build -c Release
 
-      - name: Run tests
-        run: dotnet test --no-build --configuration Release --logger "trx;LogFileName=test_results.trx" --results-directory TestResults
+      - name: Run unit and architecture tests
+        run: |
+          dotnet test EFlow.Shared/EFlow.Common.UnitTests/EFlow.Common.UnitTests.csproj --no-build --configuration Release --logger "trx;LogFileName=eflow-common-unit-tests.trx" --results-directory TestResults/unit-and-arch
+          dotnet test EFlow.Booking/Tests/EFlow.Booking.UnitTests/EFlow.Booking.UnitTests.csproj --no-build --configuration Release --logger "trx;LogFileName=eflow-booking-unit-tests.trx" --results-directory TestResults/unit-and-arch
+          dotnet test EFlow.Notifications/Tests/EFlow.Notifications.UnitTests/EFlow.Notifications.UnitTests.csproj --no-build --configuration Release --logger "trx;LogFileName=eflow-notifications-unit-tests.trx" --results-directory TestResults/unit-and-arch
+          dotnet test EFlow.Booking/Tests/EFlow.Booking.ArchitectureTests/EFlow.Booking.ArchitectureTests.csproj --no-build --configuration Release --logger "trx;LogFileName=eflow-booking-architecture-tests.trx" --results-directory TestResults/unit-and-arch
+
+      - name: Run integration tests
+        run: |
+          dotnet test EFlow.Booking/Tests/EFlow.Booking.IntegrationTests/EFlow.Booking.IntegrationTests.csproj --no-build --configuration Release --logger "trx;LogFileName=eflow-booking-integration-tests.trx" --results-directory TestResults/integration
+
+      - name: Run API tests
+        run: |
+          dotnet test EFlow.Booking/Tests/EFlow.Booking.ApiTests/EFlow.Booking.ApiTests.csproj --no-build --configuration Release --logger "trx;LogFileName=eflow-booking-api-tests.trx" --results-directory TestResults/api

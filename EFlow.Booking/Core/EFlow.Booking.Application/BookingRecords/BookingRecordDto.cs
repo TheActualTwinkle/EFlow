@@ -1,4 +1,4 @@
-﻿namespace EFlow.Booking.Application.BookingRecords;
+namespace EFlow.Booking.Application.BookingRecords;
 
 public record BookingRecordDto
 {

@@ -1,4 +1,4 @@
-﻿using EFlow.Booking.Application.Common.Errors.Abstractions;
+using EFlow.Booking.Application.Common.Errors.Abstractions;
 using EFlow.Booking.Application.Common.Errors.Identity;
 using EFlow.Booking.Domain;
 using EFlow.Booking.Domain.Admins;
@@ -17,7 +17,13 @@ public class CreateAdminCommandHandler(
 {
     public async Task<Result<Guid>> Handle(CreateAdminCommand request, CancellationToken cancellationToken)
     {
-        var identity = new Identity { UserName = request.UserName };
+        var identity = new Identity
+        {
+            Id = Guid.NewGuid(),
+            UserName = request.UserName,
+            Email = request.Email
+        };
+
         var createUserResult = await userManager.CreateAsync(identity, request.Password);
 
         if (!createUserResult.Succeeded)
@@ -35,8 +41,8 @@ public class CreateAdminCommandHandler(
                     .WithIdentityErrors(addToRoleResult.Errors));
 
         var nowUtc = systemClock.UtcNow;
-        
-        var admin = Admin.Create(nowUtc, nowUtc);
+
+        var admin = Admin.Create(new AdminId(identity.Id), nowUtc, nowUtc);
 
         await unitOfWork
             .GetRepository<IAdminRepository>()
