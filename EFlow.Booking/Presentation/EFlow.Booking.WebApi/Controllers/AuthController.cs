@@ -20,34 +20,6 @@ public class AuthController(
     ISystemClock systemClock)
     : ControllerBase
 {
-    // TODO: убрать этот endpoint когда появится другая возможность регистрации админов из файлика
-    [HttpPost("register")]
-    public async Task<IActionResult> Register(RegisterRequest request)
-    {
-        if (request.Role is not Identity.Role.Admin)
-            return BadRequest("Only admin registration is allowed");
-
-        var user = new Identity
-        {
-            Id = Guid.NewGuid(),
-            UserName = request.Username,
-            Email = request.Email
-        };
-
-        var result = await userManager.CreateAsync(user, request.Password);
-
-        if (!result.Succeeded)
-            return BadRequest(result.Errors);
-
-        await userManager.AddToRoleAsync(user, Identity.GetRoleName(request.Role));
-
-        await signInManager.SignInAsync(user, true);
-
-        var token = await GenerateJwtTokenAsync(user);
-
-        return Ok(new { Token = token });
-    }
-
     [HttpPost("login")]
     public async Task<IActionResult> Login(LoginRequest request)
     {

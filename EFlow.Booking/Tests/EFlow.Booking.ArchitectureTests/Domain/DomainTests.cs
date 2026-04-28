@@ -16,9 +16,10 @@ public class DomainTests
     [Fact]
     public void Domain_ShouldNotHaveForbiddenAssemblyReferences()
     {
-        // Arrange & Act
+        // Arrange
         var domainAssembly = typeof(Identity).Assembly;
-        
+
+        // Act
         var forbiddenProjects = domainAssembly
             .GetReferencedAssemblies()
             .Select(reference => reference.Name)
@@ -36,7 +37,7 @@ public class DomainTests
     [Fact]
     public void DomainEvents_ShouldBeSealed()
     {
-        // Arrange & Act
+        // Act
         var result = Types
             .InAssembly(typeof(Identity).Assembly)
             .That()
@@ -56,7 +57,7 @@ public class DomainTests
     [Fact]
     public void DomainEvents_ShouldHaveDomainEventSuffix()
     {
-        // Arrange & Act
+        // Act
         var result = Types
             .InAssembly(typeof(Identity).Assembly)
             .That()
@@ -76,7 +77,7 @@ public class DomainTests
     [Fact]
     public void Entities_ShouldBeSealed()
     {
-        // Arrange & Act
+        // Act
         var result = Types
             .InAssembly(typeof(Identity).Assembly)
             .That()
@@ -96,7 +97,7 @@ public class DomainTests
     [Fact]
     public void Entities_ShouldHavePrivateParameterlessConstructor()
     {
-        // Arrange & Act
+        // Act
         var invalidEntities = GetTypesImplementing<Entity>()
             .Where(type =>
             {
@@ -121,7 +122,7 @@ public class DomainTests
     [Fact]
     public void BusinessRules_ShouldBeSealed()
     {
-        // Arrange & Act
+        // Act
         var result = Types
             .InAssembly(typeof(Identity).Assembly)
             .That()
@@ -141,7 +142,7 @@ public class DomainTests
     [Fact]
     public void BusinessRules_ShouldHaveOnlyInternalConstructors()
     {
-        // Arrange & Act
+        // Act
         var invalidRules = GetTypesImplementing<IBusinessRule>()
             .Where(type =>
             {

@@ -3,7 +3,6 @@ using EFlow.Booking.ApiTests.Infrastructure.Collections;
 using EFlow.Booking.ApiTests.Infrastructure.Contracts;
 using EFlow.Booking.ApiTests.Infrastructure.Fixtures;
 using EFlow.Booking.ApiTests.Infrastructure.Scenarios;
-using EFlow.Booking.Domain;
 using FluentAssertions;
 
 namespace EFlow.Booking.ApiTests.Auth;
@@ -20,28 +19,33 @@ public sealed class AuthApiTests(ApiTestStackFixture fixture)
     [Fact]
     public async Task GetCurrentUser_WhenUserIsAnonymous_ShouldReturnUnauthorized()
     {
+        // Arrange
         using var session = fixture.CreateSession();
 
+        // Act
         var response = await session.GetAsync("/api/auth/me");
 
+        // Assert
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
 
     /// <summary>
-    /// Verifies that <c>Register</c> authenticates the caller and returns the expected current-user payload when the requested role is admin.
+    /// Verifies that <c>Login</c> authenticates the caller and returns the expected current-user payload for the configured administrator.
     /// </summary>
     [Fact]
-    public async Task Register_WhenRoleIsAdmin_ShouldAuthenticateUserAndReturnExpectedCurrentUser()
+    public async Task Login_WhenCredentialsAreValid_ShouldAuthenticateUserAndReturnExpectedCurrentUser()
     {
+        // Arrange
         var scenario = new ApiScenario(fixture);
         var (adminSession, currentUser) = await scenario.CreateAdminSessionAsync();
 
         using (adminSession)
         {
+            // Act & Assert
             currentUser.Id.Should().NotBeEmpty();
-            currentUser.UserName.Should().Be($"admin_{scenario.Suffix}");
-            currentUser.Email.Should().Be($"admin_{scenario.Suffix}@example.com");
-            currentUser.Roles.Should().Contain(Identity.Roles.Admin);
+            currentUser.UserName.Should().Be(fixture.AdminUsername);
+            currentUser.Email.Should().Be(fixture.AdminEmail);
+            currentUser.Roles.Should().Contain("Admin");
         }
     }
 
@@ -51,42 +55,44 @@ public sealed class AuthApiTests(ApiTestStackFixture fixture)
     [Fact]
     public async Task Logout_WhenUserIsAuthenticated_ShouldInvalidateSession()
     {
+        // Arrange
         var scenario = new ApiScenario(fixture);
         var (adminSession, _) = await scenario.CreateAdminSessionAsync();
 
         using (adminSession)
         {
+            // Act
             var logoutResponse = await adminSession.PostAsync<object?>("/api/auth/logout", null);
+            var meAfterLogout = await adminSession.GetAsync("/api/auth/me");
 
+            // Assert
             logoutResponse.StatusCode.Should().Be(HttpStatusCode.OK);
             (await adminSession.ReadTextAsync(logoutResponse)).Should().Contain("Logged out successfully");
-
-            var meAfterLogout = await adminSession.GetAsync("/api/auth/me");
             meAfterLogout.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
         }
     }
 
     /// <summary>
-    /// Verifies that <c>Register</c> returns <c>BadRequest</c> when the requested role is not admin.
+    /// Verifies that <c>Login</c> returns <c>Unauthorized</c> when the username does not exist.
     /// </summary>
     [Fact]
-    public async Task Register_WhenRoleIsNotAdmin_ShouldReturnBadRequest()
+    public async Task Login_WhenUserDoesNotExist_ShouldReturnUnauthorized()
     {
-        var scenario = new ApiScenario(fixture);
+        // Arrange
         using var session = fixture.CreateSession();
 
+        // Act
         var response = await session.PostAsync(
-            "/api/auth/register",
-            new RegisterRequestModel
+            "/api/auth/login",
+            new LoginRequestModel
             {
-                Username = $"student_{scenario.Suffix}",
-                Password = "Student123!",
-                Email = $"student_{scenario.Suffix}@example.com",
-                Role = Identity.Role.Student
+                Username = "missing-user",
+                Password = "WrongPassword!"
             });
 
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
-        (await session.ReadTextAsync(response)).Should().Contain("Only admin registration is allowed");
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+        (await session.ReadTextAsync(response)).Should().Contain("Invalid credentials");
     }
 
     /// <summary>
@@ -95,6 +101,7 @@ public sealed class AuthApiTests(ApiTestStackFixture fixture)
     [Fact]
     public async Task Login_WhenPasswordIsInvalid_ShouldReturnUnauthorized()
     {
+        // Arrange
         var scenario = new ApiScenario(fixture);
         var (adminSession, _) = await scenario.CreateAdminSessionAsync();
 
@@ -102,14 +109,16 @@ public sealed class AuthApiTests(ApiTestStackFixture fixture)
         {
             using var invalidLoginSession = fixture.CreateSession();
 
+            // Act
             var response = await invalidLoginSession.PostAsync(
                 "/api/auth/login",
                 new LoginRequestModel
                 {
-                    Username = $"admin_{scenario.Suffix}",
+                    Username = fixture.AdminUsername,
                     Password = "WrongPassword!"
                 });
 
+            // Assert
             response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
             (await invalidLoginSession.ReadTextAsync(response)).Should().Contain("Invalid credentials");
         }

@@ -24,16 +24,18 @@ public sealed class BookingsApiTests(ApiTestStackFixture fixture)
     public Task GetBookingById_WhenBookingExists_ShouldReturnExpectedBooking() =>
         WithBookingsFixtureAsync(async (scenario, context) =>
         {
+            // Arrange
             var bookingId = await scenario.CreateBookingAsync(context.AdminSession, context.Student1Id, context.SlotId);
+            context.AddCleanup(ApiScenario.DeleteBooking(bookingId));
 
+            // Act
             var booking = await scenario.GetBookingAsync(context.AdminSession, bookingId);
 
+            // Assert
             booking.Id.Should().Be(bookingId);
             booking.StudentId.Should().Be(context.Student1Id);
             booking.SlotId.Should().Be(context.SlotId);
             booking.CreatedAt.Should().BeAfter(DateTime.UtcNow.AddMinutes(-10));
-
-            context.AddCleanup(ApiScenario.DeleteBooking(bookingId));
         });
 
     /// <summary>
@@ -43,8 +45,10 @@ public sealed class BookingsApiTests(ApiTestStackFixture fixture)
     public Task GetAllBookings_WhenUserIsAdmin_ShouldReturnAllCreatedBookings() =>
         WithTwoBookingsAsync(async (_, context) =>
         {
+            // Act
             var response = await context.AdminSession.GetAsync("/api/bookings");
 
+            // Assert
             response.StatusCode.Should().Be(HttpStatusCode.OK);
             var bookings = (await context.AdminSession.ReadAsync<BookingRecordDto[]>(response))!;
             bookings.Should().Contain(x => x.Id == context.Booking1Id && x.StudentId == context.Student1Id);
@@ -58,8 +62,10 @@ public sealed class BookingsApiTests(ApiTestStackFixture fixture)
     public Task GetBookingsByStudent_WhenUserRequestsOwnBookings_ShouldReturnOwnBookings() =>
         WithTwoBookingsAsync(async (_, context) =>
         {
+            // Act
             var response = await context.Student1Session.GetAsync($"/api/bookings/by-student/{context.Student1Id}");
 
+            // Assert
             response.StatusCode.Should().Be(HttpStatusCode.OK);
             var bookings = (await context.Student1Session.ReadAsync<BookingRecordDto[]>(response))!;
             bookings.Should().ContainSingle(x => x.Id == context.Booking1Id);
@@ -72,8 +78,10 @@ public sealed class BookingsApiTests(ApiTestStackFixture fixture)
     public Task GetBookingsByStudent_WhenUserRequestsAnotherStudentsBookings_ShouldReturnForbidden() =>
         WithTwoBookingsAsync(async (_, context) =>
         {
+            // Act
             var response = await context.Student1Session.GetAsync($"/api/bookings/by-student/{context.Student2Id}");
 
+            // Assert
             await context.Student1Session.AssertProblemAsync(response, HttpStatusCode.Forbidden, "Forbidden", "view your own bookings");
         });
 
@@ -84,6 +92,7 @@ public sealed class BookingsApiTests(ApiTestStackFixture fixture)
     public Task CreateBooking_WhenStudentTargetsAnotherStudent_ShouldReturnForbidden() =>
         WithBookingsFixtureAsync(async (_, context) =>
         {
+            // Act
             var response = await context.Student1Session.PostAsync(
                 "/api/bookings",
                 new CreateBookingRequest
@@ -92,6 +101,7 @@ public sealed class BookingsApiTests(ApiTestStackFixture fixture)
                     SlotId = context.SlotId
                 });
 
+            // Assert
             await context.Student1Session.AssertProblemAsync(response, HttpStatusCode.Forbidden, "Forbidden", "create bookings for yourself");
         });
 
@@ -102,8 +112,10 @@ public sealed class BookingsApiTests(ApiTestStackFixture fixture)
     public Task DeleteBooking_WhenStudentTargetsAnotherStudentsBooking_ShouldReturnForbidden() =>
         WithTwoBookingsAsync(async (_, context) =>
         {
+            // Act
             var response = await context.Student1Session.DeleteAsync($"/api/bookings/{context.Booking2Id}");
 
+            // Assert
             await context.Student1Session.AssertProblemAsync(response, HttpStatusCode.Forbidden, "Forbidden", "delete your own bookings");
         });
 
@@ -114,8 +126,10 @@ public sealed class BookingsApiTests(ApiTestStackFixture fixture)
     public Task GetBookingsBySlot_WhenUserIsAdmin_ShouldReturnBookingsForSlot() =>
         WithTwoBookingsAsync(async (_, context) =>
         {
+            // Act
             var response = await context.AdminSession.GetAsync($"/api/bookings/by-slot/{context.SlotId}");
 
+            // Assert
             response.StatusCode.Should().Be(HttpStatusCode.OK);
             var bookings = (await context.AdminSession.ReadAsync<BookingRecordDto[]>(response))!;
             bookings.Should().Contain(x => x.Id == context.Booking1Id);
@@ -124,6 +138,7 @@ public sealed class BookingsApiTests(ApiTestStackFixture fixture)
 
     private async Task WithBookingsFixtureAsync(Func<ApiScenario, BookingsFixture, Task> assertion)
     {
+        // Arrange
         var scenario = new ApiScenario(fixture);
         var (adminSession, _) = await scenario.CreateAdminSessionAsync();
 
@@ -154,7 +169,7 @@ public sealed class BookingsApiTests(ApiTestStackFixture fixture)
             context.Booking2Id = await scenario.CreateBookingAsync(context.AdminSession, context.Student2Id, context.SlotId);
             context.AddCleanup(ApiScenario.DeleteBooking(context.Booking1Id));
             context.AddCleanup(ApiScenario.DeleteBooking(context.Booking2Id));
-
+            
             await assertion(scenario, context);
         });
 
@@ -162,7 +177,7 @@ public sealed class BookingsApiTests(ApiTestStackFixture fixture)
     {
         var groupId = await scenario.CreateGroupAsync(adminSession, $"Group {scenario.Suffix}");
         var teacherUsername = $"teacher_{scenario.Suffix}";
-
+        
         var teacherId = await scenario.CreateTeacherAsync(
             adminSession,
             teacherUsername,
@@ -194,7 +209,7 @@ public sealed class BookingsApiTests(ApiTestStackFixture fixture)
         await scenario.AddAdmissionAsync(adminSession, slotId, student1Id);
         await scenario.AddAdmissionAsync(adminSession, slotId, student2Id);
         var student1Session = await scenario.LoginAsync(student1Username, "Student123!");
-
+        
         return new BookingsFixture(adminSession, student1Session, groupId, teacherId, subjectId, slotId, student1Id, student2Id);
     }
 }

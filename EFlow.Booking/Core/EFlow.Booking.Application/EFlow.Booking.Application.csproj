@@ -8,6 +8,7 @@
         <PackageReference Include="Mapster.DependencyInjection"/>
         <PackageReference Include="MediatR"/>
         <PackageReference Include="MemoryPack"/>
+        <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" />
     </ItemGroup>
 
     <ItemGroup>

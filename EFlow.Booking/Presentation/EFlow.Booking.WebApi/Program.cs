@@ -47,7 +47,7 @@ builder.Services
 
 builder.Services.AddControllers();
 
-builder.Services.AddApplication();
+builder.Services.AddApplication(builder.Configuration);
 builder.Services.AddPersistence(builder.Configuration);
 builder.Services.AddJobScheduler(builder.Configuration);
 builder.Services.AddOutbox(builder.Configuration);
@@ -55,7 +55,7 @@ builder.Services.AddMessaging(builder.Configuration);
 
 var app = builder.Build();
 
-await app.ApplyDbMigrations();
+await app.ApplyDbMigrationsAsync();
 
 if (app.Environment.IsDevelopment())
 {
@@ -99,5 +99,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
+await app.InitAdminsAsync();
 
 await app.RunAsync();

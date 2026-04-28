@@ -30,87 +30,90 @@ public static class DependencyInjection
         return builder;
     }
 
-    public static IServiceCollection ConfigureIdentity(this IServiceCollection services, IConfiguration configuration)
+    extension(IServiceCollection services)
     {
-        services.AddIdentity<Identity, IdentityRole<Guid>>(options =>
-            {
-                options.Password.RequireDigit = false;
-                options.Password.RequireLowercase = false;
-                options.Password.RequireUppercase = false;
-                options.Password.RequireNonAlphanumeric = false;
-                options.Password.RequiredLength = 6; // TODO сделать нормальные ограничения
-                options.Lockout.MaxFailedAccessAttempts = 3;
-                options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(1);
-                options.Lockout.AllowedForNewUsers = true;
-            })
-            .AddEntityFrameworkStores<ApplicationDbContext>()
-            .AddDefaultTokenProviders();
-
-        services.AddAuthentication(options =>
-            {
-                options.DefaultScheme = "JWT_OR_COOKIE";
-                options.DefaultChallengeScheme = "JWT_OR_COOKIE";
-            })
-            .AddCookie(
-                CookieAuthenticationDefaults.AuthenticationScheme, options =>
+        public IServiceCollection ConfigureIdentity(IConfiguration configuration)
+        {
+            services.AddIdentity<Identity, IdentityRole<Guid>>(options =>
                 {
-                    options.ExpireTimeSpan = TimeSpan.FromDays(7);
-
-                    options.Events.OnRedirectToLogin = context =>
-                    {
-                        context.Response.StatusCode = StatusCodes.Status401Unauthorized;
-
-                        return Task.CompletedTask;
-                    };
-
-                    options.Events.OnRedirectToAccessDenied = context =>
-                    {
-                        context.Response.StatusCode = StatusCodes.Status403Forbidden;
-
-                        return Task.CompletedTask;
-                    };
+                    options.Password.RequireDigit = false;
+                    options.Password.RequireLowercase = false;
+                    options.Password.RequireUppercase = false;
+                    options.Password.RequireNonAlphanumeric = false;
+                    options.Password.RequiredLength = 6; // TODO сделать нормальные ограничения
+                    options.Lockout.MaxFailedAccessAttempts = 3;
+                    options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(1);
+                    options.Lockout.AllowedForNewUsers = true;
                 })
-            .AddJwtBearer(
-                JwtBearerDefaults.AuthenticationScheme, options =>
+                .AddEntityFrameworkStores<ApplicationDbContext>()
+                .AddDefaultTokenProviders();
+
+            services.AddAuthentication(options =>
                 {
-                    options.TokenValidationParameters = new TokenValidationParameters
-                    {
-                        ValidateIssuer = true,
-                        ValidateAudience = true,
-                        ValidateLifetime = true,
-                        ValidateIssuerSigningKey = true,
-                        ValidIssuer = configuration["Jwt:Issuer"],
-                        ValidAudience = configuration["Jwt:Audience"],
-                        IssuerSigningKey = new SymmetricSecurityKey(
-                            Encoding.UTF8.GetBytes(configuration["Jwt:Key"]!))
-                    };
+                    options.DefaultScheme = "JWT_OR_COOKIE";
+                    options.DefaultChallengeScheme = "JWT_OR_COOKIE";
                 })
-            .AddPolicyScheme(
-                "JWT_OR_COOKIE", "JWT_OR_COOKIE", options =>
-                {
-                    options.ForwardDefaultSelector = context =>
+                .AddCookie(
+                    CookieAuthenticationDefaults.AuthenticationScheme, options =>
                     {
-                        var authorization = context.Request.Headers.Authorization.FirstOrDefault();
+                        options.ExpireTimeSpan = TimeSpan.FromDays(7);
 
-                        return authorization?.StartsWith("Bearer ") == true ?
-                            JwtBearerDefaults.AuthenticationScheme :
-                            CookieAuthenticationDefaults.AuthenticationScheme;
-                    };
-                });
+                        options.Events.OnRedirectToLogin = context =>
+                        {
+                            context.Response.StatusCode = StatusCodes.Status401Unauthorized;
 
-        services.AddAuthorization();
+                            return Task.CompletedTask;
+                        };
 
-        return services;
-    }
-    
-    public static IServiceCollection AddMapping(this IServiceCollection services)
-    {
-        TypeAdapterConfig.GlobalSettings.Apply(new MapsterRegister());
-        TypeAdapterConfig.GlobalSettings.RequireExplicitMapping = true;
-        TypeAdapterConfig.GlobalSettings.Default.IgnoreNonMapped(true);
+                        options.Events.OnRedirectToAccessDenied = context =>
+                        {
+                            context.Response.StatusCode = StatusCodes.Status403Forbidden;
 
-        services.AddSingleton(TypeAdapterConfig.GlobalSettings);
+                            return Task.CompletedTask;
+                        };
+                    })
+                .AddJwtBearer(
+                    JwtBearerDefaults.AuthenticationScheme, options =>
+                    {
+                        options.TokenValidationParameters = new TokenValidationParameters
+                        {
+                            ValidateIssuer = true,
+                            ValidateAudience = true,
+                            ValidateLifetime = true,
+                            ValidateIssuerSigningKey = true,
+                            ValidIssuer = configuration["Jwt:Issuer"],
+                            ValidAudience = configuration["Jwt:Audience"],
+                            IssuerSigningKey = new SymmetricSecurityKey(
+                                Encoding.UTF8.GetBytes(configuration["Jwt:Key"]!))
+                        };
+                    })
+                .AddPolicyScheme(
+                    "JWT_OR_COOKIE", "JWT_OR_COOKIE", options =>
+                    {
+                        options.ForwardDefaultSelector = context =>
+                        {
+                            var authorization = context.Request.Headers.Authorization.FirstOrDefault();
 
-        return services;
+                            return authorization?.StartsWith("Bearer ") == true ?
+                                JwtBearerDefaults.AuthenticationScheme :
+                                CookieAuthenticationDefaults.AuthenticationScheme;
+                        };
+                    });
+
+            services.AddAuthorization();
+
+            return services;
+        }
+
+        public IServiceCollection AddMapping()
+        {
+            TypeAdapterConfig.GlobalSettings.Apply(new MapsterRegister());
+            TypeAdapterConfig.GlobalSettings.RequireExplicitMapping = true;
+            TypeAdapterConfig.GlobalSettings.Default.IgnoreNonMapped(true);
+
+            services.AddSingleton(TypeAdapterConfig.GlobalSettings);
+
+            return services;
+        }
     }
 }

@@ -8,7 +8,6 @@ using EFlow.Booking.Application.Students;
 using EFlow.Booking.Application.Subjects;
 using EFlow.Booking.Application.SubmissionSlots;
 using EFlow.Booking.Application.Teachers;
-using EFlow.Booking.Domain;
 using EFlow.Booking.WebApi.Contracts.Bookings;
 using EFlow.Booking.WebApi.Contracts.Groups;
 using EFlow.Booking.WebApi.Contracts.Students;
@@ -30,27 +29,25 @@ internal sealed class ApiScenario(ApiTestStackFixture fixture)
     public string Suffix { get; } = Guid.NewGuid().ToString("N")[..8];
 
     /// <summary>
-    /// Registers a unique admin user, authenticates it, and returns both the session and current-user payload.
+    /// Authenticates the configured admin user and returns both the session and current-user payload.
     /// </summary>
     public async Task<(ApiSession Session, CurrentUserResponse CurrentUser)> CreateAdminSessionAsync()
     {
+        // Arrange
         var session = fixture.CreateSession();
-        var username = $"admin_{Suffix}";
-        var email = $"{username}@example.com";
-        const string password = "Admin123!";
 
-        var registerResponse = await session.PostAsync(
-            "/api/auth/register",
-            new RegisterRequestModel
+        // Act
+        var loginResponse = await session.PostAsync(
+            "/api/auth/login",
+            new LoginRequestModel
             {
-                Username = username,
-                Password = password,
-                Email = email,
-                Role = Identity.Role.Admin
+                Username = fixture.AdminUsername,
+                Password = fixture.AdminPassword
             });
 
-        registerResponse.StatusCode.Should().Be(HttpStatusCode.OK);
-        var authToken = await session.ReadAsync<AuthTokenResponse>(registerResponse);
+        // Assert
+        loginResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var authToken = await session.ReadAsync<AuthTokenResponse>(loginResponse);
         authToken.Should().NotBeNull();
         authToken.Token.Should().NotBeNullOrWhiteSpace();
 
@@ -67,8 +64,10 @@ internal sealed class ApiScenario(ApiTestStackFixture fixture)
     /// </summary>
     public async Task<ApiSession> LoginAsync(string username, string password)
     {
+        // Arrange
         var session = fixture.CreateSession();
 
+        // Act
         var response = await session.PostAsync(
             "/api/auth/login",
             new LoginRequestModel
@@ -77,6 +76,7 @@ internal sealed class ApiScenario(ApiTestStackFixture fixture)
                 Password = password
             });
 
+        // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var authToken = await session.ReadAsync<AuthTokenResponse>(response);
         authToken.Should().NotBeNull();

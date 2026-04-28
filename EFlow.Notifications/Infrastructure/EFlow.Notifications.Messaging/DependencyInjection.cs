@@ -14,38 +14,41 @@ namespace EFlow.Notifications.Messaging;
 
 public static class DependencyInjection
 {
-    public static IServiceCollection AddMessaging(this IServiceCollection services, IConfiguration configuration)
+    extension(IServiceCollection services)
     {
-        services.AddScoped<TopicInitializer>();
-
-        services.Configure<KafkaSettings>(configuration.GetRequiredSection("KafkaSettings"));
-        services.Configure<KafkaTopicsSettings>(configuration.GetRequiredSection("KafkaSettings"));
-
-        services.AddScoped<ICommitLogConsumerFactory, CommitLogConsumerFactory>();
-
-        services.AddSingleton<IAdminClient>(serviceProvider =>
+        public IServiceCollection AddMessaging(IConfiguration configuration)
         {
-            var settings = serviceProvider.GetRequiredService<IOptions<KafkaSettings>>().Value;
+            services.AddScoped<TopicInitializer>();
 
-            return new AdminClientBuilder(new AdminClientConfig { BootstrapServers = settings.BootstrapServers }).Build();
-        });
+            services.Configure<KafkaSettings>(configuration.GetRequiredSection("KafkaSettings"));
+            services.Configure<KafkaTopicsSettings>(configuration.GetRequiredSection("KafkaSettings"));
 
-        services.AddScoped(typeof(IDeserializer<>), typeof(DefaultSerializer<>));
+            services.AddScoped<ICommitLogConsumerFactory, CommitLogConsumerFactory>();
 
-        return services;
-    }
+            services.AddSingleton<IAdminClient>(serviceProvider =>
+            {
+                var settings = serviceProvider.GetRequiredService<IOptions<KafkaSettings>>().Value;
 
-    public static IServiceCollection AddBookingClient(this IServiceCollection services, IConfiguration configuration)
-    {
-        services.Configure<BookingReminderSettings>(configuration.GetSection(BookingReminderSettings.SectionName));
+                return new AdminClientBuilder(new AdminClientConfig { BootstrapServers = settings.BootstrapServers }).Build();
+            });
 
-        services.AddHttpClient<IBookingClient, BookingClient>((serviceProvider, client) =>
+            services.AddScoped(typeof(IDeserializer<>), typeof(DefaultSerializer<>));
+
+            return services;
+        }
+
+        public IServiceCollection AddBookingClient(IConfiguration configuration)
         {
-            var options = serviceProvider.GetRequiredService<IOptions<BookingReminderSettings>>().Value;
+            services.Configure<BookingReminderSettings>(configuration.GetSection(BookingReminderSettings.SectionName));
+
+            services.AddHttpClient<IBookingClient, BookingClient>((serviceProvider, client) =>
+            {
+                var options = serviceProvider.GetRequiredService<IOptions<BookingReminderSettings>>().Value;
             
-            client.BaseAddress = new Uri(options.BookingApiBaseUrl);
-        });
+                client.BaseAddress = new Uri(options.BookingApiBaseUrl);
+            });
         
-        return services;
+            return services;
+        }
     }
 }
