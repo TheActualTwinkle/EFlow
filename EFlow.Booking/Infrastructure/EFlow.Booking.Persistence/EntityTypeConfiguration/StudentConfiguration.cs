@@ -48,5 +48,9 @@ public class StudentConfiguration : IEntityTypeConfiguration<Student>
         builder.Property(s => s.CreatedAt)
             .HasColumnName("created_at")
             .IsRequired();
+
+        builder.HasOne<Group>()
+            .WithMany()
+            .HasForeignKey(student => student.GroupId);
     }
 }

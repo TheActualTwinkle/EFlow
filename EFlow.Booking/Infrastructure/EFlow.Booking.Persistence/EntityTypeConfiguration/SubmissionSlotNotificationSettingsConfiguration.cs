@@ -1,3 +1,4 @@
+using EFlow.Booking.Domain;
 using EFlow.Booking.Domain.Notifications;
 using EFlow.Booking.Domain.SubmissionSlots;
 using EFlow.Booking.Domain.SubmissionSlots.NotificationSettings;
@@ -56,5 +57,9 @@ public class SubmissionSlotNotificationSettingsConfiguration : IEntityTypeConfig
             .WithMany(slot => slot.NotificationSettings)
             .HasForeignKey(settings => settings.SubmissionSlotId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        builder.HasOne<Identity>()
+            .WithMany()
+            .HasForeignKey(settings => settings.UserId);
     }
 }

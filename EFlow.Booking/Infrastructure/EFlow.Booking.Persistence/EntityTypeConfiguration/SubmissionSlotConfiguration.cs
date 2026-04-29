@@ -77,5 +77,13 @@ public class SubmissionSlotConfiguration : IEntityTypeConfiguration<SubmissionSl
         builder.Property(s => s.AllowedGroupIds)
             .HasColumnName("allowed_group_ids")
             .HasColumnType("uuid[]");
+
+        builder.HasOne<Subject>()
+            .WithMany()
+            .HasForeignKey(s => s.SubjectId);
+        
+        builder.HasOne<Teacher>()
+            .WithMany()
+            .HasForeignKey(s => s.TeacherId);
     }
 }
