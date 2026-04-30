@@ -1,3 +1,4 @@
+using EFlow.Common.Infrastructure;
 using EFlow.Notifications.Application.Email.Interfaces;
 using EFlow.Notifications.Application.Email.Models;
 using EFlow.Notifications.Application.Email.Settings;
@@ -9,13 +10,14 @@ using Microsoft.Extensions.Logging;
 namespace EFlow.Notifications.Application.Email;
 
 public class EmailNotificationService(
-    IOptions<SmtpSettings> settings,
+    IOptions<SmtpSettings> settingsOptions,
+    ISystemClock systemClock,
     ILogger<EmailNotificationService> logger)
     : IEmailNotificationService
 {
     public async Task SendAsync(NotificationMessage notificationMessage, CancellationToken cancellationToken = new())
     {
-        var smtpSettings = settings.Value;
+        var smtpSettings = settingsOptions.Value;
         var emailMessage = CreateMimeMessage(notificationMessage, smtpSettings);
 
         using var client = new SmtpClient();
@@ -43,7 +45,7 @@ public class EmailNotificationService(
             notificationMessage.Subject);
     }
 
-    private static MimeMessage CreateMimeMessage(NotificationMessage message, SmtpSettings settings)
+    private MimeMessage CreateMimeMessage(NotificationMessage message, SmtpSettings settings)
     {
         var email = new MimeMessage();
         
@@ -51,6 +53,7 @@ public class EmailNotificationService(
         email.To.Add(MailboxAddress.Parse(message.RecipientEmail));
         email.Subject = message.Subject;
         email.Body = new BodyBuilder { HtmlBody = message.Body }.ToMessageBody();
+        email.Date = systemClock.UtcNow;
 
         return email;
     }

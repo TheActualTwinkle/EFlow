@@ -115,7 +115,7 @@ public class CommitLogConsumer<TKey, TValue> : ICommitLogConsumer<TKey, TValue>
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogError(ex, "Handler failed for topic: \"{Topic}\". Exception: {Exception}", topic, ex);
+                        _logger.LogError(ex, "Handler failed for topic: \"{Topic}\". Exception: {Exception}", topic, ex.Message);
                         // TODO: Send to DQL as retryable
                     }
                 }
