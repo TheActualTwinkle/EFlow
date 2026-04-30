@@ -1,5 +1,3 @@
-using System.Reactive.Concurrency;
-using System.Reactive.Linq;
 using Confluent.Kafka;
 using Microsoft.Extensions.Logging;
 
@@ -10,6 +8,10 @@ public class CommitLogConsumer<TKey, TValue> : ICommitLogConsumer<TKey, TValue>
     private readonly IConsumer<TKey, TValue> _consumer;
 
     private readonly ILogger<CommitLogConsumer<TKey, TValue>> _logger;
+
+    private Task? _consumingTask;
+    
+    private CancellationTokenSource? _stoppingCts;
 
     public CommitLogConsumer(
         ConsumerConfig consumerConfig,
@@ -26,52 +28,113 @@ public class CommitLogConsumer<TKey, TValue> : ICommitLogConsumer<TKey, TValue>
             .Build();
     }
 
-    public IObservable<TValue> FromTopic(string topic) =>
-        Observable.Create<TValue>(observer =>
+    public Task StartAsync(
+        string topic,
+        Func<TValue, CancellationToken, ValueTask<bool>> handler,
+        CancellationToken cancellationToken = new())
+    {
+        if (_consumingTask is not null)
+            throw new InvalidOperationException("Commit log consumer is already running.");
+
+        _stoppingCts?.Dispose();
+        
+        var stoppingCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        
+        _stoppingCts = stoppingCts;
+        _consumingTask = Task.Run(() => Consume(topic, handler, stoppingCts.Token), CancellationToken.None);
+
+        return Task.CompletedTask;
+    }
+
+    public async Task StopAsync(CancellationToken cancellationToken = new())
+    {
+        if (_consumingTask is null)
+            return;
+
+        try
         {
-            var cts = new CancellationTokenSource();
-
-            NewThreadScheduler.Default.ScheduleLongRunning(_ =>
+            if (_stoppingCts is not null)
+                await _stoppingCts.CancelAsync();
+            
+            await _consumingTask.WaitAsync(cancellationToken);
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            _logger.LogInformation("Stopping consumer was canceled.");
+        }
+        finally
+        {
+            if (_consumingTask.IsCompleted)
             {
-                _logger.LogInformation("Starting consumer for topic {Topic}", topic);
+                _consumingTask = null;
+                _stoppingCts?.Dispose();
+                _stoppingCts = null;
+            }
+        }
+    }
 
-                _consumer.Subscribe(topic);
+    private async Task Consume(string topic, Func<TValue, CancellationToken, ValueTask<bool>> handler, CancellationToken cancellationToken)
+    {
+        _logger.LogInformation("Starting consumer for topic {Topic}", topic);
 
+        _consumer.Subscribe(topic);
+
+        try
+        {
+            while (!cancellationToken.IsCancellationRequested)
                 try
                 {
-                    while (!cts.IsCancellationRequested)
-                        try
+                    var result = _consumer.Consume(cancellationToken);
+
+                    if (result?.Message is null)
+                    {
+                        // TODO: Send to DQL as non-retryable
+                        
+                        continue;
+                    }
+
+                    try
+                    {
+                        var isHandledSuccessfully = await handler(result.Message.Value, cancellationToken);
+
+                        if (isHandledSuccessfully)
                         {
-                            var result = _consumer.Consume(cts.Token);
-
-                            if (result?.Message is null)
-                                continue;
-
                             _consumer.Commit(result);
 
-                            observer.OnNext(result.Message.Value);
+                            _logger.LogDebug("Message \"{Type}\" was handled successfully and committed.", result.Message.Value?.GetType().Name);
                         }
-                        catch (OperationCanceledException)
+                        else
                         {
-                            _logger.LogInformation("Consumer operation was canceled.");
-
-                            break;
+                            _logger.LogWarning("Message \"{Type}\" was not handled successfully.", result.Message.Value?.GetType().Name);
+                            // TODO: Send to DQL as retryable
                         }
-                        catch (Exception ex)
-                        {
-                            _logger.LogError(ex, "Error consuming message from Kafka topic {Topic}", topic);
-                        }
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        break;
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Handler failed for topic: \"{Topic}\". Exception: {Exception}", topic, ex);
+                        // TODO: Send to DQL as retryable
+                    }
                 }
-                finally
+                catch (OperationCanceledException)
                 {
-                    _consumer.Close();
+                    _logger.LogInformation("Consumer operation was canceled.");
 
-                    observer.OnCompleted();
-
-                    _logger.LogInformation("Consumer for topic {Topic} closed", topic);
+                    break;
                 }
-            });
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error consuming message from Kafka topic {Topic}", topic);
+                }
+        }
+        finally
+        {
+            _consumer.Close();
 
-            return () => cts.Cancel();
-        });
+            _logger.LogInformation("Consumer for topic {Topic} closed", topic);
+        }
+    }
 }

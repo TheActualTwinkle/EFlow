@@ -14,4 +14,4 @@ if [ -f "$ENV_FILE" ]; then
 fi
 
 JWT_KEY="${JWT_KEY:-down-script-placeholder-key}"
-docker compose -f "$COMPOSE_FILE" down -v --remove-orphans
+docker compose -f "$COMPOSE_FILE" down --remove-orphans

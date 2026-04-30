@@ -40,7 +40,7 @@ internal static class ProblemDetailsFactory
             _ => new ProblemDetails
             {
                 Status = StatusCodes.Status500InternalServerError,
-                Title = $"Server error. {exception.Message}."
+                Title = $"Server error. {exception.Message}"
             }
         };
 }
