@@ -86,8 +86,8 @@ services:
       KafkaSettings__BootstrapServers: kafka:9092
       Smtp__Host: ${SMTP_HOST?SMTP_HOST is required}
       Smtp__Port: ${SMTP_PORT?SMTP_PORT is required}
-      Smtp__Username: ${SMTP_USERNAME?SMTP_USERNAME is required}
-      Smtp__Password: ${SMTP_PASSWORD?SMTP_PASSWORD is required}
+      Smtp__Username: ${SMTP_USERNAME:-}
+      Smtp__Password: ${SMTP_PASSWORD:-}
       Smtp__FromEmail: ${SMTP_FROM_EMAIL?SMTP_FROM_EMAIL is required}
       Smtp__FromName: ${SMTP_FROM_NAME?SMTP_FROM_NAME is required}
       Smtp__SecureSocketOptions: ${SMTP_SECURE_SOCKET_OPTIONS?SMTP_SECURE_SOCKET_OPTIONS is required}
