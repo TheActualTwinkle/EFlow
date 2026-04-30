@@ -90,6 +90,6 @@ services:
       Smtp__Password: ${SMTP_PASSWORD:-}
       Smtp__FromEmail: ${SMTP_FROM_EMAIL?SMTP_FROM_EMAIL is required}
       Smtp__FromName: ${SMTP_FROM_NAME?SMTP_FROM_NAME is required}
-      Smtp__SecureSocketOptions: ${SMTP_SECURE_SOCKET_OPTIONS?SMTP_SECURE_SOCKET_OPTIONS is required}
+      Smtp__SecureSocketOptions: ${SMTP_SECURE_SOCKET_OPTIONS:-Auto}
     ports:
       - "${NOTIFICATIONS_API_PORT:-8082}:8082"

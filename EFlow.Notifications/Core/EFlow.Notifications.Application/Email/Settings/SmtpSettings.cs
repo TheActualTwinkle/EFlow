@@ -18,5 +18,5 @@ public sealed record SmtpSettings
 
     public required string FromName { get; init; }
 
-    public SecureSocketOptions SecureSocketOptions { get; init; } = SecureSocketOptions.Auto;
+    public required SecureSocketOptions SecureSocketOptions { get; init; }
 }
