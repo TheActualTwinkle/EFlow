@@ -1,5 +1,4 @@
 using Confluent.Kafka;
-using EFlow.Common.Extensions;
 using EFlow.Common.IntegrationEvents.Booking.BookingRecords;
 using EFlow.Common.IntegrationEvents.Booking.SubmissionSlots;
 using EFlow.Common.Markers;
@@ -12,28 +11,55 @@ using Microsoft.Extensions.Hosting;
 namespace EFlow.Notifications.Application.EventHandlers;
 
 public sealed class IntegrationEventHandler(
-    ICommitLogConsumerFactory consumerFactory,
     IServiceProvider serviceProvider)
     : IHostedService
 {
-    private readonly List<IDisposable> _subscriptions = [];
-
-    public Task StartAsync(CancellationToken cancellationToken)
+    private readonly List<IServiceScope> _scopes = [];
+    
+    private CancellationTokenSource _cts = null!;
+    
+    public async Task StartAsync(CancellationToken cancellationToken)
     {
-        _subscriptions.Add(Subscribe<SubmissionSlotCreatedIntegrationEvent>(KafkaTopics.SubmissionSlotCreatedTopic, cancellationToken));
-        _subscriptions.Add(Subscribe<SubmissionSlotUpdatedIntegrationEvent>(KafkaTopics.SubmissionSlotUpdatedTopic, cancellationToken));
-        _subscriptions.Add(Subscribe<BookingCreatedIntegrationEvent>(KafkaTopics.BookingCreatedTopic, cancellationToken));
-        _subscriptions.Add(Subscribe<BookingCancelledIntegrationEvent>(KafkaTopics.BookingCancelledTopic, cancellationToken));
-
-        return Task.CompletedTask;
+        _cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        
+        await SubscribeAsync<SubmissionSlotCreatedIntegrationEvent>(KafkaTopics.SubmissionSlotCreatedTopic, _cts.Token);
+        await SubscribeAsync<SubmissionSlotUpdatedIntegrationEvent>(KafkaTopics.SubmissionSlotUpdatedTopic, _cts.Token);
+        await SubscribeAsync<BookingCreatedIntegrationEvent>(KafkaTopics.BookingCreatedTopic, _cts.Token);
+        await SubscribeAsync<BookingCancelledIntegrationEvent>(KafkaTopics.BookingCancelledTopic, _cts.Token);
     }
 
-    public Task StopAsync(CancellationToken cancellationToken)
+    public async Task StopAsync(CancellationToken cancellationToken)
     {
-        _subscriptions.ForEach(subscription => subscription.Dispose());
-        _subscriptions.Clear();
+        await _cts.CancelAsync();
+
+        foreach (var serviceScope in _scopes)
+            serviceScope.Dispose();
+    }
+
+    private async Task SubscribeAsync<T>(
+        string topic,
+        CancellationToken cancellationToken = new())
+        where T : class, IKafkaMessage
+    {
+        var scope = serviceProvider.CreateScope();
         
-        return Task.CompletedTask;
+        _scopes.Add(scope);
+        
+        var consumer = scope.ServiceProvider
+            .GetRequiredService<ICommitLogConsumerFactory>()
+            .Create<Guid, T>(GetKafkaConsumerSettings());
+
+        await consumer.StartAsync(
+            topic,
+            async (message, ct) =>
+            {
+                await scope.ServiceProvider
+                    .GetRequiredService<IIntegrationEventProcessor<T>>()
+                    .ProcessAsync(message, ct);
+
+                return true;
+            },
+            cancellationToken);
     }
 
     private static KafkaConsumerSettings GetKafkaConsumerSettings() =>
@@ -42,16 +68,4 @@ public sealed class IntegrationEventHandler(
             GroupId = "notifications-service",
             AutoOffsetReset = AutoOffsetReset.Latest
         };
-
-    private IDisposable Subscribe<T>(
-        string topic,
-        CancellationToken cancellationToken = new())
-        where T : class, IKafkaMessage =>
-        consumerFactory
-            .Create<Guid, T>(GetKafkaConsumerSettings())
-            .FromTopic(topic)
-            .DoAsync(message => serviceProvider
-                .GetRequiredService<IIntegrationEventProcessor<T>>()
-                .ProcessAsync(message, cancellationToken))
-            .Subscribe();
 }

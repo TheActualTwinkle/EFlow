@@ -47,7 +47,7 @@ app.UseSerilogRequestLogging();
 using var scope = app.Services.CreateScope();
 await scope.ServiceProvider
         .GetRequiredService<TopicInitializer>()
-        .CreateMissingTopicsAsync();
+        .WaitForTopicsCreatedAsync(app.Lifetime.ApplicationStopping);
 
 app.UseBookingReminders();
 

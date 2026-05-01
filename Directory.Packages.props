@@ -37,6 +37,7 @@
     <PackageVersion Include="Hangfire.Core" Version="1.8.20" />
     <PackageVersion Include="Hangfire.PostgreSql" Version="1.20.12" />
     <PackageVersion Include="Hangfire.DynamicJobs" Version="0.3.0" />
+    <PackageVersion Include="MailKit" Version="4.16.0" />
     <PackageVersion Include="Microsoft.IdentityModel.Tokens" Version="6.31.0" />
     <PackageVersion Include="System.IdentityModel.Tokens.Jwt" Version="6.31.0" />
     <PackageVersion Include="Moq" Version="4.20.72" />

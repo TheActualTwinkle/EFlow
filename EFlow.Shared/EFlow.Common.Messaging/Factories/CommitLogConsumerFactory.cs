@@ -24,7 +24,8 @@ public class CommitLogConsumerFactory(IServiceProvider serviceProvider) : ICommi
             GroupId = consumerSettings.GroupId,
             AutoOffsetReset = consumerSettings.AutoOffsetReset,
             AllowAutoCreateTopics = false,
-            ReconnectBackoffMs = 1000
+            ReconnectBackoffMs = 1000,
+            EnableAutoCommit = false
         };
 
         return new CommitLogConsumer<TKey, TValue>(

@@ -5,6 +5,8 @@ using EFlow.Common.Infrastructure;
 using EFlow.Notifications.Application.BookingReminders;
 using EFlow.Notifications.Application.Email;
 using EFlow.Notifications.Application.Email.Interfaces;
+using EFlow.Notifications.Application.Email.Settings;
+using EFlow.Notifications.Application.EventHandlers;
 using EFlow.Notifications.Application.EventHandlers.Processors;
 using EFlow.Notifications.Application.EventHandlers.Processors.Interfaces;
 using EFlow.Notifications.Messaging.Booking.Settings;
@@ -24,8 +26,8 @@ public static class DependencyInjection
         public IServiceCollection AddNotificationServices(IConfiguration configuration)
         {
             services.AddSingleton<ISystemClock, SystemClock>();
-        
-            // TODO: add settings
+
+            services.Configure<SmtpSettings>(configuration.GetRequiredSection(SmtpSettings.SectionName));
             services.AddScoped<IEmailNotificationService, EmailNotificationService>();
         
             services.AddScoped<IIntegrationEventProcessor<SubmissionSlotCreatedIntegrationEvent>, SubmissionSlotCreatedIntegrationEventProcessor>();
@@ -33,6 +35,8 @@ public static class DependencyInjection
             services.AddScoped<IIntegrationEventProcessor<BookingCreatedIntegrationEvent>, BookingCreatedIntegrationEventProcessor>();
             services.AddScoped<IIntegrationEventProcessor<BookingCancelledIntegrationEvent>, BookingCancelledIntegrationEventProcessor>();
             services.AddScoped<BookingReminderJob>();
+            
+            services.AddHostedService<IntegrationEventHandler>();
 
             return services;
         }

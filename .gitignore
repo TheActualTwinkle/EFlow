@@ -373,6 +373,7 @@ FodyWeavers.xsd
 *.env
 !/docker/api-tests.env
 !/docker/debug.env
+!/docker/template.prod.env
 
 !/scripts/
 !/scripts/**/*
