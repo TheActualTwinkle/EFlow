@@ -14,27 +14,26 @@ public sealed class IntegrationEventHandler(
     IServiceProvider serviceProvider)
     : IHostedService
 {
-    private CancellationTokenSource _cts = null!;
+    private readonly List<IServiceScope> _scopes = [];
     
-    private IServiceScope _scope = null!;
+    private CancellationTokenSource _cts = null!;
     
     public async Task StartAsync(CancellationToken cancellationToken)
     {
         _cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-
-        _scope = serviceProvider.CreateScope();
         
-        await SubscribeAsync<SubmissionSlotCreatedIntegrationEvent>(KafkaTopics.SubmissionSlotCreatedTopic, cancellationToken);
-        await SubscribeAsync<SubmissionSlotUpdatedIntegrationEvent>(KafkaTopics.SubmissionSlotUpdatedTopic, cancellationToken);
-        await SubscribeAsync<BookingCreatedIntegrationEvent>(KafkaTopics.BookingCreatedTopic, cancellationToken);
-        await SubscribeAsync<BookingCancelledIntegrationEvent>(KafkaTopics.BookingCancelledTopic, cancellationToken);
+        await SubscribeAsync<SubmissionSlotCreatedIntegrationEvent>(KafkaTopics.SubmissionSlotCreatedTopic, _cts.Token);
+        await SubscribeAsync<SubmissionSlotUpdatedIntegrationEvent>(KafkaTopics.SubmissionSlotUpdatedTopic, _cts.Token);
+        await SubscribeAsync<BookingCreatedIntegrationEvent>(KafkaTopics.BookingCreatedTopic, _cts.Token);
+        await SubscribeAsync<BookingCancelledIntegrationEvent>(KafkaTopics.BookingCancelledTopic, _cts.Token);
     }
 
     public async Task StopAsync(CancellationToken cancellationToken)
     {
         await _cts.CancelAsync();
 
-        _scope.Dispose();
+        foreach (var serviceScope in _scopes)
+            serviceScope.Dispose();
     }
 
     private async Task SubscribeAsync<T>(
@@ -42,7 +41,11 @@ public sealed class IntegrationEventHandler(
         CancellationToken cancellationToken = new())
         where T : class, IKafkaMessage
     {
-        var consumer = _scope.ServiceProvider
+        var scope = serviceProvider.CreateScope();
+        
+        _scopes.Add(scope);
+        
+        var consumer = scope.ServiceProvider
             .GetRequiredService<ICommitLogConsumerFactory>()
             .Create<Guid, T>(GetKafkaConsumerSettings());
 
@@ -50,7 +53,7 @@ public sealed class IntegrationEventHandler(
             topic,
             async (message, ct) =>
             {
-                await _scope.ServiceProvider
+                await scope.ServiceProvider
                     .GetRequiredService<IIntegrationEventProcessor<T>>()
                     .ProcessAsync(message, ct);
 

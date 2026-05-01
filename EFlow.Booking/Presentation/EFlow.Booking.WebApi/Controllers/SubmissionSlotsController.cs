@@ -19,12 +19,12 @@ public class SubmissionSlotsController(ISender sender) : ControllerBase
     [Authorize(Roles = $"{Identity.Roles.Admin},{Identity.Roles.Teacher}")]
     public async Task<IActionResult> CreateSlot([FromBody] CreateSubmissionSlotRequest request, CancellationToken cancellationToken)
     {
-        if (!User.IsInRole(Identity.Roles.Admin))
-            if (request.TeacherId.ToString() != User.FindFirst(ClaimTypes.NameIdentifier)?.Value)
-                return Problem(
-                    title: "Forbidden",
-                    detail: "You can only create slots for yourself.",
-                    statusCode: StatusCodes.Status403Forbidden);
+        if (!User.IsInRole(Identity.Roles.Admin) &&
+            request.TeacherId.ToString() != User.FindFirst(ClaimTypes.NameIdentifier)?.Value)
+            return Problem(
+                title: "Forbidden",
+                detail: "You can only create slots for yourself.",
+                statusCode: StatusCodes.Status403Forbidden);
 
         var command = new CreateSubmissionSlotCommand
         {
