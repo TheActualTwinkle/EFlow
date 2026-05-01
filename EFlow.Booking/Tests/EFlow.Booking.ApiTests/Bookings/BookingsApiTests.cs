@@ -5,7 +5,7 @@ using EFlow.Booking.ApiTests.Infrastructure.Collections;
 using EFlow.Booking.ApiTests.Infrastructure.Fixtures;
 using EFlow.Booking.ApiTests.Infrastructure.Scenarios;
 using EFlow.Booking.ApiTests.Infrastructure.Sessions;
-using EFlow.Booking.Application.BookingRecords;
+using EFlow.Booking.Contracts.BookingRecords;
 using EFlow.Booking.WebApi.Contracts.Bookings;
 using FluentAssertions;
 
@@ -33,8 +33,10 @@ public sealed class BookingsApiTests(ApiTestStackFixture fixture)
 
             // Assert
             booking.Id.Should().Be(bookingId);
-            booking.StudentId.Should().Be(context.Student1Id);
-            booking.SlotId.Should().Be(context.SlotId);
+            booking.Student.Should().NotBeNull();
+            booking.Student!.Id.Should().Be(context.Student1Id);
+            booking.Slot.Should().NotBeNull();
+            booking.Slot!.Id.Should().Be(context.SlotId);
             booking.CreatedAt.Should().BeAfter(DateTime.UtcNow.AddMinutes(-10));
         });
 
@@ -50,9 +52,9 @@ public sealed class BookingsApiTests(ApiTestStackFixture fixture)
 
             // Assert
             response.StatusCode.Should().Be(HttpStatusCode.OK);
-            var bookings = (await context.AdminSession.ReadAsync<BookingRecordDto[]>(response))!;
-            bookings.Should().Contain(x => x.Id == context.Booking1Id && x.StudentId == context.Student1Id);
-            bookings.Should().Contain(x => x.Id == context.Booking2Id && x.StudentId == context.Student2Id);
+            var bookings = (await context.AdminSession.ReadAsync<BookingRecordView[]>(response))!;
+            bookings.Should().Contain(x => x.Id == context.Booking1Id && x.Student != null && x.Student.Id == context.Student1Id);
+            bookings.Should().Contain(x => x.Id == context.Booking2Id && x.Student != null && x.Student.Id == context.Student2Id);
         });
 
     /// <summary>
@@ -67,7 +69,7 @@ public sealed class BookingsApiTests(ApiTestStackFixture fixture)
 
             // Assert
             response.StatusCode.Should().Be(HttpStatusCode.OK);
-            var bookings = (await context.Student1Session.ReadAsync<BookingRecordDto[]>(response))!;
+            var bookings = (await context.Student1Session.ReadAsync<BookingRecordView[]>(response))!;
             bookings.Should().ContainSingle(x => x.Id == context.Booking1Id);
         });
 
@@ -131,7 +133,7 @@ public sealed class BookingsApiTests(ApiTestStackFixture fixture)
 
             // Assert
             response.StatusCode.Should().Be(HttpStatusCode.OK);
-            var bookings = (await context.AdminSession.ReadAsync<BookingRecordDto[]>(response))!;
+            var bookings = (await context.AdminSession.ReadAsync<BookingRecordView[]>(response))!;
             bookings.Should().Contain(x => x.Id == context.Booking1Id);
             bookings.Should().Contain(x => x.Id == context.Booking2Id);
         });

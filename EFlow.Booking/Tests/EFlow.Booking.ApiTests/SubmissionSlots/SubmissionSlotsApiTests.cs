@@ -5,6 +5,7 @@ using EFlow.Booking.ApiTests.Infrastructure.Fixtures;
 using EFlow.Booking.ApiTests.Infrastructure.Scenarios;
 using EFlow.Booking.ApiTests.Infrastructure.Sessions;
 using EFlow.Booking.ApiTests.SubmissionSlots.Support;
+using EFlow.Booking.Contracts.SubmissionSlots;
 using EFlow.Booking.Application.SubmissionSlots;
 using EFlow.Booking.Domain.Notifications;
 using EFlow.Common.IntegrationEvents.Booking.Models;
@@ -35,8 +36,10 @@ public sealed class SubmissionSlotsApiTests(ApiTestStackFixture fixture)
 
             // Assert
             slot.Id.Should().Be(context.SlotId);
-            slot.SubjectId.Should().Be(context.SubjectId);
-            slot.TeacherId.Should().Be(context.TeacherId);
+            slot.Subject.Should().NotBeNull();
+            slot.Subject!.Id.Should().Be(context.SubjectId);
+            slot.Teacher.Should().NotBeNull();
+            slot.Teacher!.Id.Should().Be(context.TeacherId);
             slot.StartTime.Should().Be(context.SlotStart);
             slot.EndTime.Should().Be(context.SlotStart.AddHours(1));
             slot.MaxStudents.Should().Be(5);
@@ -44,9 +47,9 @@ public sealed class SubmissionSlotsApiTests(ApiTestStackFixture fixture)
             slot.Comment.Should().Be("API test slot");
             bySubjectResponse.StatusCode.Should().Be(HttpStatusCode.OK);
             availableResponse.StatusCode.Should().Be(HttpStatusCode.OK);
-            var slotsBySubject = (await context.AdminSession.ReadAsync<SubmissionSlotDto[]>(bySubjectResponse))!;
-            var availableSlots = (await context.AdminSession.ReadAsync<SubmissionSlotDto[]>(availableResponse))!;
-            slotsBySubject.Should().Contain(x => x.Id == context.SlotId && x.SubjectId == context.SubjectId);
+            var slotsBySubject = (await context.AdminSession.ReadAsync<SubmissionSlotView[]>(bySubjectResponse))!;
+            var availableSlots = (await context.AdminSession.ReadAsync<SubmissionSlotView[]>(availableResponse))!;
+            slotsBySubject.Should().Contain(x => x.Id == context.SlotId && x.Subject != null && x.Subject.Id == context.SubjectId);
             availableSlots.Should().Contain(x => x.Id == context.SlotId);
         });
 

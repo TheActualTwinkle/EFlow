@@ -52,5 +52,15 @@ public sealed class SubmissionSlotQueryService(ApplicationDbContext context) : I
                 .Where(t => t.Id == submissionSlot.TeacherId)
                 .Select(t => t.ToTeacherView())
                 .FirstOrDefault()!,
+            AdmittedStudents = context.Students
+                .Where(student => submissionSlot.Admissions
+                    .Select(admission => admission.StudentId)
+                    .Contains(student.Id))
+                .Select(student => student.ToStudentView())
+                .ToList(),
+            AllowedGroups = context.Groups
+                .Where(group => submissionSlot.AllowedGroupIds.Contains(group.Id))
+                .Select(group => group.ToGroupView())
+                .ToList()
         };
 }

@@ -451,10 +451,18 @@ public class BookingNotificationHandlersIntegrationTests
         return mock.Object;
     }
 
-    private sealed class FakeUnitOfWork(IReadOnlyDictionary<Type, IRepository> repositories) : IUnitOfWork
+    private sealed class FakeUnitOfWork(
+        IReadOnlyDictionary<Type, IRepository> repositories,
+        IReadOnlyDictionary<Type, IQueryService>? queryServices = null) : IUnitOfWork
     {
+        private static readonly IReadOnlyDictionary<Type, IQueryService> EmptyQueryServices =
+            new Dictionary<Type, IQueryService>();
+
         public T GetRepository<T>() where T : IRepository =>
             (T)repositories[typeof(T)];
+
+        public T GetQueryService<T>() where T : IQueryService =>
+            (T)(queryServices ?? EmptyQueryServices)[typeof(T)];
 
         public Task BeginTransactionAsync(
             IsolationLevel isolationLevel = IsolationLevel.ReadCommitted,

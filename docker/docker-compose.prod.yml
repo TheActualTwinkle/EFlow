@@ -94,13 +94,3 @@ services:
       Smtp__SecureSocketOptions: ${SMTP_SECURE_SOCKET_OPTIONS:-Auto}
     ports:
       - "${NOTIFICATIONS_API_PORT:-8082}:8082"
-
-  web-ui:
-    build:
-      context: ../UI
-      dockerfile: Dockerfile
-    restart: unless-stopped
-    depends_on:
-      - booking-api
-    ports:
-      - "8085:8085"

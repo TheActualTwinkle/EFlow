@@ -5,10 +5,10 @@ using EFlow.Booking.ApiTests.Infrastructure.Collections;
 using EFlow.Booking.ApiTests.Infrastructure.Fixtures;
 using EFlow.Booking.ApiTests.Infrastructure.Scenarios;
 using EFlow.Booking.ApiTests.Infrastructure.Sessions;
-using EFlow.Booking.Application.Groups;
-using EFlow.Booking.Application.Students;
-using EFlow.Booking.Application.Subjects;
-using EFlow.Booking.Application.Teachers;
+using EFlow.Booking.Contracts.Groups;
+using EFlow.Booking.Contracts.Students;
+using EFlow.Booking.Contracts.Subjects;
+using EFlow.Booking.Contracts.Teachers;
 using FluentAssertions;
 
 namespace EFlow.Booking.ApiTests.Catalog;
@@ -36,7 +36,7 @@ public sealed class CatalogApiTests(ApiTestStackFixture fixture)
             group.Id.Should().Be(context.GroupId);
             group.Name.Should().Be(context.GroupName);
             response.StatusCode.Should().Be(HttpStatusCode.OK);
-            var groups = (await context.AdminSession.ReadAsync<GroupDto[]>(response))!;
+            var groups = (await context.AdminSession.ReadAsync<GroupView[]>(response))!;
             groups.Should().Contain(x => x.Id == context.GroupId && x.Name == context.GroupName);
         });
 
@@ -61,7 +61,7 @@ public sealed class CatalogApiTests(ApiTestStackFixture fixture)
             teacher.BirthDate.Should().Be(new DateOnly(1990, 01, 01));
             teacher.CreatedAt.Should().NotBeNull();
             response.StatusCode.Should().Be(HttpStatusCode.OK);
-            var teachers = (await context.AdminSession.ReadAsync<TeacherDto[]>(response))!;
+            var teachers = (await context.AdminSession.ReadAsync<TeacherView[]>(response))!;
             teachers.Should().Contain(x => x.Id == context.TeacherId && x.FirstName == "Ivan" && x.LastName == "Petrov");
         });
 
@@ -80,15 +80,16 @@ public sealed class CatalogApiTests(ApiTestStackFixture fixture)
 
             // Assert
             student.Id.Should().Be(context.StudentId);
-            student.GroupId.Should().Be(context.GroupId);
+            student.Group.Should().NotBeNull();
+            student.Group!.Id.Should().Be(context.GroupId);
             student.FirstName.Should().Be("Petr");
             student.LastName.Should().Be("Sidorov");
             student.MiddleName.Should().Be("M");
             student.BirthDate.Should().Be(new DateOnly(2004, 01, 01));
             student.CreatedAt.Should().BeAfter(DateTime.UtcNow.AddMinutes(-10));
             response.StatusCode.Should().Be(HttpStatusCode.OK);
-            var students = (await context.AdminSession.ReadAsync<StudentDto[]>(response))!;
-            students.Should().Contain(x => x.Id == context.StudentId && x.GroupId == context.GroupId);
+            var students = (await context.AdminSession.ReadAsync<StudentView[]>(response))!;
+            students.Should().Contain(x => x.Id == context.StudentId && x.Group != null && x.Group.Id == context.GroupId);
         });
 
     /// <summary>
@@ -107,11 +108,13 @@ public sealed class CatalogApiTests(ApiTestStackFixture fixture)
             // Assert
             subject.Id.Should().Be(context.SubjectId);
             subject.Name.Should().Be(context.SubjectName);
-            subject.TeacherId.Should().Be(context.TeacherId);
-            subject.GroupIds.Should().BeEquivalentTo([context.GroupId]);
+            subject.Teacher.Should().NotBeNull();
+            subject.Teacher!.Id.Should().Be(context.TeacherId);
+            subject.Groups.Should().NotBeNull();
+            subject.Groups!.Select(x => x.Id).Should().BeEquivalentTo([context.GroupId]);
             response.StatusCode.Should().Be(HttpStatusCode.OK);
-            var subjects = (await context.AdminSession.ReadAsync<SubjectDto[]>(response))!;
-            subjects.Should().Contain(x => x.Id == context.SubjectId && x.TeacherId == context.TeacherId);
+            var subjects = (await context.AdminSession.ReadAsync<SubjectView[]>(response))!;
+            subjects.Should().Contain(x => x.Id == context.SubjectId && x.Teacher != null && x.Teacher.Id == context.TeacherId);
         });
 
     /// <summary>
