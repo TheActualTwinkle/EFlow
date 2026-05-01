@@ -18,22 +18,38 @@ builder.Configuration
     .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", true, true)
     .AddEnvironmentVariables();
 
+if (builder.Environment.IsOpenApiGenerator())
+{
+    builder.Services.AddEndpointsApiExplorer();
+    builder.Services.AddOpenApi();
+    
+    builder.Services.AddControllers();
+
+    await builder.Build().RunAsync();
+
+    return;
+}
+
 builder.Host.UseSerilog((_, configuration) => configuration
     .ReadFrom.Configuration(builder.Configuration));
 
 builder.Services.AddCors(options =>
 {
+    var allowedOrigins = builder.Configuration
+                             .GetRequiredSection("Cors:AllowedOrigins")
+                             .Get<string[]>()
+                         ?? throw new InvalidOperationException("Allowed origins not configured");
+    
     options.AddPolicy(
-        "AllowAll",
+        "AllowFrontend",
         policyBuilder => policyBuilder
-            .AllowAnyOrigin()
+            .WithOrigins(allowedOrigins)
+            .AllowCredentials()
             .AllowAnyMethod()
             .AllowAnyHeader());
 });
 
 builder.Services.ConfigureIdentity(builder.Configuration);
-
-builder.Services.AddMapping();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddOpenApi();
@@ -57,9 +73,10 @@ var app = builder.Build();
 
 await app.ApplyDbMigrationsAsync();
 
+app.MapOpenApi();
+
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
     app.MapScalarApiReference();
 
     app.UseHangfireDashboard(
@@ -72,7 +89,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-app.UseCors("AllowAll");
+app.UseCors("AllowFrontend");
 
 app.MapHealthChecks(
     "/health", new HealthCheckOptions

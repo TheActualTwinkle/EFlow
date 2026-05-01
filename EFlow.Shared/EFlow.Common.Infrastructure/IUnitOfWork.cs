@@ -6,6 +6,8 @@ namespace EFlow.Common.Infrastructure;
 public interface IUnitOfWork : IAsyncDisposable
 {
     public T GetRepository<T>() where T : IRepository;
+    
+    public T GetQueryService<T>() where T : IQueryService;
 
     public Task BeginTransactionAsync(
         IsolationLevel isolationLevel = IsolationLevel.ReadCommitted,

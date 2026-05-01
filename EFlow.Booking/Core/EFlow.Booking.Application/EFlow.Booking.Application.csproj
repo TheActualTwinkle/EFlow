@@ -4,8 +4,6 @@
         <PackageReference Include="FluentResults"/>
         <PackageReference Include="FluentValidation"/>
         <PackageReference Include="FluentValidation.DependencyInjectionExtensions"/>
-        <PackageReference Include="Mapster"/>
-        <PackageReference Include="Mapster.DependencyInjection"/>
         <PackageReference Include="MediatR"/>
         <PackageReference Include="MemoryPack"/>
         <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" />
@@ -14,6 +12,7 @@
     <ItemGroup>
         <ProjectReference Include="..\..\..\EFlow.Shared\EFlow.Common.Infrastructure\EFlow.Common.Infrastructure.csproj" />
         <ProjectReference Include="..\..\..\EFlow.Shared\EFlow.Common.IntegrationEvents\EFlow.Common.IntegrationEvents.csproj" />
+        <ProjectReference Include="..\EFlow.Booking.Contracts\EFlow.Booking.Contracts.csproj" />
         <ProjectReference Include="..\EFlow.Booking.Domain\EFlow.Booking.Domain.csproj"/>
     </ItemGroup>
 

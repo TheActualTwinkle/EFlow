@@ -29,12 +29,12 @@ public class AuthController(
             return Unauthorized("Invalid credentials");
 
         if (await userManager.IsLockedOutAsync(user))
-            return Unauthorized($"Account is locked until {user.LockoutEnd:O}");
+            return StatusCode(StatusCodes.Status423Locked, $"Account is locked until {user.LockoutEnd:O}");
 
         var result = await signInManager.CheckPasswordSignInAsync(user, request.Password, true);
 
         if (result.IsLockedOut)
-            return Unauthorized($"Account is locked until {user.LockoutEnd:O}");
+            return StatusCode(StatusCodes.Status423Locked, $"Account is locked until {user.LockoutEnd:O}");
 
         if (!result.Succeeded)
             return Unauthorized("Invalid credentials");

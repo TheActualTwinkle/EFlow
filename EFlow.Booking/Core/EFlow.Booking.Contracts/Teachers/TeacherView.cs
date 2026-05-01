@@ -1,6 +1,6 @@
-namespace EFlow.Booking.Application.Teachers;
+namespace EFlow.Booking.Contracts.Teachers;
 
-public record TeacherDto
+public sealed record TeacherView
 {
     public required Guid Id { get; init; }
 

@@ -1,11 +1,11 @@
-namespace EFlow.Booking.Application.Students;
+using EFlow.Booking.Contracts.Groups;
 
-public record StudentDto
+namespace EFlow.Booking.Contracts.Students;
+
+public sealed record StudentView
 {
     public required Guid Id { get; init; }
-
-    public required Guid GroupId { get; init; }
-
+    
     public required string FirstName { get; init; }
 
     public required string LastName { get; init; }
@@ -15,4 +15,6 @@ public record StudentDto
     public required DateOnly BirthDate { get; init; }
 
     public required DateTime CreatedAt { get; init; }
+    
+    public GroupView? Group { get; init; }
 }

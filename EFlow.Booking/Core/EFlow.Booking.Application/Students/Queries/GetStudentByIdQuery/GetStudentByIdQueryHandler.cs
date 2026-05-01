@@ -1,20 +1,20 @@
 using EFlow.Booking.Application.Common.Errors;
 using EFlow.Booking.Application.Common.Errors.Abstractions;
+using EFlow.Booking.Contracts.Students;
 using EFlow.Booking.Domain.Students;
 using EFlow.Common.Infrastructure;
 using FluentResults;
-using Mapster;
 using MediatR;
 
 namespace EFlow.Booking.Application.Students.Queries;
 
 public class GetStudentByIdQueryHandler(IUnitOfWork unitOfWork)
-    : IRequestHandler<GetStudentByIdQuery, Result<StudentDto>>
+    : IRequestHandler<GetStudentByIdQuery, Result<StudentView>>
 {
-    public async Task<Result<StudentDto>> Handle(GetStudentByIdQuery request, CancellationToken cancellationToken)
+    public async Task<Result<StudentView>> Handle(GetStudentByIdQuery request, CancellationToken cancellationToken)
     {
         var student = await unitOfWork
-            .GetRepository<IStudentRepository>()
+            .GetQueryService<IStudentQueryService>()
             .GetByIdAsync(new StudentId(request.Id), cancellationToken);
 
         if (student is null)
@@ -23,6 +23,6 @@ public class GetStudentByIdQueryHandler(IUnitOfWork unitOfWork)
                     .WithMessage("Student not found")
                     .WithId(request.Id));
 
-        return student.Adapt<StudentDto>();
+        return Result.Ok(student);
     }
 }

@@ -1,6 +1,6 @@
-namespace EFlow.Booking.Application.Groups;
+namespace EFlow.Booking.Contracts.Groups;
 
-public record GroupDto
+public sealed record GroupView
 {
     public required Guid Id { get; init; }
 

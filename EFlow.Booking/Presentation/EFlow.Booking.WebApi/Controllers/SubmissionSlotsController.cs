@@ -69,7 +69,7 @@ public class SubmissionSlotsController(ISender sender) : ControllerBase
     }
 
     [HttpGet("reminder-snapshot")]
-    [AllowAnonymous]
+    [AllowAnonymous] // TODO: фиксануть авторизацию
     public async Task<IActionResult> GetReminderSnapshot(CancellationToken cancellationToken)
     {
         var result = await sender.Send(new GetSubmissionSlotReminderSnapshotQuery(), cancellationToken);
@@ -115,7 +115,7 @@ public class SubmissionSlotsController(ISender sender) : ControllerBase
             if (getSlotResult.IsFailed)
                 return getSlotResult.Errors[0].ToProblemDetails();
             
-            if (getSlotResult.Value.TeacherId.ToString() != User.FindFirst(ClaimTypes.NameIdentifier)?.Value)
+            if (getSlotResult.Value.Teacher!.Id.ToString() != User.FindFirst(ClaimTypes.NameIdentifier)?.Value)
                 return Problem(
                     title: "Forbidden",
                     detail: "You can only update your own slots.",
@@ -154,7 +154,7 @@ public class SubmissionSlotsController(ISender sender) : ControllerBase
             if (getSlotResult.IsFailed)
                 return NoContent();
             
-            if (getSlotResult.Value.TeacherId.ToString() != User.FindFirst(ClaimTypes.NameIdentifier)?.Value)
+            if (getSlotResult.Value.Teacher!.Id.ToString() != User.FindFirst(ClaimTypes.NameIdentifier)?.Value)
                 return Problem(
                     title: "Forbidden",
                     detail: "You can only delete your own slots.",
@@ -182,7 +182,7 @@ public class SubmissionSlotsController(ISender sender) : ControllerBase
             if (getSlotResult.IsFailed)
                 return getSlotResult.Errors[0].ToProblemDetails();
             
-            if (getSlotResult.Value.TeacherId.ToString() != User.FindFirst(ClaimTypes.NameIdentifier)?.Value)
+            if (getSlotResult.Value.Teacher!.Id.ToString() != User.FindFirst(ClaimTypes.NameIdentifier)?.Value)
                 return Problem(
                     title: "Forbidden",
                     detail: "You can only add admissions to your own slots.",
@@ -216,7 +216,7 @@ public class SubmissionSlotsController(ISender sender) : ControllerBase
             if (getSlotResult.IsFailed)
                 return getSlotResult.Errors[0].ToProblemDetails();
             
-            if (getSlotResult.Value.TeacherId.ToString() != User.FindFirst(ClaimTypes.NameIdentifier)?.Value)
+            if (getSlotResult.Value.Teacher!.Id.ToString() != User.FindFirst(ClaimTypes.NameIdentifier)?.Value)
                 return Problem(
                     title: "Forbidden",
                     detail: "You can only remove admissions to your own slots.",

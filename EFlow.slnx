@@ -3,6 +3,7 @@
     <Folder Name="/EFlow.Booking/Core/">
         <Project Path="EFlow.Booking/Core/EFlow.Booking.Application/EFlow.Booking.Application.csproj" />
         <Project Path="EFlow.Booking/Core/EFlow.Booking.Domain/EFlow.Booking.Domain.csproj" />
+        <Project Path="EFlow.Booking\Core\EFlow.Booking.Contracts\EFlow.Booking.Contracts.csproj" />
     </Folder>
     <Folder Name="/EFlow.Booking/Infrastructure/">
         <Project Path="EFlow.Booking/Infrastructure/EFlow.Booking.Messaging/EFlow.Booking.Messaging.csproj" />

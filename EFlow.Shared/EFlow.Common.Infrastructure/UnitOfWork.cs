@@ -27,6 +27,15 @@ public sealed class UnitOfWork(
         return (T)serviceProvider.GetRequiredService(type);
     }
 
+    public T GetQueryService<T>() where T : IQueryService
+    {
+        ObjectDisposedException.ThrowIf(_disposed, nameof(UnitOfWork));
+
+        var type = typeof(T);
+
+        return (T)serviceProvider.GetRequiredService(type);
+    }
+
     public async Task BeginTransactionAsync(
         IsolationLevel isolationLevel = IsolationLevel.ReadCommitted,
         CancellationToken cancellationToken = new())
