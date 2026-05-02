@@ -1,4 +1,3 @@
-using System.Linq.Expressions;
 using EFlow.Booking.Contracts.SubmissionSlots;
 using EFlow.Booking.Domain.Subjects;
 using EFlow.Booking.Domain.SubmissionSlots;
@@ -10,57 +9,116 @@ namespace EFlow.Booking.Persistence.QueryServices;
 
 public sealed class SubmissionSlotQueryService(ApplicationDbContext context) : ISubmissionSlotQueryService
 {
-    public async Task<IEnumerable<SubmissionSlotView>> GetAllAsync(CancellationToken cancellationToken = new()) =>
-        await context.SubmissionSlots
-            .Select(MapToView())
+    public async Task<IEnumerable<SubmissionSlotView>> GetAllAsync(CancellationToken cancellationToken = new())
+    {
+        var slots = await QuerySlots()
             .ToListAsync(cancellationToken);
 
-    public async Task<SubmissionSlotView?> GetByIdAsync(SubmissionSlotId id, CancellationToken cancellationToken = new()) =>
-        await context.SubmissionSlots
-            .Where(s => s.Id == id)
-            .Select(MapToView())
-            .FirstOrDefaultAsync(cancellationToken);
+        return await MapToViewsAsync(slots, cancellationToken);
+    }
 
-    public async Task<IEnumerable<SubmissionSlotView>> GetBySubjectIdAsync(SubjectId subjectId, CancellationToken cancellationToken = new()) =>
-        await context.SubmissionSlots
-            .Where(s => s.SubjectId == subjectId)
-            .Select(MapToView())
+    public async Task<SubmissionSlotView?> GetByIdAsync(SubmissionSlotId id, CancellationToken cancellationToken = new())
+    {
+        var slots = await QuerySlots()
+            .Where(slot => slot.Id == id)
             .ToListAsync(cancellationToken);
 
-    public async Task<IEnumerable<SubmissionSlotView>> GetAvailableSlotsAsync(DateTime fromDate, CancellationToken cancellationToken = new()) =>
-        await context.SubmissionSlots
-            .Where(s => s.StartTime >= fromDate)
+        return (await MapToViewsAsync(slots, cancellationToken)).FirstOrDefault();
+    }
+
+    public async Task<IEnumerable<SubmissionSlotView>> GetBySubjectIdAsync(SubjectId subjectId, CancellationToken cancellationToken = new())
+    {
+        var slots = await QuerySlots()
+            .Where(slot => slot.SubjectId == subjectId)
+            .ToListAsync(cancellationToken);
+
+        return await MapToViewsAsync(slots, cancellationToken);
+    }
+
+    public async Task<IEnumerable<SubmissionSlotView>> GetAvailableSlotsAsync(DateTime fromDate, CancellationToken cancellationToken = new())
+    {
+        var slots = await QuerySlots()
+            .Where(slot => slot.StartTime >= fromDate)
             // TODO: filter out slots that are already fully booked
-            .Select(MapToView())
             .ToListAsync(cancellationToken);
 
-    private Expression<Func<SubmissionSlot, SubmissionSlotView>> MapToView() =>
-        submissionSlot => new SubmissionSlotView
-        {
-            Id = submissionSlot.Id.Value,
-            StartTime = submissionSlot.StartTime,
-            EndTime = submissionSlot.EndTime,
-            MaxStudents = submissionSlot.MaxStudents,
-            AllowAllGroups = submissionSlot.AllowAllGroups,
-            Location = submissionSlot.Location,
-            Comment = submissionSlot.Comment,
-            Subject = context.Subjects
-                .Where(s => s.Id == submissionSlot.SubjectId)
-                .Select(s => s.ToSubjectView())
-                .FirstOrDefault()!,
-            Teacher = context.Teachers
-                .Where(t => t.Id == submissionSlot.TeacherId)
-                .Select(t => t.ToTeacherView())
-                .FirstOrDefault()!,
-            AdmittedStudents = context.Students
-                .Where(student => submissionSlot.Admissions
+        return await MapToViewsAsync(slots, cancellationToken);
+    }
+
+    private IQueryable<SubmissionSlot> QuerySlots() =>
+        context.SubmissionSlots
+            .AsNoTracking()
+            .Include(slot => slot.AllowedGroupIds)
+            .Include(slot => slot.Admissions);
+
+    private async Task<IReadOnlyCollection<SubmissionSlotView>> MapToViewsAsync(
+        IReadOnlyCollection<SubmissionSlot> slots,
+        CancellationToken cancellationToken)
+    {
+        if (slots.Count == 0)
+            return [];
+
+        var subjectIds = slots
+            .Select(slot => slot.SubjectId)
+            .Distinct()
+            .ToArray();
+
+        var teacherIds = slots
+            .Select(slot => slot.TeacherId)
+            .Distinct()
+            .ToArray();
+
+        var allowedGroupIds = slots
+            .SelectMany(slot => slot.AllowedGroupIds)
+            .Distinct()
+            .ToArray();
+
+        var admittedStudentIds = slots
+            .SelectMany(slot => slot.Admissions.Select(admission => admission.StudentId))
+            .Distinct()
+            .ToArray();
+
+        var subjects = await context.Subjects
+            .AsNoTracking()
+            .Where(subject => subjectIds.AsEnumerable().Contains(subject.Id))
+            .ToDictionaryAsync(subject => subject.Id, cancellationToken);
+
+        var teachers = await context.Teachers
+            .AsNoTracking()
+            .Where(teacher => teacherIds.AsEnumerable().Contains(teacher.Id))
+            .ToDictionaryAsync(teacher => teacher.Id, cancellationToken);
+
+        var allowedGroups = await context.Groups
+            .AsNoTracking()
+            .Where(group => allowedGroupIds.AsEnumerable().Contains(group.Id))
+            .ToDictionaryAsync(group => group.Id, cancellationToken);
+
+        var admittedStudents = await context.Students
+            .AsNoTracking()
+            .Where(student => admittedStudentIds.AsEnumerable().Contains(student.Id))
+            .ToDictionaryAsync(student => student.Id, cancellationToken);
+
+        return slots
+            .Select(slot =>
+            {
+                subjects.TryGetValue(slot.SubjectId, out var subject);
+                teachers.TryGetValue(slot.TeacherId, out var teacher);
+
+                var slotAllowedGroups = slot.AllowedGroupIds
+                    .Where(allowedGroups.ContainsKey)
+                    .Select(groupId => allowedGroups[groupId]);
+
+                var slotAdmittedStudents = slot.Admissions
                     .Select(admission => admission.StudentId)
-                    .Contains(student.Id))
-                .Select(student => student.ToStudentView())
-                .ToList(),
-            AllowedGroups = context.Groups
-                .Where(group => submissionSlot.AllowedGroupIds.Contains(group.Id))
-                .Select(group => group.ToGroupView())
-                .ToList()
-        };
+                    .Where(admittedStudents.ContainsKey)
+                    .Select(studentId => admittedStudents[studentId]);
+
+                return slot.ToSubmissionSlotView(
+                    teacher,
+                    subject,
+                    slotAllowedGroups,
+                    slotAdmittedStudents);
+            })
+            .ToArray();
+    }
 }

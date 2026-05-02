@@ -1,4 +1,3 @@
-using EFlow.Booking.Domain.Groups;
 using EFlow.Booking.Domain.Teachers;
 using EFlow.Booking.Domain.Subjects;
 using Microsoft.EntityFrameworkCore;
@@ -8,6 +7,8 @@ namespace EFlow.Booking.Persistence.EntityTypeConfiguration;
 
 public class SubjectConfiguration : IEntityTypeConfiguration<Subject>
 {
+    private const string GroupIdValuePropertyName = "Value";
+
     public void Configure(EntityTypeBuilder<Subject> builder)
     {
         builder.ToTable("subjects");
@@ -44,10 +45,10 @@ public class SubjectConfiguration : IEntityTypeConfiguration<Subject>
                     .HasColumnName("group_id")
                     .IsRequired();
 
-                groupsBuilder.HasKey("subject_id", nameof(GroupId.Value))
+                groupsBuilder.HasKey("subject_id", GroupIdValuePropertyName)
                     .HasName("pk_subject_groups");
 
-                groupsBuilder.HasIndex(nameof(GroupId.Value))
+                groupsBuilder.HasIndex(GroupIdValuePropertyName)
                     .HasDatabaseName("ix_subject_groups_group_id");
             });
 

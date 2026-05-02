@@ -1,4 +1,3 @@
-using EFlow.Booking.Domain.Groups;
 using EFlow.Booking.Domain.SubmissionSlots;
 using EFlow.Booking.Domain.Subjects;
 using EFlow.Booking.Domain.Teachers;
@@ -9,6 +8,8 @@ namespace EFlow.Booking.Persistence.EntityTypeConfiguration;
 
 public class SubmissionSlotConfiguration : IEntityTypeConfiguration<SubmissionSlot>
 {
+    private const string GroupIdValuePropertyName = "Value";
+
     public void Configure(EntityTypeBuilder<SubmissionSlot> builder)
     {
         builder.ToTable(
@@ -74,10 +75,10 @@ public class SubmissionSlotConfiguration : IEntityTypeConfiguration<SubmissionSl
                     .HasColumnName("group_id")
                     .IsRequired();
 
-                allowedGroupsBuilder.HasKey("submission_slot_id", nameof(GroupId.Value))
+                allowedGroupsBuilder.HasKey("submission_slot_id", GroupIdValuePropertyName)
                     .HasName("pk_submission_slot_allowed_groups");
 
-                allowedGroupsBuilder.HasIndex(nameof(GroupId.Value))
+                allowedGroupsBuilder.HasIndex(GroupIdValuePropertyName)
                     .HasDatabaseName("ix_submission_slot_allowed_groups_group_id");
             });
 

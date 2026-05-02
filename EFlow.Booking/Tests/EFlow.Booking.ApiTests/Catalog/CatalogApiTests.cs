@@ -103,6 +103,7 @@ public sealed class CatalogApiTests(ApiTestStackFixture fixture)
             var subject = await scenario.GetSubjectAsync(context.AdminSession, context.SubjectId);
 
             // Act
+            var allResponse = await context.AdminSession.GetAsync("/api/subjects");
             var response = await context.AdminSession.GetAsync($"/api/subjects/by-teacher/{context.TeacherId}");
 
             // Assert
@@ -112,8 +113,16 @@ public sealed class CatalogApiTests(ApiTestStackFixture fixture)
             subject.Teacher!.Id.Should().Be(context.TeacherId);
             subject.Groups.Should().NotBeNull();
             subject.Groups!.Select(x => x.Id).Should().BeEquivalentTo([context.GroupId]);
+            allResponse.StatusCode.Should().Be(HttpStatusCode.OK);
             response.StatusCode.Should().Be(HttpStatusCode.OK);
+            var allSubjects = (await context.AdminSession.ReadAsync<SubjectView[]>(allResponse))!;
             var subjects = (await context.AdminSession.ReadAsync<SubjectView[]>(response))!;
+            allSubjects.Should().Contain(x =>
+                x.Id == context.SubjectId &&
+                x.Teacher != null &&
+                x.Teacher.Id == context.TeacherId &&
+                x.Groups != null &&
+                x.Groups.Any(g => g.Id == context.GroupId));
             subjects.Should().Contain(x => x.Id == context.SubjectId && x.Teacher != null && x.Teacher.Id == context.TeacherId);
         });
 
