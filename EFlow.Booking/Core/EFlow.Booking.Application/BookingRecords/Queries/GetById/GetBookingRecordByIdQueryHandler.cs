@@ -1,20 +1,20 @@
 using EFlow.Booking.Application.Common.Errors;
 using EFlow.Booking.Application.Common.Errors.Abstractions;
+using EFlow.Booking.Contracts.BookingRecords;
 using EFlow.Booking.Domain.BookingRecords;
 using EFlow.Common.Infrastructure;
 using FluentResults;
-using Mapster;
 using MediatR;
 
 namespace EFlow.Booking.Application.BookingRecords.Queries;
 
 public class GetBookingRecordByIdQueryHandler(IUnitOfWork unitOfWork)
-    : IRequestHandler<GetBookingRecordByIdQuery, Result<BookingRecordDto>>
+    : IRequestHandler<GetBookingRecordByIdQuery, Result<BookingRecordView>>
 {
-    public async Task<Result<BookingRecordDto>> Handle(GetBookingRecordByIdQuery request, CancellationToken cancellationToken)
+    public async Task<Result<BookingRecordView>> Handle(GetBookingRecordByIdQuery request, CancellationToken cancellationToken)
     {
         var booking = await unitOfWork
-            .GetRepository<IBookingRecordRepository>()
+            .GetQueryService<IBookingRecordQueryService>()
             .GetByIdAsync(new BookingRecordId(request.Id), cancellationToken);
 
         if (booking is null)
@@ -23,6 +23,6 @@ public class GetBookingRecordByIdQueryHandler(IUnitOfWork unitOfWork)
                     .WithMessage("BookingRecord not found")
                     .WithId(request.Id));
 
-        return booking.Adapt<BookingRecordDto>();
+        return Result.Ok(booking); 
     }
 }

@@ -66,4 +66,10 @@ public static class StartupExtensions
             await adminInitializer.InitializeAsync();
         }
     }
+    
+    extension(IHostEnvironment hostEnvironment)
+    {
+        public bool IsOpenApiGenerator() =>
+            hostEnvironment.IsEnvironment("OpenApiGenerator");
+    }
 }

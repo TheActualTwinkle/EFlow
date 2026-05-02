@@ -1,3 +1,10 @@
+using EFlow.Booking.Contracts.Admins;
+using EFlow.Booking.Contracts.BookingRecords;
+using EFlow.Booking.Contracts.Groups;
+using EFlow.Booking.Contracts.Students;
+using EFlow.Booking.Contracts.Subjects;
+using EFlow.Booking.Contracts.SubmissionSlots;
+using EFlow.Booking.Contracts.Teachers;
 using EFlow.Booking.Domain.Admins;
 using EFlow.Booking.Domain.BookingRecords;
 using EFlow.Booking.Domain.Groups;
@@ -6,6 +13,7 @@ using EFlow.Booking.Domain.SubmissionSlots;
 using EFlow.Booking.Domain.Teachers;
 using EFlow.Booking.Domain.Subjects;
 using EFlow.Booking.Persistence.DatabaseContext;
+using EFlow.Booking.Persistence.QueryServices;
 using EFlow.Booking.Persistence.Repositories;
 using EFlow.Common.Domain.Repositories;
 using EFlow.Common.Infrastructure;
@@ -36,15 +44,9 @@ public static class DependencyInjection
         
             services.AddScoped<DbContext>(sp => sp.GetRequiredService<ApplicationDbContext>());
 
-            services.AddScoped<IAdminRepository, AdminRepository>();
-            services.AddScoped<ITeacherRepository, TeacherRepository>();
-            services.AddScoped<IStudentRepository, StudentRepository>();
-            services.AddScoped<IGroupRepository, GroupRepository>();
-            services.AddScoped<ISubjectRepository, SubjectRepository>();
-            services.AddScoped<ISubmissionSlotRepository, SubmissionSlotRepository>();
-            services.AddScoped<IBookingRecordRepository, BookingRecordRepository>();
-            services.AddScoped<IOutboxMessageRepository, OutboxMessageRepository>();
-        
+            services.AddRepositories();
+            services.AddQueryServices();
+
             services.AddScoped<IDomainEventDispatcher, DomainEventDispatcher>();
 
             return services;
@@ -69,6 +71,29 @@ public static class DependencyInjection
             });
 
             return services;
+        }
+
+        private void AddRepositories()
+        {
+            services.AddScoped<IAdminRepository, AdminRepository>();
+            services.AddScoped<ITeacherRepository, TeacherRepository>();
+            services.AddScoped<IStudentRepository, StudentRepository>();
+            services.AddScoped<IGroupRepository, GroupRepository>();
+            services.AddScoped<ISubjectRepository, SubjectRepository>();
+            services.AddScoped<ISubmissionSlotRepository, SubmissionSlotRepository>();
+            services.AddScoped<IBookingRecordRepository, BookingRecordRepository>();
+            services.AddScoped<IOutboxMessageRepository, OutboxMessageRepository>();
+        }
+
+        private void AddQueryServices()
+        {
+            services.AddScoped<IAdminQueryService, AdminQueryService>();
+            services.AddScoped<ITeacherQueryService, TeacherQueryService>();
+            services.AddScoped<IStudentQueryService, StudentQueryService>();
+            services.AddScoped<IGroupQueryService, GroupQueryService>();
+            services.AddScoped<ISubjectQueryService, SubjectQueryService>();
+            services.AddScoped<ISubmissionSlotQueryService, SubmissionSlotQueryService>();
+            services.AddScoped<IBookingRecordQueryService, BookingRecordQueryService>();
         }
     }
 }

@@ -1,20 +1,18 @@
-using EFlow.Booking.Domain.Subjects;
+using EFlow.Booking.Contracts.Subjects;
 using EFlow.Common.Infrastructure;
 using FluentResults;
-using Mapster;
 using MediatR;
 
 namespace EFlow.Booking.Application.Subjects.Queries;
 
 public class GetAllSubjectsQueryHandler(IUnitOfWork unitOfWork)
-    : IRequestHandler<GetAllSubjectsQuery, Result<IEnumerable<SubjectDto>>>
+    : IRequestHandler<GetAllSubjectsQuery, Result<IEnumerable<SubjectView>>>
 {
-    public async Task<Result<IEnumerable<SubjectDto>>> Handle(GetAllSubjectsQuery request, CancellationToken cancellationToken)
+    public async Task<Result<IEnumerable<SubjectView>>> Handle(GetAllSubjectsQuery request, CancellationToken cancellationToken)
     {
-        var subjects = (await unitOfWork
-                .GetRepository<ISubjectRepository>()
-                .GetAllAsync(cancellationToken))
-            .Adapt<IEnumerable<SubjectDto>>();
+        var subjects = await unitOfWork
+            .GetQueryService<ISubjectQueryService>()
+            .GetAllAsync(cancellationToken);
 
         return Result.Ok(subjects);
     }

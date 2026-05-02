@@ -1,20 +1,20 @@
 using EFlow.Booking.Application.Common.Errors;
 using EFlow.Booking.Application.Common.Errors.Abstractions;
+using EFlow.Booking.Contracts.Groups;
 using EFlow.Booking.Domain.Groups;
 using EFlow.Common.Infrastructure;
 using FluentResults;
-using Mapster;
 using MediatR;
 
 namespace EFlow.Booking.Application.Groups.Queries;
 
 public class GetGroupByIdQueryHandler(IUnitOfWork unitOfWork)
-    : IRequestHandler<GetGroupByIdQuery, Result<GroupDto>>
+    : IRequestHandler<GetGroupByIdQuery, Result<GroupView>>
 {
-    public async Task<Result<GroupDto>> Handle(GetGroupByIdQuery request, CancellationToken cancellationToken)
+    public async Task<Result<GroupView>> Handle(GetGroupByIdQuery request, CancellationToken cancellationToken)
     {
         var group = await unitOfWork
-            .GetRepository<IGroupRepository>()
+            .GetQueryService<IGroupQueryService>()
             .GetByIdAsync(new GroupId(request.Id), cancellationToken);
 
         if (group is null)
@@ -23,6 +23,6 @@ public class GetGroupByIdQueryHandler(IUnitOfWork unitOfWork)
                     .WithMessage("Group not found")
                     .WithId(request.Id));
 
-        return group.Adapt<GroupDto>();
+        return Result.Ok(group);
     }
 }

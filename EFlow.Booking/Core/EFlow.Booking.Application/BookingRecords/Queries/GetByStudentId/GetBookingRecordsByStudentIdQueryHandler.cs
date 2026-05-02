@@ -1,21 +1,19 @@
-using EFlow.Booking.Domain.BookingRecords;
+using EFlow.Booking.Contracts.BookingRecords;
 using EFlow.Booking.Domain.Students;
 using EFlow.Common.Infrastructure;
 using FluentResults;
-using Mapster;
 using MediatR;
 
 namespace EFlow.Booking.Application.BookingRecords.Queries;
 
 public class GetBookingRecordsByStudentIdQueryHandler(IUnitOfWork unitOfWork)
-    : IRequestHandler<GetBookingRecordsByStudentIdQuery, Result<IEnumerable<BookingRecordDto>>>
+    : IRequestHandler<GetBookingRecordsByStudentIdQuery, Result<IEnumerable<BookingRecordView>>>
 {
-    public async Task<Result<IEnumerable<BookingRecordDto>>> Handle(GetBookingRecordsByStudentIdQuery request, CancellationToken cancellationToken)
+    public async Task<Result<IEnumerable<BookingRecordView>>> Handle(GetBookingRecordsByStudentIdQuery request, CancellationToken cancellationToken)
     {
         var bookings = (await unitOfWork
-                .GetRepository<IBookingRecordRepository>()
-                .GetByStudentIdAsync(new StudentId(request.StudentId), cancellationToken))
-            .Adapt<IEnumerable<BookingRecordDto>>();
+            .GetQueryService<IBookingRecordQueryService>()
+            .GetByStudentIdAsync(new StudentId(request.StudentId), cancellationToken));
 
         return Result.Ok(bookings);
     }

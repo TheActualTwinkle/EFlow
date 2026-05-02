@@ -1,7 +1,5 @@
-using EFlow.Booking.Domain.Groups;
 using EFlow.Booking.Domain.Teachers;
 using EFlow.Booking.Domain.Subjects;
-using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -9,6 +7,8 @@ namespace EFlow.Booking.Persistence.EntityTypeConfiguration;
 
 public class SubjectConfiguration : IEntityTypeConfiguration<Subject>
 {
+    private const string GroupIdValuePropertyName = "Value";
+
     public void Configure(EntityTypeBuilder<Subject> builder)
     {
         builder.ToTable("subjects");
@@ -32,22 +32,25 @@ public class SubjectConfiguration : IEntityTypeConfiguration<Subject>
             .HasColumnName("teacher_id")
             .IsRequired();
 
-        builder.Property(s => s.GroupIds)
-            .HasConversion(
-                ids => ids.Select(x => x.Value).ToArray(),
-                values => values
-                    .Select(value => new GroupId(value))
-                    .ToArray())
-            .Metadata.SetValueComparer(
-                new ValueComparer<ICollection<GroupId>>(
-                    (left, right) => left!.SequenceEqual(right!),
-                    ids => ids.Aggregate(0, (hash, id) => HashCode.Combine(hash, id.Value.GetHashCode())),
-                    ids => ids.ToArray()));
-        
-        builder.Property(s => s.GroupIds)
-            .HasColumnName("group_ids")
-            .HasColumnType("uuid[]")
-            .IsRequired();
+        builder.OwnsMany(
+            s => s.GroupIds,
+            groupsBuilder =>
+            {
+                groupsBuilder.ToTable("subject_groups");
+
+                groupsBuilder.WithOwner()
+                    .HasForeignKey("subject_id");
+
+                groupsBuilder.Property(groupId => groupId.Value)
+                    .HasColumnName("group_id")
+                    .IsRequired();
+
+                groupsBuilder.HasKey("subject_id", GroupIdValuePropertyName)
+                    .HasName("pk_subject_groups");
+
+                groupsBuilder.HasIndex(GroupIdValuePropertyName)
+                    .HasDatabaseName("ix_subject_groups_group_id");
+            });
 
         builder.HasOne<Teacher>()
             .WithMany()

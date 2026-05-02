@@ -1,8 +1,6 @@
 using System.Text;
 using EFlow.Booking.Domain;
 using EFlow.Booking.Persistence.DatabaseContext;
-using EFlow.Booking.WebApi.Mapping;
-using Mapster;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
@@ -101,17 +99,6 @@ public static class DependencyInjection
                     });
 
             services.AddAuthorization();
-
-            return services;
-        }
-
-        public IServiceCollection AddMapping()
-        {
-            TypeAdapterConfig.GlobalSettings.Apply(new MapsterRegister());
-            TypeAdapterConfig.GlobalSettings.RequireExplicitMapping = true;
-            TypeAdapterConfig.GlobalSettings.Default.IgnoreNonMapped(true);
-
-            services.AddSingleton(TypeAdapterConfig.GlobalSettings);
 
             return services;
         }

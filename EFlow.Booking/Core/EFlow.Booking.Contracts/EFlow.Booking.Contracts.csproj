@@ -1,0 +1,5 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <ProjectReference Include="..\EFlow.Booking.Domain\EFlow.Booking.Domain.csproj" />
+  </ItemGroup>
+</Project>

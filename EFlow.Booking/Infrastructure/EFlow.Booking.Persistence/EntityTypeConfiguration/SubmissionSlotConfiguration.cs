@@ -1,8 +1,6 @@
-using EFlow.Booking.Domain.Groups;
 using EFlow.Booking.Domain.SubmissionSlots;
 using EFlow.Booking.Domain.Subjects;
 using EFlow.Booking.Domain.Teachers;
-using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -10,6 +8,8 @@ namespace EFlow.Booking.Persistence.EntityTypeConfiguration;
 
 public class SubmissionSlotConfiguration : IEntityTypeConfiguration<SubmissionSlot>
 {
+    private const string GroupIdValuePropertyName = "Value";
+
     public void Configure(EntityTypeBuilder<SubmissionSlot> builder)
     {
         builder.ToTable(
@@ -62,21 +62,25 @@ public class SubmissionSlotConfiguration : IEntityTypeConfiguration<SubmissionSl
             .HasColumnName("allow_all_groups")
             .IsRequired();
 
-        builder.Property(s => s.AllowedGroupIds)
-            .HasConversion(
-                ids => ids.Select(x => x.Value).ToArray(),
-                values => values
-                    .Select(value => new GroupId(value))
-                    .ToArray())
-            .Metadata.SetValueComparer(
-                new ValueComparer<ICollection<GroupId>>(
-                    (left, right) => left!.SequenceEqual(right!),
-                    ids => ids.Aggregate(0, (hash, id) => HashCode.Combine(hash, id.Value.GetHashCode())),
-                    ids => ids.ToArray()));
-        
-        builder.Property(s => s.AllowedGroupIds)
-            .HasColumnName("allowed_group_ids")
-            .HasColumnType("uuid[]");
+        builder.OwnsMany(
+            s => s.AllowedGroupIds,
+            allowedGroupsBuilder =>
+            {
+                allowedGroupsBuilder.ToTable("submission_slot_allowed_groups");
+
+                allowedGroupsBuilder.WithOwner()
+                    .HasForeignKey("submission_slot_id");
+
+                allowedGroupsBuilder.Property(groupId => groupId.Value)
+                    .HasColumnName("group_id")
+                    .IsRequired();
+
+                allowedGroupsBuilder.HasKey("submission_slot_id", GroupIdValuePropertyName)
+                    .HasName("pk_submission_slot_allowed_groups");
+
+                allowedGroupsBuilder.HasIndex(GroupIdValuePropertyName)
+                    .HasDatabaseName("ix_submission_slot_allowed_groups_group_id");
+            });
 
         builder.HasOne<Subject>()
             .WithMany()

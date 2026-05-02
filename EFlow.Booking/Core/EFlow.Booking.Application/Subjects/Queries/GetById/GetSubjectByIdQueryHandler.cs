@@ -1,20 +1,20 @@
 using EFlow.Booking.Application.Common.Errors;
 using EFlow.Booking.Application.Common.Errors.Abstractions;
+using EFlow.Booking.Contracts.Subjects;
 using EFlow.Booking.Domain.Subjects;
 using EFlow.Common.Infrastructure;
 using FluentResults;
-using Mapster;
 using MediatR;
 
 namespace EFlow.Booking.Application.Subjects.Queries;
 
 public class GetSubjectByIdQueryHandler(IUnitOfWork unitOfWork)
-    : IRequestHandler<GetSubjectByIdQuery, Result<SubjectDto>>
+    : IRequestHandler<GetSubjectByIdQuery, Result<SubjectView>>
 {
-    public async Task<Result<SubjectDto>> Handle(GetSubjectByIdQuery request, CancellationToken cancellationToken)
+    public async Task<Result<SubjectView>> Handle(GetSubjectByIdQuery request, CancellationToken cancellationToken)
     {
         var subject = await unitOfWork
-            .GetRepository<ISubjectRepository>()
+            .GetQueryService<ISubjectQueryService>()
             .GetByIdAsync(new SubjectId(request.Id), cancellationToken);
 
         if (subject is null)
@@ -23,6 +23,6 @@ public class GetSubjectByIdQueryHandler(IUnitOfWork unitOfWork)
                     .WithMessage("Subject not found")
                     .WithId(request.Id));
 
-        return subject.Adapt<SubjectDto>();
+        return Result.Ok(subject);
     }
 }

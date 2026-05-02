@@ -31,8 +31,8 @@ public sealed class AdminInitializer(
         if (admins.Value.Any())
         {
             logger.LogInformation(
-                "Skipping admin creation. Found existing admins: {UserNames}",
-                string.Join(", ", admins.Value.Select(a => a.UserName)));
+                "Skipping admin creation. Found existing admins: {Ids}",
+                string.Join(", ", admins.Value.Select(a => a.Id)));
             
             return;
         }

@@ -1,7 +1,6 @@
 using EFlow.Booking.Domain.Groups;
 using EFlow.Common.Infrastructure;
 using FluentResults;
-using Mapster;
 using MediatR;
 
 namespace EFlow.Booking.Application.Groups.Commands;
@@ -14,7 +13,7 @@ public class CreateGroupCommandHandler(
     {
         var repository = unitOfWork.GetRepository<IGroupRepository>();
 
-        var existingGroupNames = (await repository.GetAllAsync(cancellationToken)).Adapt<IEnumerable<GroupDto>>().Select(g => g.Name);
+        var existingGroupNames = (await repository.GetAllAsync(cancellationToken)).Select(g => g.GetName());
         
         var group = Group.Create(request.Name, existingGroupNames);
 

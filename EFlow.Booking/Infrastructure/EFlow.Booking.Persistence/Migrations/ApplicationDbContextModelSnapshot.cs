@@ -200,11 +200,6 @@ namespace EFlow.Booking.Persistence.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
-                    b.Property<Guid[]>("GroupIds")
-                        .IsRequired()
-                        .HasColumnType("uuid[]")
-                        .HasColumnName("group_ids");
-
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(127)
@@ -297,11 +292,6 @@ namespace EFlow.Booking.Persistence.Migrations
                     b.Property<bool>("AllowAllGroups")
                         .HasColumnType("boolean")
                         .HasColumnName("allow_all_groups");
-
-                    b.Property<Guid[]>("AllowedGroupIds")
-                        .IsRequired()
-                        .HasColumnType("uuid[]")
-                        .HasColumnName("allowed_group_ids");
 
                     b.Property<string>("Comment")
                         .HasMaxLength(1023)
@@ -580,6 +570,30 @@ namespace EFlow.Booking.Persistence.Migrations
                         .HasForeignKey("TeacherId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.OwnsMany("EFlow.Booking.Domain.Groups.GroupId", "GroupIds", b1 =>
+                        {
+                            b1.Property<Guid>("subject_id")
+                                .HasColumnType("uuid");
+
+                            b1.Property<Guid>("Value")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("uuid")
+                                .HasColumnName("group_id");
+
+                            b1.HasKey("subject_id", "Value")
+                                .HasName("pk_subject_groups");
+
+                            b1.HasIndex("Value")
+                                .HasDatabaseName("ix_subject_groups_group_id");
+
+                            b1.ToTable("subject_groups", (string)null);
+
+                            b1.WithOwner()
+                                .HasForeignKey("subject_id");
+                        });
+
+                    b.Navigation("GroupIds");
                 });
 
             modelBuilder.Entity("EFlow.Booking.Domain.SubmissionSlots.Admissions.SubmissionSlotAdmission", b =>
@@ -625,6 +639,30 @@ namespace EFlow.Booking.Persistence.Migrations
                         .HasForeignKey("TeacherId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.OwnsMany("EFlow.Booking.Domain.Groups.GroupId", "AllowedGroupIds", b1 =>
+                        {
+                            b1.Property<Guid>("submission_slot_id")
+                                .HasColumnType("uuid");
+
+                            b1.Property<Guid>("Value")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("uuid")
+                                .HasColumnName("group_id");
+
+                            b1.HasKey("submission_slot_id", "Value")
+                                .HasName("pk_submission_slot_allowed_groups");
+
+                            b1.HasIndex("Value")
+                                .HasDatabaseName("ix_submission_slot_allowed_groups_group_id");
+
+                            b1.ToTable("submission_slot_allowed_groups", (string)null);
+
+                            b1.WithOwner()
+                                .HasForeignKey("submission_slot_id");
+                        });
+
+                    b.Navigation("AllowedGroupIds");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<System.Guid>", b =>

@@ -2,12 +2,12 @@ using System.Net;
 using EFlow.Booking.ApiTests.Infrastructure.Contracts;
 using EFlow.Booking.ApiTests.Infrastructure.Fixtures;
 using EFlow.Booking.ApiTests.Infrastructure.Sessions;
-using EFlow.Booking.Application.BookingRecords;
-using EFlow.Booking.Application.Groups;
-using EFlow.Booking.Application.Students;
-using EFlow.Booking.Application.Subjects;
-using EFlow.Booking.Application.SubmissionSlots;
-using EFlow.Booking.Application.Teachers;
+using EFlow.Booking.Contracts.BookingRecords;
+using EFlow.Booking.Contracts.Groups;
+using EFlow.Booking.Contracts.Students;
+using EFlow.Booking.Contracts.Subjects;
+using EFlow.Booking.Contracts.SubmissionSlots;
+using EFlow.Booking.Contracts.Teachers;
 using EFlow.Booking.WebApi.Contracts.Bookings;
 using EFlow.Booking.WebApi.Contracts.Groups;
 using EFlow.Booking.WebApi.Contracts.Students;
@@ -244,69 +244,69 @@ internal sealed class ApiScenario(ApiTestStackFixture fixture)
     }
 
     /// <summary>
-    /// Retrieves a group DTO by identifier and validates the HTTP response.
+    /// Retrieves a group view by identifier and validates the HTTP response.
     /// </summary>
-    public async Task<GroupDto> GetGroupAsync(ApiSession session, Guid groupId)
+    public async Task<GroupView> GetGroupAsync(ApiSession session, Guid groupId)
     {
         var response = await session.GetAsync($"/api/groups/{groupId}");
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        return (await session.ReadAsync<GroupDto>(response))!;
+        return (await session.ReadAsync<GroupView>(response))!;
     }
 
     /// <summary>
-    /// Retrieves a teacher DTO by identifier and validates the HTTP response.
+    /// Retrieves a teacher view by identifier and validates the HTTP response.
     /// </summary>
-    public async Task<TeacherDto> GetTeacherAsync(ApiSession session, Guid teacherId)
+    public async Task<TeacherView> GetTeacherAsync(ApiSession session, Guid teacherId)
     {
         var response = await session.GetAsync($"/api/teachers/{teacherId}");
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        return (await session.ReadAsync<TeacherDto>(response))!;
+        return (await session.ReadAsync<TeacherView>(response))!;
     }
 
     /// <summary>
-    /// Retrieves a student DTO by identifier and validates the HTTP response.
+    /// Retrieves a student view by identifier and validates the HTTP response.
     /// </summary>
-    public async Task<StudentDto> GetStudentAsync(ApiSession session, Guid studentId)
+    public async Task<StudentView> GetStudentAsync(ApiSession session, Guid studentId)
     {
         var response = await session.GetAsync($"/api/students/{studentId}");
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        return (await session.ReadAsync<StudentDto>(response))!;
+        return (await session.ReadAsync<StudentView>(response))!;
     }
 
     /// <summary>
-    /// Retrieves a subject DTO by identifier and validates the HTTP response.
+    /// Retrieves a subject view by identifier and validates the HTTP response.
     /// </summary>
-    public async Task<SubjectDto> GetSubjectAsync(ApiSession session, Guid subjectId)
+    public async Task<SubjectView> GetSubjectAsync(ApiSession session, Guid subjectId)
     {
         var response = await session.GetAsync($"/api/subjects/{subjectId}");
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        return (await session.ReadAsync<SubjectDto>(response))!;
+        return (await session.ReadAsync<SubjectView>(response))!;
     }
 
     /// <summary>
-    /// Retrieves a submission-slot DTO by identifier and validates the HTTP response.
+    /// Retrieves a submission-slot view by identifier and validates the HTTP response.
     /// </summary>
-    public async Task<SubmissionSlotDto> GetSlotAsync(ApiSession session, Guid slotId)
+    public async Task<SubmissionSlotView> GetSlotAsync(ApiSession session, Guid slotId)
     {
         var response = await session.GetAsync($"/api/submission-slots/{slotId}");
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        return (await session.ReadAsync<SubmissionSlotDto>(response))!;
+        return (await session.ReadAsync<SubmissionSlotView>(response))!;
     }
 
     /// <summary>
-    /// Retrieves a booking DTO by identifier and validates the HTTP response.
+    /// Retrieves a booking view by identifier and validates the HTTP response.
     /// </summary>
-    public async Task<BookingRecordDto> GetBookingAsync(ApiSession session, Guid bookingId)
+    public async Task<BookingRecordView> GetBookingAsync(ApiSession session, Guid bookingId)
     {
         var response = await session.GetAsync($"/api/bookings/{bookingId}");
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        return (await session.ReadAsync<BookingRecordDto>(response))!;
+        return (await session.ReadAsync<BookingRecordView>(response))!;
     }
 
     /// <summary>

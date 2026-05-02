@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -94,58 +94,6 @@ namespace EFlow.Booking.Persistence.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("pk_outbox_messages", x => x.id);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "students",
-                columns: table => new
-                {
-                    id = table.Column<Guid>(type: "uuid", nullable: false),
-                    group_id = table.Column<Guid>(type: "uuid", nullable: false),
-                    first_name = table.Column<string>(type: "character varying(31)", maxLength: 31, nullable: false),
-                    last_name = table.Column<string>(type: "character varying(31)", maxLength: 31, nullable: false),
-                    middle_name = table.Column<string>(type: "character varying(31)", maxLength: 31, nullable: true),
-                    birth_date = table.Column<DateOnly>(type: "date", nullable: false),
-                    created_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("pk_students", x => x.id);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "subjects",
-                columns: table => new
-                {
-                    id = table.Column<Guid>(type: "uuid", nullable: false),
-                    name = table.Column<string>(type: "character varying(127)", maxLength: 127, nullable: false),
-                    teacher_id = table.Column<Guid>(type: "uuid", nullable: false),
-                    group_ids = table.Column<Guid[]>(type: "uuid[]", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("pk_subjects", x => x.id);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "submission_slots",
-                columns: table => new
-                {
-                    id = table.Column<Guid>(type: "uuid", nullable: false),
-                    subject_id = table.Column<Guid>(type: "uuid", nullable: false),
-                    teacher_id = table.Column<Guid>(type: "uuid", nullable: false),
-                    start_time = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    end_time = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    max_students = table.Column<int>(type: "integer", nullable: false),
-                    allow_all_groups = table.Column<bool>(type: "boolean", nullable: false),
-                    allowed_group_ids = table.Column<Guid[]>(type: "uuid[]", nullable: false),
-                    location = table.Column<string>(type: "character varying(127)", maxLength: 127, nullable: true),
-                    comment = table.Column<string>(type: "character varying(1023)", maxLength: 1023, nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("pk_submission_slots", x => x.id);
-                    table.CheckConstraint("CK_SubmissionSlots_ValidTimeRange", "start_time < end_time");
                 });
 
             migrationBuilder.CreateTable(
@@ -282,6 +230,98 @@ namespace EFlow.Booking.Persistence.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "students",
+                columns: table => new
+                {
+                    id = table.Column<Guid>(type: "uuid", nullable: false),
+                    group_id = table.Column<Guid>(type: "uuid", nullable: false),
+                    first_name = table.Column<string>(type: "character varying(31)", maxLength: 31, nullable: false),
+                    last_name = table.Column<string>(type: "character varying(31)", maxLength: 31, nullable: false),
+                    middle_name = table.Column<string>(type: "character varying(31)", maxLength: 31, nullable: true),
+                    birth_date = table.Column<DateOnly>(type: "date", nullable: false),
+                    created_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("pk_students", x => x.id);
+                    table.ForeignKey(
+                        name: "FK_students_groups_group_id",
+                        column: x => x.group_id,
+                        principalTable: "groups",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "subjects",
+                columns: table => new
+                {
+                    id = table.Column<Guid>(type: "uuid", nullable: false),
+                    name = table.Column<string>(type: "character varying(127)", maxLength: 127, nullable: false),
+                    teacher_id = table.Column<Guid>(type: "uuid", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("pk_subjects", x => x.id);
+                    table.ForeignKey(
+                        name: "FK_subjects_teachers_teacher_id",
+                        column: x => x.teacher_id,
+                        principalTable: "teachers",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "subject_groups",
+                columns: table => new
+                {
+                    group_id = table.Column<Guid>(type: "uuid", nullable: false),
+                    subject_id = table.Column<Guid>(type: "uuid", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("pk_subject_groups", x => new { x.subject_id, x.group_id });
+                    table.ForeignKey(
+                        name: "FK_subject_groups_subjects_subject_id",
+                        column: x => x.subject_id,
+                        principalTable: "subjects",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "submission_slots",
+                columns: table => new
+                {
+                    id = table.Column<Guid>(type: "uuid", nullable: false),
+                    subject_id = table.Column<Guid>(type: "uuid", nullable: false),
+                    teacher_id = table.Column<Guid>(type: "uuid", nullable: false),
+                    start_time = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    end_time = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    max_students = table.Column<int>(type: "integer", nullable: false),
+                    allow_all_groups = table.Column<bool>(type: "boolean", nullable: false),
+                    location = table.Column<string>(type: "character varying(127)", maxLength: 127, nullable: true),
+                    comment = table.Column<string>(type: "character varying(1023)", maxLength: 1023, nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("pk_submission_slots", x => x.id);
+                    table.CheckConstraint("CK_SubmissionSlots_ValidTimeRange", "start_time < end_time");
+                    table.ForeignKey(
+                        name: "FK_submission_slots_subjects_subject_id",
+                        column: x => x.subject_id,
+                        principalTable: "subjects",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_submission_slots_teachers_teacher_id",
+                        column: x => x.teacher_id,
+                        principalTable: "teachers",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "booking_records",
                 columns: table => new
                 {
@@ -334,6 +374,24 @@ namespace EFlow.Booking.Persistence.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "submission_slot_allowed_groups",
+                columns: table => new
+                {
+                    group_id = table.Column<Guid>(type: "uuid", nullable: false),
+                    submission_slot_id = table.Column<Guid>(type: "uuid", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("pk_submission_slot_allowed_groups", x => new { x.submission_slot_id, x.group_id });
+                    table.ForeignKey(
+                        name: "FK_submission_slot_allowed_groups_submission_slots_submission_~",
+                        column: x => x.submission_slot_id,
+                        principalTable: "submission_slots",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "submission_slot_notification_settings",
                 columns: table => new
                 {
@@ -347,6 +405,13 @@ namespace EFlow.Booking.Persistence.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("pk_submission_slot_notification_settings", x => x.id);
+                    table.ForeignKey(
+                        name: "FK_submission_slot_notification_settings_AspNetUsers_user_id",
+                        column: x => x.user_id,
+                        principalSchema: "identity",
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_submission_slot_notification_settings_submission_slots_subm~",
                         column: x => x.submission_slot_id,
@@ -411,6 +476,21 @@ namespace EFlow.Booking.Persistence.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
+                name: "IX_students_group_id",
+                table: "students",
+                column: "group_id");
+
+            migrationBuilder.CreateIndex(
+                name: "ix_subject_groups_group_id",
+                table: "subject_groups",
+                column: "group_id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_subjects_teacher_id",
+                table: "subjects",
+                column: "teacher_id");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_submission_slot_admissions_student_id",
                 table: "submission_slot_admissions",
                 column: "student_id");
@@ -421,9 +501,29 @@ namespace EFlow.Booking.Persistence.Migrations
                 column: "submission_slot_id");
 
             migrationBuilder.CreateIndex(
+                name: "ix_submission_slot_allowed_groups_group_id",
+                table: "submission_slot_allowed_groups",
+                column: "group_id");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_submission_slot_notification_settings_submission_slot_id",
                 table: "submission_slot_notification_settings",
                 column: "submission_slot_id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_submission_slot_notification_settings_user_id",
+                table: "submission_slot_notification_settings",
+                column: "user_id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_submission_slots_subject_id",
+                table: "submission_slots",
+                column: "subject_id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_submission_slots_teacher_id",
+                table: "submission_slots",
+                column: "teacher_id");
         }
 
         /// <inheritdoc />
@@ -456,36 +556,42 @@ namespace EFlow.Booking.Persistence.Migrations
                 name: "booking_records");
 
             migrationBuilder.DropTable(
-                name: "groups");
-
-            migrationBuilder.DropTable(
                 name: "outbox_messages");
 
             migrationBuilder.DropTable(
-                name: "subjects");
+                name: "subject_groups");
 
             migrationBuilder.DropTable(
                 name: "submission_slot_admissions");
 
             migrationBuilder.DropTable(
-                name: "submission_slot_notification_settings");
+                name: "submission_slot_allowed_groups");
 
             migrationBuilder.DropTable(
-                name: "teachers");
+                name: "submission_slot_notification_settings");
 
             migrationBuilder.DropTable(
                 name: "AspNetRoles",
                 schema: "identity");
 
             migrationBuilder.DropTable(
+                name: "students");
+
+            migrationBuilder.DropTable(
                 name: "AspNetUsers",
                 schema: "identity");
 
             migrationBuilder.DropTable(
-                name: "students");
+                name: "submission_slots");
 
             migrationBuilder.DropTable(
-                name: "submission_slots");
+                name: "groups");
+
+            migrationBuilder.DropTable(
+                name: "subjects");
+
+            migrationBuilder.DropTable(
+                name: "teachers");
         }
     }
 }

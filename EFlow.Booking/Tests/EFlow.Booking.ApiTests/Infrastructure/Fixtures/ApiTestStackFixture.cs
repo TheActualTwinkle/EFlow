@@ -197,7 +197,8 @@ public sealed class ApiTestStackFixture : IAsyncLifetime
             ["BOOKING_API_PORT"] = bookingPort.ToString(),
             ["NOTIFICATIONS_API_PORT"] = notificationsPort.ToString(),
             ["JWT_ISSUER"] = $"http://localhost:{bookingPort}",
-            ["JWT_AUDIENCE"] = $"http://localhost:{bookingPort}"
+            ["JWT_AUDIENCE"] = $"http://localhost:{bookingPort}",
+            ["CORS_ALLOWED_ORIGIN_0"] = $"http://localhost:{bookingPort}"
         };
     }
 

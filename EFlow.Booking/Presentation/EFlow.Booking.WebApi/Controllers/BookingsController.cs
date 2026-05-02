@@ -134,7 +134,7 @@ public class BookingsController(ISender sender) : ControllerBase
 
             var studentId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
-            if (studentId != bookingResult.Value.StudentId.ToString())
+            if (studentId != bookingResult.Value.Student!.Id.ToString())
                 return Problem(
                     title: "Forbidden",
                     detail: "You can only delete your own bookings",
