@@ -34,7 +34,14 @@ export class WorkspaceDataService {
       return forkJoin({
         teacher: this.api.getTeacher(user.id),
         slots: this.api.getSlotsByTeacher(user.id),
-      }).pipe(switchMap((workspace) => this.withBookings(user.id, false, workspace.slots, workspace)));
+      }).pipe(
+        switchMap((workspace) =>
+          this.withBookings(user.id, false, workspace.slots, {
+            teachers: [workspace.teacher],
+            slots: workspace.slots,
+          }),
+        ),
+      );
     }
 
     return this.api.getSlots().pipe(switchMap((slots) => this.withBookings(user.id, false, slots, { slots })));

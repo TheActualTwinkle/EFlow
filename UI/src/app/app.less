@@ -464,6 +464,15 @@ textarea {
   color: var(--danger);
 }
 
+.danger-action {
+  background: var(--danger);
+  color: #fff;
+
+  &:hover {
+    background: color-mix(in srgb, var(--danger) 82%, var(--text));
+  }
+}
+
 .form-error {
   margin: 0;
   color: var(--danger);
@@ -586,17 +595,11 @@ nav {
   display: grid;
   gap: 22px;
   opacity: 1;
-  transform: translateY(0);
-  transition:
-    opacity 260ms ease,
-    transform 260ms ease,
-    filter 260ms ease;
+  transition: opacity 260ms ease;
 }
 
 .workspace-content.is-loading .workspace-live {
   opacity: 0;
-  transform: translateY(8px);
-  filter: blur(2px);
   pointer-events: none;
 }
 
@@ -1052,6 +1055,18 @@ nav {
   .entity-grid {
     grid-template-columns: minmax(180px, 1fr) auto;
   }
+
+  .entity-main {
+    display: grid;
+    gap: 4px;
+    min-width: 0;
+
+    span {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.35;
+    }
+  }
 }
 
 .toggle-line {
@@ -1377,6 +1392,48 @@ lucide-icon {
 
 }
 
+.confirm-backdrop {
+  z-index: 90;
+}
+
+.confirm-panel {
+  width: min(100%, 460px);
+  animation: none;
+  opacity: 1;
+  transform: none;
+
+  .panel-heading {
+    margin-bottom: 10px;
+    opacity: 1;
+    visibility: visible;
+
+    > lucide-icon {
+      color: var(--danger);
+    }
+  }
+}
+
+.confirm-message {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.55;
+  opacity: 1;
+  visibility: visible;
+  white-space: pre-line;
+}
+
+.confirm-summary {
+  margin: 0 0 12px;
+  color: var(--muted);
+  line-height: 1.55;
+  opacity: 1;
+  visibility: visible;
+
+  strong {
+    color: var(--text);
+  }
+}
+
 .modal-actions {
   position: sticky;
   bottom: -1px;
@@ -1390,6 +1447,12 @@ lucide-icon {
   margin-top: 4px;
   padding: 14px 0 0;
   z-index: 2;
+}
+
+.confirm-actions {
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: space-between;
 }
 
 @media (max-width: 1050px) {

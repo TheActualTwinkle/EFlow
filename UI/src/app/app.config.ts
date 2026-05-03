@@ -17,6 +17,7 @@ import {
   ShieldCheck,
   Sun,
   Trash2,
+  TriangleAlert,
   Users,
 } from 'lucide-angular';
 
@@ -43,6 +44,7 @@ export const appConfig: ApplicationConfig = {
         ShieldCheck,
         Sun,
         Trash2,
+        TriangleAlert,
         Users,
       }),
     ),

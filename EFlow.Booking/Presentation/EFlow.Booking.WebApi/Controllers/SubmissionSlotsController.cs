@@ -73,7 +73,7 @@ public class SubmissionSlotsController(ISender sender) : ControllerBase
     }
 
     [HttpGet("reminder-snapshot")]
-    [AllowAnonymous] // TODO: фиксануть авторизацию
+    [Authorize]
     public async Task<IActionResult> GetReminderSnapshot(CancellationToken cancellationToken)
     {
         var result = await sender.Send(new GetSubmissionSlotReminderSnapshotQuery(), cancellationToken);

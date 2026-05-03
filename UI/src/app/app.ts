@@ -42,6 +42,14 @@ type SubjectView = Schemas['SubjectView'];
 type SubmissionSlotView = Schemas['SubmissionSlotView'];
 type TeacherView = Schemas['TeacherView'];
 type SlotCompletionFilter = 'all' | 'active' | 'finished';
+type ConfirmDialog = {
+  title: string;
+  summaryTitle?: string;
+  summaryMeta?: string;
+  message: string;
+  confirmLabel: string;
+  action: () => void;
+};
 
 @Component({
   selector: 'app-root',
@@ -64,6 +72,7 @@ export class App {
   readonly workspaceLoading = computed(() => this.auth.isAuthenticated() && !this.loaded());
   readonly fieldErrors = signal<Record<string, string>>({});
   readonly activeModal = signal<ModalView>(null);
+  readonly confirmDialog = signal<ConfirmDialog | null>(null);
   readonly userTable = signal<UserTable>('teachers');
   readonly selectedSlotId = signal<string | null>(null);
   readonly selectedGroup = signal<GroupView | null>(null);
@@ -95,6 +104,7 @@ export class App {
     remindTimes: ['OneWeek', 'TwoDays'],
     bookingMode: 'All',
   };
+  readonly personRoles = ['Student', 'Teacher'] as const;
   readonly slotGroupSearch = signal('');
   readonly loginReadonly = signal(true);
   readonly passwordReadonly = signal(true);
@@ -607,6 +617,34 @@ export class App {
     this.customSelectOpen.set(null);
   }
 
+  selectPersonRole(role: 'Student' | 'Teacher'): void {
+    this.personForm.role = role;
+    this.closeCustomSelect();
+  }
+
+  personRoleLabel(): string {
+    return this.roleLabel(this.personForm.role);
+  }
+
+  selectPersonGroup(group: GroupView): void {
+    this.personForm.groupId = group.id;
+    this.closeCustomSelect();
+  }
+
+  personGroupLabel(): string {
+    return this.data().groups.find((group) => group.id === this.personForm.groupId)?.name ?? 'Выберите группу';
+  }
+
+  selectSubjectTeacher(teacher: TeacherView): void {
+    this.subjectForm.teacherId = teacher.id;
+    this.closeCustomSelect();
+  }
+
+  subjectTeacherLabel(): string {
+    const teacher = this.data().teachers.find((item) => item.id === this.subjectForm.teacherId);
+    return teacher ? this.fullName(teacher) : 'Выберите преподавателя';
+  }
+
   selectSlotSubject(subject: SubjectView): void {
     this.slotForm.subjectId = subject.id;
     this.slotCreateGroupSearch.set('');
@@ -649,9 +687,21 @@ export class App {
   }
 
   deleteSlot(slotId: string): void {
-    this.api.deleteSlot(slotId).subscribe(() => {
-      this.showToast('Слот удалён', 'success');
-      this.refresh();
+    const slot = this.data().slots.find((item) => item.id === slotId);
+    this.confirmDestructiveAction({
+      title: 'Удалить слот?',
+      summaryTitle: slot ? this.slotTitle(slot) : undefined,
+      summaryMeta: slot ? this.formatDateTime(slot.startTime) : undefined,
+      message: slot
+        ? 'Связанные записи и допуски станут недоступны.'
+        : 'Слот будет удалён из расписания.',
+      confirmLabel: 'Удалить слот',
+      action: () => {
+        this.api.deleteSlot(slotId).subscribe(() => {
+          this.showToast('Слот удалён', 'success');
+          this.refresh();
+        });
+      },
     });
   }
 
@@ -717,41 +767,79 @@ export class App {
   }
 
   cancelBooking(id: string): void {
-    this.api.cancelBooking(id).subscribe(() => {
-      this.showToast('Запись отменена', 'success');
-      this.refresh();
+    const booking = this.data().bookings.find((item) => item.id === id);
+    const studentName = booking?.student ? this.fullName(booking.student) : 'Запись';
+    const slotName = booking?.slot ? this.slotTitle(booking.slot) : 'слот';
+    this.confirmDestructiveAction({
+      title: 'Отменить запись?',
+      message: `${studentName} будет удалён из очереди на «${slotName}».`,
+      confirmLabel: 'Отменить запись',
+      action: () => {
+        this.api.cancelBooking(id).subscribe(() => {
+          this.showToast('Запись отменена', 'success');
+          this.refresh();
+        });
+      },
     });
   }
 
   deleteGroup(group: GroupView): void {
-    this.api.deleteGroup(group.id).subscribe(() => {
-      this.showToast('Группа удалена', 'success');
-      this.closeModal();
-      this.refresh();
+    this.confirmDestructiveAction({
+      title: 'Удалить группу?',
+      message: `Группа «${group.name}» будет удалена. Это может повлиять на студентов, дисциплины и доступ к слотам.`,
+      confirmLabel: 'Удалить группу',
+      action: () => {
+        this.api.deleteGroup(group.id).subscribe(() => {
+          this.showToast('Группа удалена', 'success');
+          this.closeModal();
+          this.refresh();
+        });
+      },
     });
   }
 
   deleteTeacher(teacher: TeacherView): void {
-    this.api.deleteTeacher(teacher.id).subscribe(() => {
-      this.showToast('Преподаватель удалён', 'success');
-      this.closeModal();
-      this.refresh();
+    this.confirmDestructiveAction({
+      title: 'Удалить преподавателя?',
+      message: `Профиль «${this.fullName(teacher)}» будет удалён вместе с доступом к системе.`,
+      confirmLabel: 'Удалить преподавателя',
+      action: () => {
+        this.api.deleteTeacher(teacher.id).subscribe(() => {
+          this.showToast('Преподаватель удалён', 'success');
+          this.closeModal();
+          this.refresh();
+        });
+      },
     });
   }
 
   deleteStudent(student: StudentView): void {
-    this.api.deleteStudent(student.id).subscribe(() => {
-      this.showToast('Студент удалён', 'success');
-      this.closeModal();
-      this.refresh();
+    this.confirmDestructiveAction({
+      title: 'Удалить студента?',
+      message: `Профиль «${this.fullName(student)}» будет удалён вместе с доступом к системе.`,
+      confirmLabel: 'Удалить студента',
+      action: () => {
+        this.api.deleteStudent(student.id).subscribe(() => {
+          this.showToast('Студент удалён', 'success');
+          this.closeModal();
+          this.refresh();
+        });
+      },
     });
   }
 
   deleteSubject(subject: SubjectView): void {
-    this.api.deleteSubject(subject.id).subscribe(() => {
-      this.showToast('Дисциплина удалена', 'success');
-      this.closeModal();
-      this.refresh();
+    this.confirmDestructiveAction({
+      title: 'Удалить дисциплину?',
+      message: `Дисциплина «${subject.name}» будет удалена из учебного процесса.`,
+      confirmLabel: 'Удалить дисциплину',
+      action: () => {
+        this.api.deleteSubject(subject.id).subscribe(() => {
+          this.showToast('Дисциплина удалена', 'success');
+          this.closeModal();
+          this.refresh();
+        });
+      },
     });
   }
 
@@ -836,6 +924,21 @@ export class App {
     this.fieldErrors.set({});
     this.dateTimePickerOpen.set(null);
     this.customSelectOpen.set(null);
+  }
+
+  closeConfirmDialog(): void {
+    this.confirmDialog.set(null);
+  }
+
+  confirmPendingAction(): void {
+    const dialog = this.confirmDialog();
+
+    if (!dialog) {
+      return;
+    }
+
+    this.confirmDialog.set(null);
+    dialog.action();
   }
 
   toggleSelection(collection: string[], id: string): void {
@@ -1291,12 +1394,30 @@ export class App {
     student.group = group;
   }
 
+  selectEditStudentGroup(student: StudentView, group: GroupView): void {
+    student.group = group;
+    this.closeCustomSelect();
+  }
+
+  editStudentGroupLabel(student: StudentView): string {
+    return student.group?.name ?? 'Выберите группу';
+  }
+
   subjectTeacherId(subject: SubjectView): string {
     return subject.teacher?.id ?? '';
   }
 
   setSubjectTeacher(subject: SubjectView, teacherId: string): void {
     subject.teacher = this.data().teachers.find((teacher) => teacher.id === teacherId) ?? null;
+  }
+
+  selectEditSubjectTeacher(subject: SubjectView, teacher: TeacherView): void {
+    subject.teacher = teacher;
+    this.closeCustomSelect();
+  }
+
+  editSubjectTeacherLabel(subject: SubjectView): string {
+    return subject.teacher ? this.fullName(subject.teacher) : 'Выберите преподавателя';
   }
 
   subjectGroupIds(subject: SubjectView): string[] {
@@ -1362,6 +1483,12 @@ export class App {
     window.setTimeout(() => {
       this.toasts.update((items) => items.filter((item) => item.id !== toast.id));
     }, 3200);
+  }
+
+  private confirmDestructiveAction(dialog: ConfirmDialog): void {
+    this.dateTimePickerOpen.set(null);
+    this.customSelectOpen.set(null);
+    this.confirmDialog.set(dialog);
   }
 
   private setFieldErrors(errors: Record<string, string>): boolean {

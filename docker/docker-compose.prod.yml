@@ -85,6 +85,10 @@ services:
       ASPNETCORE_ENVIRONMENT: Production
       ConnectionStrings__HangfireDb: Host=postgres;Port=5432;Database=${POSTGRES_DB:-eflow};Username=${POSTGRES_USER:-postgres};Password=${POSTGRES_PASSWORD:-123456789}
       KafkaSettings__BootstrapServers: kafka:9092
+      Jwt__Key: ${JWT_KEY:?JWT_KEY is required}
+      Jwt__Issuer: ${JWT_ISSUER:-http://localhost:8081}
+      Jwt__Audience: ${JWT_AUDIENCE:-http://localhost:8081}
+      Jwt__ExpireMinutes: 5
       Smtp__Host: ${SMTP_HOST?SMTP_HOST is required}
       Smtp__Port: ${SMTP_PORT?SMTP_PORT is required}
       Smtp__Username: ${SMTP_USERNAME:-}

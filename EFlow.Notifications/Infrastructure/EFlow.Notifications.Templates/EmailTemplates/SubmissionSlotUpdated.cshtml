@@ -3,36 +3,37 @@
 <html lang="ru">
 <head>
     <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>@Model.Title</title>
 </head>
-<body style="margin:0;padding:24px;background:#f6f2ff;font-family:'Segoe UI',Arial,sans-serif;color:#1f1b2d;">
-    <div style="max-width:760px;margin:0 auto;background:#ffffff;border-radius:24px;overflow:hidden;border:1px solid #e7defd;box-shadow:0 24px 60px rgba(76,29,149,.08);">
-        <div style="padding:34px 36px;background:linear-gradient(135deg,#4c1d95 0%,#7c3aed 100%);color:#fff;">
-            <div style="display:inline-block;padding:8px 14px;border-radius:999px;background:rgba(255,255,255,.16);font-size:12px;letter-spacing:.08em;text-transform:uppercase;">Обновление</div>
-            <h1 style="margin:18px 0 10px;font-size:30px;line-height:1.15;">@Model.Title</h1>
-            <p style="margin:0;font-size:16px;line-height:1.65;color:rgba(255,255,255,.86);">@Model.Lead</p>
+<body style="margin:0;padding:24px;background:#f5f5f5;font-family:Inter,'Segoe UI',Arial,sans-serif;color:#111111;letter-spacing:0;">
+    <div style="max-width:720px;margin:0 auto;border:1px solid #dedede;border-radius:8px;background:#ffffff;box-shadow:0 18px 44px rgba(0,0,0,.08);overflow:hidden;">
+        <div style="padding:22px 24px;border-bottom:1px solid #dedede;background:#ffffff;">
+            <div style="font-size:12px;font-weight:760;line-height:1;text-transform:uppercase;color:#666666;">Обновление</div>
+            <h1 style="margin:8px 0 0;font-size:26px;line-height:1.2;font-weight:780;color:#111111;">@Model.Title</h1>
+            <p style="margin:12px 0 0;font-size:15px;line-height:1.6;color:#666666;">@Model.Lead</p>
         </div>
-        <div style="padding:28px 36px 8px;">
-            <div style="padding:20px;border-radius:18px;background:#faf7ff;border:1px solid #ede9fe;">
-                <div style="font-size:12px;color:#6b7280;text-transform:uppercase;letter-spacing:.06em;">Актуальное состояние</div>
-                <div style="margin-top:10px;font-size:18px;font-weight:700;">@Model.SubjectName</div>
-                <div style="margin-top:6px;font-size:15px;color:#4b5563;">@Model.TeacherName</div>
-                <div style="margin-top:6px;font-size:15px;color:#4b5563;">@Model.CurrentTimeRange</div>
+
+        <div style="padding:18px 24px 24px;background:#ffffff;">
+            <div style="border:1px solid #dedede;border-radius:8px;background:#fafafa;padding:16px;">
+                <div style="font-size:12px;font-weight:760;line-height:1;text-transform:uppercase;color:#666666;">Актуальное состояние</div>
+                <div style="margin-top:10px;font-size:18px;font-weight:780;line-height:1.3;color:#111111;">@Model.SubjectName</div>
+                <div style="margin-top:6px;font-size:14px;line-height:1.45;color:#666666;">@Model.TeacherName</div>
+                <div style="margin-top:6px;font-size:14px;line-height:1.45;color:#111111;">@Model.CurrentTimeRange</div>
             </div>
-        </div>
-        <div style="padding:0 36px 32px;">
+
             @foreach (var change in Model.Changes)
             {
-                <div style="margin-top:16px;padding:18px 20px;border-radius:18px;background:#ffffff;border:1px solid #e5e7eb;">
-                    <div style="font-size:14px;font-weight:700;color:#111827;">@change.Label</div>
-                    <table style="width:100%;margin-top:14px;border-collapse:separate;border-spacing:0 12px;">
+                <div style="margin-top:14px;border:1px solid #dedede;border-radius:8px;background:#ffffff;padding:16px;">
+                    <div style="font-size:15px;font-weight:720;line-height:1.35;color:#111111;">@change.Label</div>
+                    <table role="presentation" style="width:100%;margin-top:12px;border-collapse:separate;border-spacing:0 8px;">
                         <tr>
-                            <td style="width:72px;font-size:12px;color:#6b7280;text-transform:uppercase;">Было</td>
-                            <td style="font-size:15px;color:#7f1d1d;background:#fef2f2;border-radius:12px;padding:12px 14px;">@change.OldValue</td>
+                            <td style="width:82px;padding:0;color:#666666;font-size:12px;font-weight:760;line-height:1;text-transform:uppercase;">Было</td>
+                            <td style="padding:10px 12px;border:1px solid #dedede;border-radius:8px;background:#fafafa;color:#666666;font-size:14px;line-height:1.45;">@change.OldValue</td>
                         </tr>
                         <tr>
-                            <td style="font-size:12px;color:#6b7280;text-transform:uppercase;">Стало</td>
-                            <td style="font-size:15px;color:#14532d;background:#f0fdf4;border-radius:12px;padding:12px 14px;">@change.NewValue</td>
+                            <td style="padding:0;color:#666666;font-size:12px;font-weight:760;line-height:1;text-transform:uppercase;">Стало</td>
+                            <td style="padding:10px 12px;border:1px solid #dedede;border-radius:8px;background:#ffffff;color:#111111;font-size:14px;font-weight:720;line-height:1.45;">@change.NewValue</td>
                         </tr>
                     </table>
                 </div>

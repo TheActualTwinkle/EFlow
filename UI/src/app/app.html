@@ -355,6 +355,7 @@
                       <small class="field-error">{{ fieldError('slotEnd') }}</small>
                     }
                   </label>
+                  <p class="timezone-note">{{ slotDurationPerStudentLabel() }}</p>
                 </div>
                 <label>
                   <span>Мест <b>*</b></span>
@@ -395,7 +396,6 @@
                   </div>
                 }
               </div>
-              <p class="timezone-note">{{ slotDurationPerStudentLabel() }}</p>
               <button class="primary-action" type="submit" [disabled]="!slotForm.subjectId || !slotForm.startTime || !slotForm.endTime || (auth.hasRole('Admin') && !slotForm.teacherId)">
                 <lucide-icon name="plus" />
                 Создать слот
@@ -684,27 +684,6 @@
               Создать
             </button>
           </section>
-          @if (activeModal() === 'createGroup') {
-          <div class="modal-backdrop" (click)="closeModal()">
-          <form class="panel form-panel modal-panel" (ngSubmit)="createGroup()" autocomplete="off" (click)="$event.stopPropagation()">
-            <div class="panel-heading">
-              <div>
-                <p class="eyebrow">Справочник</p>
-                <h2>Группы</h2>
-              </div>
-              <lucide-icon name="users" />
-            </div>
-            <label>
-              <span>Название группы <b>*</b></span>
-              <input name="groupName" [(ngModel)]="groupForm.name" autocomplete="off" required />
-              @if (fieldError('groupName')) {
-                <small class="field-error">{{ fieldError('groupName') }}</small>
-              }
-            </label>
-            <button class="primary-action" type="submit">Создать группу</button>
-          </form>
-          </div>
-          }
           <div class="panel">
             <label class="search-field">
               <span>Поиск</span>
@@ -753,7 +732,21 @@
             <div class="form-grid">
               <label>
                 Роль
-                <select name="personRole" [(ngModel)]="personForm.role">
+                <div class="custom-select" [class.open]="customSelectOpen() === 'personRole'">
+                  <button type="button" (click)="toggleCustomSelect('personRole')">
+                    <span>{{ personRoleLabel() }}</span>
+                  </button>
+                  @if (customSelectOpen() === 'personRole') {
+                    <div class="custom-select-menu">
+                      @for (role of personRoles; track role) {
+                        <button type="button" [class.selected]="personForm.role === role" (click)="selectPersonRole(role)">
+                          {{ roleLabel(role) }}
+                        </button>
+                      }
+                    </div>
+                  }
+                </div>
+                <select class="native-shadow" name="personRole" [(ngModel)]="personForm.role" tabindex="-1">
                   <option value="Student">Студент</option>
                   <option value="Teacher">Преподаватель</option>
                 </select>
@@ -768,7 +761,21 @@
               @if (personForm.role === 'Student') {
                 <label>
                   <span>Группа <b>*</b></span>
-                  <select name="personGroup" [(ngModel)]="personForm.groupId" required>
+                  <div class="custom-select" [class.open]="customSelectOpen() === 'personGroup'">
+                    <button type="button" (click)="toggleCustomSelect('personGroup')" [disabled]="!data().groups.length">
+                      <span>{{ data().groups.length ? personGroupLabel() : 'Нет групп. Сначала создайте группу' }}</span>
+                    </button>
+                    @if (customSelectOpen() === 'personGroup') {
+                      <div class="custom-select-menu">
+                        @for (group of data().groups; track group.id) {
+                          <button type="button" [class.selected]="personForm.groupId === group.id" (click)="selectPersonGroup(group)">
+                            {{ group.name }}
+                          </button>
+                        }
+                      </div>
+                    }
+                  </div>
+                  <select class="native-shadow" name="personGroup" [(ngModel)]="personForm.groupId" required tabindex="-1">
                     @if (!data().groups.length) {
                       <option value="" disabled>Нет групп. Сначала создайте группу</option>
                     }
@@ -831,8 +838,10 @@
               <div class="entity-list">
                 @for (student of filteredStudents(); track student.id) {
                   <article class="entity-grid">
-                    <strong>{{ fullName(student) }}</strong>
-                    <span>{{ student.group?.name || 'Группа не указана' }}</span>
+                    <span class="entity-main">
+                      <strong>{{ fullName(student) }}</strong>
+                      <span>Группа: {{ student.group?.name || 'не указана' }}</span>
+                    </span>
                     <div class="action-row">
                       <button class="secondary-action" type="button" (click)="editStudent(student)">Редактировать</button>
                       <button class="icon-button danger" type="button" (click)="deleteStudent(student)" aria-label="Удалить студента">
@@ -874,7 +883,21 @@
               <label><span>Название <b>*</b></span><input name="subjectName" [(ngModel)]="subjectForm.name" autocomplete="off" required />@if (fieldError('subjectName')) { <small class="field-error">{{ fieldError('subjectName') }}</small> }</label>
               <label>
                 <span>Преподаватель <b>*</b></span>
-                <select name="subjectTeacher" [(ngModel)]="subjectForm.teacherId" required>
+                <div class="custom-select" [class.open]="customSelectOpen() === 'subjectTeacher'">
+                  <button type="button" (click)="toggleCustomSelect('subjectTeacher')" [disabled]="!data().teachers.length">
+                    <span>{{ data().teachers.length ? subjectTeacherLabel() : 'Нет преподавателей. Сначала создайте преподавателя' }}</span>
+                  </button>
+                  @if (customSelectOpen() === 'subjectTeacher') {
+                    <div class="custom-select-menu">
+                      @for (teacher of data().teachers; track teacher.id) {
+                        <button type="button" [class.selected]="subjectForm.teacherId === teacher.id" (click)="selectSubjectTeacher(teacher)">
+                          {{ fullName(teacher) }}
+                        </button>
+                      }
+                    </div>
+                  }
+                </div>
+                <select class="native-shadow" name="subjectTeacher" [(ngModel)]="subjectForm.teacherId" required tabindex="-1">
                   @if (!data().teachers.length) {
                     <option value="" disabled>Нет преподавателей. Сначала создайте преподавателя</option>
                   }
@@ -910,8 +933,10 @@
             <div class="entity-list">
               @for (subject of filteredSubjects(); track subject.id) {
                 <article class="entity-grid">
-                  <strong>{{ subject.name }}</strong>
-                  <span>{{ fullName(subject.teacher) }}</span>
+                  <span class="entity-main">
+                    <strong>{{ subject.name }}</strong>
+                    <span>Преподаватель: {{ fullName(subject.teacher) }}</span>
+                  </span>
                   <div class="action-row">
                     <button class="secondary-action" type="button" (click)="editSubject(subject)">Редактировать</button>
                     <button class="icon-button danger" type="button" (click)="deleteSubject(subject)" aria-label="Удалить дисциплину">
@@ -930,6 +955,28 @@
         </div>
       </div>
     </main>
+  </div>
+}
+
+@if (activeModal() === 'createGroup') {
+  <div class="modal-backdrop" (click)="closeModal()">
+    <form class="panel form-panel modal-panel" (ngSubmit)="createGroup()" autocomplete="off" (click)="$event.stopPropagation()">
+      <div class="panel-heading">
+        <div>
+          <p class="eyebrow">Справочник</p>
+          <h2>Группы</h2>
+        </div>
+        <lucide-icon name="users" />
+      </div>
+      <label>
+        <span>Название группы <b>*</b></span>
+        <input name="groupName" [(ngModel)]="groupForm.name" autocomplete="off" required />
+        @if (fieldError('groupName')) {
+          <small class="field-error">{{ fieldError('groupName') }}</small>
+        }
+      </label>
+      <button class="primary-action" type="submit">Создать группу</button>
+    </form>
   </div>
 }
 
@@ -1049,7 +1096,21 @@
         <label><span>Дата рождения</span><input [(ngModel)]="student.birthDate" name="editStudentBirth" type="date" /></label>
         <label>
           <span>Группа <b>*</b></span>
-          <select [ngModel]="studentGroupId(student)" (ngModelChange)="setStudentGroup(student, $event)" name="editStudentGroup">
+          <div class="custom-select" [class.open]="customSelectOpen() === 'editStudentGroup:' + student.id">
+            <button type="button" (click)="toggleCustomSelect('editStudentGroup:' + student.id)" [disabled]="!data().groups.length">
+              <span>{{ data().groups.length ? editStudentGroupLabel(student) : 'Нет групп' }}</span>
+            </button>
+            @if (customSelectOpen() === 'editStudentGroup:' + student.id) {
+              <div class="custom-select-menu">
+                @for (group of data().groups; track group.id) {
+                  <button type="button" [class.selected]="studentGroupId(student) === group.id" (click)="selectEditStudentGroup(student, group)">
+                    {{ group.name }}
+                  </button>
+                }
+              </div>
+            }
+          </div>
+          <select class="native-shadow" [ngModel]="studentGroupId(student)" (ngModelChange)="setStudentGroup(student, $event)" name="editStudentGroup" tabindex="-1">
             @for (group of data().groups; track group.id) {
               <option [value]="group.id">{{ group.name }}</option>
             }
@@ -1071,7 +1132,21 @@
         <label><span>Название <b>*</b></span><input [(ngModel)]="subject.name" name="editSubjectName" required /></label>
         <label>
           <span>Преподаватель <b>*</b></span>
-          <select [ngModel]="subjectTeacherId(subject)" (ngModelChange)="setSubjectTeacher(subject, $event)" name="editSubjectTeacher">
+          <div class="custom-select" [class.open]="customSelectOpen() === 'editSubjectTeacher:' + subject.id">
+            <button type="button" (click)="toggleCustomSelect('editSubjectTeacher:' + subject.id)" [disabled]="!data().teachers.length">
+              <span>{{ data().teachers.length ? editSubjectTeacherLabel(subject) : 'Нет преподавателей' }}</span>
+            </button>
+            @if (customSelectOpen() === 'editSubjectTeacher:' + subject.id) {
+              <div class="custom-select-menu">
+                @for (teacher of data().teachers; track teacher.id) {
+                  <button type="button" [class.selected]="subjectTeacherId(subject) === teacher.id" (click)="selectEditSubjectTeacher(subject, teacher)">
+                    {{ fullName(teacher) }}
+                  </button>
+                }
+              </div>
+            }
+          </div>
+          <select class="native-shadow" [ngModel]="subjectTeacherId(subject)" (ngModelChange)="setSubjectTeacher(subject, $event)" name="editSubjectTeacher" tabindex="-1">
             @for (teacher of data().teachers; track teacher.id) {
               <option [value]="teacher.id">{{ fullName(teacher) }}</option>
             }
@@ -1092,6 +1167,36 @@
         <button class="primary-action" type="submit">Сохранить</button>
       </div>
     </form>
+  </div>
+}
+
+@if (confirmDialog(); as confirm) {
+  <div class="modal-backdrop confirm-backdrop" (click)="closeConfirmDialog()">
+    <section class="panel modal-panel confirm-panel" role="dialog" aria-modal="true" aria-labelledby="confirm-title" (click)="$event.stopPropagation()">
+      <div class="panel-heading">
+        <div>
+          <p class="eyebrow">Подтверждение</p>
+          <h2 id="confirm-title">{{ confirm.title }}</h2>
+        </div>
+        <lucide-icon name="triangle-alert" />
+      </div>
+      @if (confirm.summaryTitle) {
+        <p class="confirm-summary">
+          <strong>{{ confirm.summaryTitle }}</strong>
+          @if (confirm.summaryMeta) {
+            <span> · {{ confirm.summaryMeta }}</span>
+          }
+        </p>
+      }
+      <p class="confirm-message">{{ confirm.message }}</p>
+      <div class="modal-actions confirm-actions">
+        <button class="primary-action danger-action" type="button" (click)="confirmPendingAction()">
+          <lucide-icon name="trash-2" />
+          {{ confirm.confirmLabel }}
+        </button>
+        <button class="secondary-action" type="button" (click)="closeConfirmDialog()">Отмена</button>
+      </div>
+    </section>
   </div>
 }
 

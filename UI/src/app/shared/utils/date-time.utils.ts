@@ -44,7 +44,7 @@ export function toApiDateTime(value: string): string {
 
 export function minutesPerStudentLabel(startTime: string, endTime: string, maxStudents: number): string {
   if (!startTime || !endTime || !maxStudents) {
-    return 'Укажите время и количество мест';
+    return 'Для расчета времени на студента укажите время и количество мест';
   }
 
   const minutes = (new Date(endTime).getTime() - new Date(startTime).getTime()) / 60_000;
