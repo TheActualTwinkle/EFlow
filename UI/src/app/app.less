@@ -15,6 +15,42 @@
   }
 }
 
+@keyframes request-slide {
+  0% {
+    transform: translateX(-120%) scaleX(0.34);
+  }
+
+  45% {
+    transform: translateX(8%) scaleX(0.58);
+  }
+
+  100% {
+    transform: translateX(142%) scaleX(0.36);
+  }
+}
+
+@keyframes skeleton-flow {
+  0% {
+    background-position: 140% 0;
+  }
+
+  100% {
+    background-position: -140% 0;
+  }
+}
+
+@keyframes skeleton-rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .auth-shell {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(360px, 440px);
@@ -517,6 +553,154 @@ nav {
   align-content: start;
   gap: 22px;
   padding: 28px;
+}
+
+.request-slider {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  height: 3px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--line) 64%, transparent);
+
+  span {
+    display: block;
+    width: 62%;
+    height: 100%;
+    border-radius: inherit;
+    background:
+      linear-gradient(90deg, transparent, color-mix(in srgb, var(--success) 68%, var(--primary)), transparent),
+      var(--primary);
+    transform-origin: center;
+    animation: request-slide 1.15s cubic-bezier(0.45, 0, 0.25, 1) infinite;
+  }
+}
+
+.workspace-content {
+  position: relative;
+  min-height: 260px;
+}
+
+.workspace-live {
+  display: grid;
+  gap: 22px;
+  opacity: 1;
+  transform: translateY(0);
+  transition:
+    opacity 260ms ease,
+    transform 260ms ease,
+    filter 260ms ease;
+}
+
+.workspace-content.is-loading .workspace-live {
+  opacity: 0;
+  transform: translateY(8px);
+  filter: blur(2px);
+  pointer-events: none;
+}
+
+.loading-surface {
+  position: absolute;
+  z-index: 10;
+  inset: 0;
+  display: grid;
+  align-content: start;
+  gap: 18px;
+  animation: skeleton-rise 220ms ease both;
+}
+
+.loading-stripe,
+.skeleton-line,
+.skeleton-title,
+.skeleton-number,
+.skeleton-row,
+.skeleton-input {
+  position: relative;
+  display: block;
+  overflow: hidden;
+  border-radius: 8px;
+  background:
+    linear-gradient(
+      100deg,
+      color-mix(in srgb, var(--surface-strong) 72%, var(--line)) 28%,
+      color-mix(in srgb, var(--success) 13%, var(--surface)) 42%,
+      color-mix(in srgb, var(--warning) 10%, var(--surface-strong)) 52%,
+      color-mix(in srgb, var(--surface-strong) 72%, var(--line)) 66%
+    );
+  background-size: 240% 100%;
+  animation: skeleton-flow 1.45s ease-in-out infinite;
+}
+
+.loading-stripe {
+  height: 5px;
+  border-radius: 999px;
+}
+
+.skeleton-metrics {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.skeleton-card,
+.skeleton-panel {
+  display: grid;
+  gap: 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+  padding: 18px;
+  box-shadow: 0 14px 34px color-mix(in srgb, var(--text) 6%, transparent);
+}
+
+.skeleton-card {
+  min-height: 108px;
+  align-content: start;
+}
+
+.skeleton-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(320px, 430px);
+  gap: 18px;
+  align-items: start;
+}
+
+.skeleton-line {
+  width: 46%;
+  height: 13px;
+
+  &.short {
+    width: 32%;
+  }
+}
+
+.skeleton-title {
+  width: 68%;
+  height: 28px;
+}
+
+.skeleton-number {
+  width: 70px;
+  height: 42px;
+  margin-top: 8px;
+}
+
+.skeleton-input {
+  height: 44px;
+}
+
+.skeleton-row {
+  height: 62px;
+
+  &.compact {
+    height: 38px;
+  }
+}
+
+.inline-skeleton {
+  display: grid;
+  gap: 10px;
 }
 
 .topbar,
@@ -1211,7 +1395,8 @@ lucide-icon {
 @media (max-width: 1050px) {
   .auth-shell,
   .app-shell,
-  .content-grid {
+  .content-grid,
+  .skeleton-grid {
     grid-template-columns: 1fr;
   }
 
@@ -1229,6 +1414,10 @@ lucide-icon {
   }
 
   .metrics-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .skeleton-metrics {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
@@ -1253,6 +1442,7 @@ lucide-icon {
   }
 
   .metrics-grid,
+  .skeleton-metrics,
   .form-grid,
   .entity-list article,
   .entity-list .entity-grid,

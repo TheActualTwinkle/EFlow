@@ -3,7 +3,7 @@ import { Component, computed, effect, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { NavigationEnd, Router } from '@angular/router';
 import { LucideAngularModule } from 'lucide-angular';
-import { filter, forkJoin } from 'rxjs';
+import { filter, finalize, forkJoin } from 'rxjs';
 
 import type { components } from './api/contracts';
 import { ApiService } from './core/api.service';
@@ -61,6 +61,7 @@ export class App {
   readonly toasts = signal<ToastMessage[]>([]);
   readonly data = signal<WorkspaceData>(emptyWorkspaceData());
   readonly loaded = signal(false);
+  readonly workspaceLoading = computed(() => this.auth.isAuthenticated() && !this.loaded());
   readonly fieldErrors = signal<Record<string, string>>({});
   readonly activeModal = signal<ModalView>(null);
   readonly userTable = signal<UserTable>('teachers');
@@ -83,6 +84,7 @@ export class App {
   readonly slotCreateGroupSearch = signal('');
   readonly expandedBookingSlotIds = signal<string[]>([]);
   readonly loadedBookingSlotIds = signal<string[]>([]);
+  readonly loadingBookingSlotIds = signal<string[]>([]);
   readonly admissionTooltip = signal({ visible: false, text: '', x: 0, y: 0 });
   readonly loginForm = { username: '', password: '' };
   readonly groupForm = { name: '' };
@@ -308,7 +310,10 @@ export class App {
         return;
       }
 
-      this.workspaceData.loadAdminSection(adminView).subscribe((workspace) => this.applyWorkspace(workspace));
+      this.workspaceData.loadAdminSection(adminView).subscribe({
+        next: (workspace) => this.applyWorkspace(workspace),
+        error: () => this.loaded.set(true),
+      });
       return;
     }
 
@@ -319,7 +324,10 @@ export class App {
           ? this.workspaceData.loadBookings(user, this.data(), roles)
           : this.workspaceData.loadOverview(user, this.data(), roles);
 
-    loader.subscribe((workspace) => this.applyWorkspace(workspace));
+    loader.subscribe({
+      next: (workspace) => this.applyWorkspace(workspace),
+      error: () => this.loaded.set(true),
+    });
   }
 
   private applyWorkspace(partial: Partial<WorkspaceData>): void {
@@ -878,14 +886,22 @@ export class App {
     this.expandedBookingSlotIds.update((ids) => (expanded ? ids.filter((id) => id !== slot.id) : [...ids, slot.id]));
 
     if (!expanded && !this.loadedBookingSlotIds().includes(slot.id)) {
-      this.api.getBookingsBySlot(slot.id, true).subscribe((bookings) => {
-        this.data.update((current) => ({
-          ...current,
-          bookings: [...current.bookings.filter((booking) => booking.slot?.id !== slot.id), ...bookings],
-        }));
-        this.loadedBookingSlotIds.update((ids) => (ids.includes(slot.id) ? ids : [...ids, slot.id]));
-      });
+      this.loadingBookingSlotIds.update((ids) => (ids.includes(slot.id) ? ids : [...ids, slot.id]));
+      this.api
+        .getBookingsBySlot(slot.id, true)
+        .pipe(finalize(() => this.loadingBookingSlotIds.update((ids) => ids.filter((id) => id !== slot.id))))
+        .subscribe((bookings) => {
+          this.data.update((current) => ({
+            ...current,
+            bookings: [...current.bookings.filter((booking) => booking.slot?.id !== slot.id), ...bookings],
+          }));
+          this.loadedBookingSlotIds.update((ids) => (ids.includes(slot.id) ? ids : [...ids, slot.id]));
+        });
     }
+  }
+
+  isBookingSlotLoading(slotId: string): boolean {
+    return this.loadingBookingSlotIds().includes(slotId);
   }
 
   notificationSlot(): SubmissionSlotView | null {

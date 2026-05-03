@@ -97,6 +97,53 @@
         </button>
       </header>
 
+      @if (api.busy()) {
+        <div class="request-slider" aria-hidden="true"><span></span></div>
+      }
+
+      <div class="workspace-content" [class.is-loading]="workspaceLoading()">
+        @if (workspaceLoading()) {
+          <section class="loading-surface" aria-hidden="true">
+            <div class="loading-stripe"></div>
+            @if (activeView() === 'overview') {
+              <div class="skeleton-metrics">
+                @for (item of [1, 2, 3, 4]; track item) {
+                  <div class="skeleton-card">
+                    <span class="skeleton-line short"></span>
+                    <span class="skeleton-number"></span>
+                  </div>
+                }
+              </div>
+              <div class="skeleton-grid">
+                <div class="skeleton-panel wide">
+                  <span class="skeleton-line short"></span>
+                  <span class="skeleton-title"></span>
+                  @for (item of [1, 2, 3, 4]; track item) {
+                    <span class="skeleton-row"></span>
+                  }
+                </div>
+                <div class="skeleton-panel">
+                  <span class="skeleton-line short"></span>
+                  <span class="skeleton-title"></span>
+                  @for (item of [1, 2, 3, 4, 5]; track item) {
+                    <span class="skeleton-row compact"></span>
+                  }
+                </div>
+              </div>
+            } @else {
+              <div class="skeleton-panel">
+                <span class="skeleton-line short"></span>
+                <span class="skeleton-title"></span>
+                <span class="skeleton-input"></span>
+                @for (item of [1, 2, 3, 4, 5]; track item) {
+                  <span class="skeleton-row"></span>
+                }
+              </div>
+            }
+          </section>
+        }
+
+        <div class="workspace-live">
       @if (activeView() === 'overview') {
         <section class="metrics-grid">
           <article>
@@ -563,6 +610,12 @@
                     </button>
                     @if (isBookingSlotExpanded(slot.id)) {
                       <div class="booking-list nested">
+                        @if (isBookingSlotLoading(slot.id)) {
+                          <div class="inline-skeleton">
+                            <span class="skeleton-row compact"></span>
+                            <span class="skeleton-row compact"></span>
+                          </div>
+                        } @else {
                         @for (booking of bookingsForSlot(slot.id); track booking.id) {
                           <article [class.current-user]="isCurrentUserBooking(booking)">
                             <div class="queue-number">{{ bookingPosition(booking) || '—' }}</div>
@@ -578,6 +631,7 @@
                           </article>
                         } @empty {
                           <p class="empty">На этот слот пока никто не записан.</p>
+                        }
                         }
                       </div>
                     }
@@ -873,6 +927,8 @@
           }
         </section>
       }
+        </div>
+      </div>
     </main>
   </div>
 }

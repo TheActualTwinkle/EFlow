@@ -1,9 +1,10 @@
 import { HttpClient, HttpErrorResponse, HttpParams } from '@angular/common/http';
-import { Injectable, signal } from '@angular/core';
+import { Injectable, inject, signal } from '@angular/core';
 import { catchError, forkJoin, map, of, throwError } from 'rxjs';
 
 import type { components } from '../api/contracts';
 import { apiBaseUrl } from './environment';
+import { HttpActivityService } from './http-activity.service';
 
 type Schemas = components['schemas'];
 type BookingRecordView = Schemas['BookingRecordView'];
@@ -29,10 +30,10 @@ interface ApiProblem {
 
 @Injectable({ providedIn: 'root' })
 export class ApiService {
-  private readonly busyState = signal(false);
+  private readonly httpActivity = inject(HttpActivityService);
   private readonly errorState = signal<string | null>(null);
 
-  readonly busy = this.busyState.asReadonly();
+  readonly busy = this.httpActivity.busy;
   readonly error = this.errorState.asReadonly();
 
   constructor(private readonly http: HttpClient) {}
