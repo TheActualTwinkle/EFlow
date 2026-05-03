@@ -7,4 +7,6 @@ namespace EFlow.Booking.Application.BookingRecords.Queries;
 public record GetBookingRecordsBySlotIdQuery : IRequest<Result<IEnumerable<BookingRecordView>>>
 {
     public required Guid SlotId { get; init; }
+    
+    public bool FetchStudentsGroups { get; init; }
 }

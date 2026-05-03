@@ -1,0 +1,77 @@
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateX(18px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.toast-stack {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  z-index: 50;
+  display: grid;
+  gap: 12px;
+}
+
+.toast {
+  display: grid;
+  grid-template-columns: 12px minmax(0, 1fr);
+  gap: 14px;
+  align-items: center;
+  width: min(480px, calc(100vw - 48px));
+  min-height: 76px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.14);
+  color: var(--text);
+  padding: 19px 22px;
+  font-size: 16px;
+  font-weight: 620;
+  line-height: 1.35;
+  animation: toast-in 220ms ease both;
+
+  &.success {
+    border-color: color-mix(in srgb, var(--success) 42%, var(--line));
+    background: color-mix(in srgb, var(--success) 6%, var(--surface));
+  }
+
+  &.warning {
+    border-color: color-mix(in srgb, var(--warning) 44%, var(--line));
+    background: color-mix(in srgb, var(--warning) 7%, var(--surface));
+  }
+
+  &.error {
+    border-color: color-mix(in srgb, var(--danger) 46%, var(--line));
+    background: color-mix(in srgb, var(--danger) 6%, var(--surface));
+  }
+}
+
+.toast-dot {
+  width: 11px;
+  height: 11px;
+  border-radius: 999px;
+  background: var(--muted);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--muted) 12%, transparent);
+
+  .success & {
+    background: var(--success);
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--success) 16%, transparent);
+  }
+
+  .warning & {
+    background: var(--warning);
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--warning) 18%, transparent);
+  }
+
+  .error & {
+    background: var(--danger);
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--danger) 16%, transparent);
+  }
+}

@@ -6,7 +6,7 @@ namespace EFlow.Booking.Application.BookingRecords.Commands.Update;
 
 public record UpdateBookingRecordCommand : IRequest<Result>, ITransactionalRequest
 {
-    public Guid Id { get; init; }
+    public required Guid Id { get; init; }
 
     public Guid? StudentId { get; init; }
 

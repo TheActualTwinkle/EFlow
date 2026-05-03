@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using EFlow.Booking.Application.Teachers.Commands;
 using EFlow.Booking.Application.Teachers.Queries;
+using EFlow.Booking.Contracts.Teachers;
 using EFlow.Booking.Domain;
 using EFlow.Booking.WebApi.Contracts.Teachers;
 using EFlow.Booking.WebApi.Extensions;
@@ -38,6 +39,7 @@ public class TeachersController(ISender sender) : ControllerBase
 
     [HttpGet("{id:guid}")]
     [Authorize]
+    [ProducesResponseType(typeof(TeacherView), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetTeacher(Guid id, CancellationToken cancellationToken)
     {
         var result = await sender.Send(new GetTeacherByIdQuery { Id = id }, cancellationToken);
@@ -49,6 +51,7 @@ public class TeachersController(ISender sender) : ControllerBase
 
     [HttpGet]
     [Authorize]
+    [ProducesResponseType(typeof(IEnumerable<TeacherView>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetAllTeachers(CancellationToken cancellationToken)
     {
         var result = await sender.Send(new GetAllTeachersQuery(), cancellationToken);

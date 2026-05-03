@@ -1,0 +1,7 @@
+<svg width="128" height="128" viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="EFlow wave E logo">
+  <rect width="128" height="128" rx="28" fill="#EEF6FF"/>
+  <path d="M34 34C46 26 58 26 70 34C82 42 94 42 106 34" stroke="#2563EB" stroke-width="10" stroke-linecap="round"/>
+  <path d="M34 64C46 56 58 56 70 64C82 72 94 72 106 64" stroke="#0F172A" stroke-width="10" stroke-linecap="round"/>
+  <path d="M34 94C46 86 58 86 70 94C82 102 94 102 106 94" stroke="#38BDF8" stroke-width="10" stroke-linecap="round"/>
+  <path d="M34 34C25 48 25 80 34 94" stroke="#2563EB" stroke-width="10" stroke-linecap="round"/>
+</svg>

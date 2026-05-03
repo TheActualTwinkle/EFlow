@@ -25,7 +25,12 @@ if (builder.Environment.IsOpenApiGenerator())
     
     builder.Services.AddControllers();
 
-    await builder.Build().RunAsync();
+    var openApiApp = builder.Build();
+
+    openApiApp.MapOpenApi();
+    openApiApp.MapControllers();
+
+    await openApiApp.RunAsync();
 
     return;
 }

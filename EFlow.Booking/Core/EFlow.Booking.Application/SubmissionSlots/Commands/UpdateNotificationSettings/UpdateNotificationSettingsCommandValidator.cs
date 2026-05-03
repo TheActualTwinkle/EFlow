@@ -13,7 +13,7 @@ public class UpdateNotificationSettingsCommandValidator : AbstractValidator<Upda
             .NotEmpty().WithMessage("User ID is required");
 
         RuleFor(x => x.SubmissionRemindTimes)
-            .NotNull().WithMessage("Reminder schedules are required");
+            .NotEmpty().WithMessage("Reminder schedules must not be empty");
 
         RuleFor(x => x.SubmissionRemindTimes)
             .Must(schedules => schedules.Distinct().Count() == schedules.Count)

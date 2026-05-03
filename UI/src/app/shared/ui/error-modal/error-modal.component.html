@@ -1,0 +1,9 @@
+@if (error) {
+  <div class="modal-backdrop" (click)="close.emit()">
+    <section class="error-modal" (click)="$event.stopPropagation()">
+      <h2>Ошибка</h2>
+      <p>{{ error }}</p>
+      <button class="primary-action" type="button" (click)="close.emit()">Понятно</button>
+    </section>
+  </div>
+}

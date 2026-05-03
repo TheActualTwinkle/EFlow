@@ -13,7 +13,10 @@ public class GetBookingRecordsBySlotIdQueryHandler(IUnitOfWork unitOfWork)
     {
         var bookings = await unitOfWork
             .GetQueryService<IBookingRecordQueryService>()
-            .GetBySlotIdAsync(new SubmissionSlotId(request.SlotId), cancellationToken);
+            .GetBySlotIdAsync(
+                new SubmissionSlotId(request.SlotId),
+                request.FetchStudentsGroups,
+                cancellationToken);
 
         return Result.Ok(bookings);
     }

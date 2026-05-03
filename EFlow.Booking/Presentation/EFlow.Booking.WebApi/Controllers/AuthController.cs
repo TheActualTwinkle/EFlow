@@ -1,13 +1,9 @@
-using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using System.Text;
 using EFlow.Booking.Domain;
 using EFlow.Booking.WebApi.Contracts.Auth;
-using EFlow.Common.Infrastructure;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.IdentityModel.Tokens;
 
 namespace EFlow.Booking.WebApi.Controllers;
 
@@ -15,9 +11,7 @@ namespace EFlow.Booking.WebApi.Controllers;
 [Route("api/auth")]
 public class AuthController(
     UserManager<Identity> userManager,
-    SignInManager<Identity> signInManager,
-    IConfiguration configuration,
-    ISystemClock systemClock)
+    SignInManager<Identity> signInManager)
     : ControllerBase
 {
     [HttpPost("login")]
@@ -41,9 +35,7 @@ public class AuthController(
 
         await signInManager.SignInAsync(user, true);
 
-        var token = await GenerateJwtTokenAsync(user);
-
-        return Ok(new { Token = token });
+        return Ok();
     }
 
     [HttpPost("logout")]
@@ -57,6 +49,7 @@ public class AuthController(
 
     [HttpGet("me")]
     [Authorize]
+    [ProducesResponseType(typeof(CurrentUserView), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetCurrentUser()
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -72,38 +65,13 @@ public class AuthController(
         var roles = await userManager.GetRolesAsync(user);
 
         return Ok(
-            new
+            new CurrentUserView
             {
-                user.Id,
-                user.UserName,
-                user.Email,
-                roles
+                Id = user.Id,
+                UserName = user.UserName,
+                Email = user.Email,
+                Roles = roles.ToArray()
             });
     }
 
-    private async Task<string> GenerateJwtTokenAsync(Identity user)
-    {
-        var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["Jwt:Key"]!));
-        var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
-        var roles = await userManager.GetRolesAsync(user);
-
-        var claims = new List<Claim>
-        {
-            new(ClaimTypes.NameIdentifier, user.Id.ToString()),
-            new(ClaimTypes.Name, user.UserName!),
-            new(ClaimTypes.Email, user.Email ?? string.Empty)
-        };
-
-        claims.AddRange(roles.Select(role => new Claim(ClaimTypes.Role, role)));
-
-        var token = new JwtSecurityToken(
-            configuration["Jwt:Issuer"],
-            configuration["Jwt:Audience"],
-            claims,
-            expires: systemClock.UtcNow.AddMinutes(configuration.GetValue<int>("Jwt:ExpireMinutes")),
-            signingCredentials: credentials
-        );
-
-        return new JwtSecurityTokenHandler().WriteToken(token);
-    }
 }

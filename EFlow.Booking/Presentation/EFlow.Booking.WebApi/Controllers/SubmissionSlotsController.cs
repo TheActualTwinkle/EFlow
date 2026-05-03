@@ -2,6 +2,8 @@ using System.Security.Claims;
 using EFlow.Booking.Application.SubmissionSlots.Commands;
 using EFlow.Booking.Application.SubmissionSlots.Commands.Update;
 using EFlow.Booking.Application.SubmissionSlots.Queries;
+using EFlow.Booking.Application.SubmissionSlots.Queries.GetByTeacherId;
+using EFlow.Booking.Contracts.SubmissionSlots;
 using EFlow.Booking.Domain;
 using EFlow.Booking.WebApi.Contracts.SubmissionSlots;
 using EFlow.Booking.WebApi.Extensions;
@@ -48,6 +50,7 @@ public class SubmissionSlotsController(ISender sender) : ControllerBase
 
     [HttpGet("{id:guid}")]
     [Authorize]
+    [ProducesResponseType(typeof(SubmissionSlotView), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetSlot(Guid id, CancellationToken cancellationToken)
     {
         var result = await sender.Send(new GetSubmissionSlotByIdQuery { Id = id }, cancellationToken);
@@ -59,6 +62,7 @@ public class SubmissionSlotsController(ISender sender) : ControllerBase
 
     [HttpGet]
     [Authorize]
+    [ProducesResponseType(typeof(IEnumerable<SubmissionSlotView>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetAllSlots(CancellationToken cancellationToken)
     {
         var result = await sender.Send(new GetAllSubmissionSlotsQuery(), cancellationToken);
@@ -81,6 +85,7 @@ public class SubmissionSlotsController(ISender sender) : ControllerBase
 
     [HttpGet("by-subject/{subjectId:guid}")]
     [Authorize]
+    [ProducesResponseType(typeof(IEnumerable<SubmissionSlotView>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetSlotsBySubject(Guid subjectId, CancellationToken cancellationToken)
     {
         var result = await sender.Send(new GetSubmissionSlotsBySubjectIdQuery { SubjectId = subjectId }, cancellationToken);
@@ -90,8 +95,21 @@ public class SubmissionSlotsController(ISender sender) : ControllerBase
             Ok(result.Value);
     }
 
+    [HttpGet("by-teacher/{teacherId:guid}")]
+    [Authorize]
+    [ProducesResponseType(typeof(IEnumerable<SubmissionSlotView>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetSlotsByTeacher(Guid teacherId, CancellationToken cancellationToken)
+    {
+        var result = await sender.Send(new GetSubmissionSlotsByTeacherIdQuery { TeacherId = teacherId }, cancellationToken);
+        
+        return result.IsFailed ?
+            result.Errors[0].ToProblemDetails() :
+            Ok(result.Value);
+    }
+
     [HttpGet("available")]
     [Authorize]
+    [ProducesResponseType(typeof(IEnumerable<SubmissionSlotView>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetAvailableSlots([FromQuery] GetAvailableSubmissionSlotsRequest request, CancellationToken cancellationToken)
     {
         var result = await sender.Send(new GetAvailableSubmissionSlotsQuery { FromDate = request.FromDate }, cancellationToken);

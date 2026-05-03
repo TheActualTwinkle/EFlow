@@ -2,6 +2,8 @@
     
     <PropertyGroup>
         <NoWarn>8618</NoWarn>
+        <NoWarn>1903</NoWarn>
+        <NoWarn>1608</NoWarn>
     </PropertyGroup>
 
     <ItemGroup>
