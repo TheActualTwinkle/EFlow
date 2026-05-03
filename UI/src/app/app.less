@@ -610,6 +610,56 @@ nav {
   }
 }
 
+.filter-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin: -4px 0 12px;
+}
+
+.filter-pills {
+  display: inline-flex;
+  gap: 4px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+  padding: 4px;
+
+  button {
+    min-height: 34px;
+    border: 0;
+    border-radius: 7px;
+    background: transparent;
+    color: var(--muted);
+    padding: 7px 10px;
+    font-weight: 720;
+
+    &.active,
+    &:hover {
+      background: var(--primary);
+      color: var(--bg);
+    }
+  }
+}
+
+.filter-check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 36px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--text);
+  padding: 7px 10px;
+
+  input {
+    width: 18px;
+    min-height: 18px;
+  }
+}
+
 .admin-layout {
   display: grid;
   gap: 16px;
@@ -694,6 +744,41 @@ nav {
   span {
     color: var(--muted);
   }
+}
+
+.timeline-item.no-admission,
+.slot-card.no-admission {
+  position: relative;
+  overflow: hidden;
+  border-color: color-mix(in srgb, var(--muted) 32%, var(--line));
+
+  &::after {
+    content: '';
+    position: absolute;
+    z-index: 1;
+    inset: 0;
+    pointer-events: none;
+    background: color-mix(in srgb, var(--muted) 24%, transparent);
+    backdrop-filter: grayscale(1);
+  }
+}
+
+.admission-tooltip {
+  position: fixed;
+  z-index: 80;
+  width: max-content;
+  max-width: min(320px, calc(100vw - 28px));
+  transform: translate(-50%, calc(-100% - 14px));
+  pointer-events: none;
+  border: 1px solid color-mix(in srgb, var(--line) 82%, var(--text));
+  border-radius: 8px;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  color: var(--text);
+  padding: 9px 11px;
+  font-size: 12px;
+  font-weight: 720;
+  line-height: 1.35;
 }
 
 .details {

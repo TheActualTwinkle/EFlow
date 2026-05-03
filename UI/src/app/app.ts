@@ -41,6 +41,7 @@ type StudentView = Schemas['StudentView'];
 type SubjectView = Schemas['SubjectView'];
 type SubmissionSlotView = Schemas['SubmissionSlotView'];
 type TeacherView = Schemas['TeacherView'];
+type SlotCompletionFilter = 'all' | 'active' | 'finished';
 
 @Component({
   selector: 'app-root',
@@ -74,10 +75,15 @@ export class App {
   readonly adminSearch = signal('');
   readonly slotSearch = signal('');
   readonly bookingSearch = signal('');
+  readonly slotCompletionFilter = signal<SlotCompletionFilter>('all');
+  readonly bookingCompletionFilter = signal<SlotCompletionFilter>('all');
+  readonly slotOnlyAdmitted = signal(false);
+  readonly bookingOnlyAdmitted = signal(false);
   readonly admissionSearch = signal('');
   readonly slotCreateGroupSearch = signal('');
   readonly expandedBookingSlotIds = signal<string[]>([]);
   readonly loadedBookingSlotIds = signal<string[]>([]);
+  readonly admissionTooltip = signal({ visible: false, text: '', x: 0, y: 0 });
   readonly loginForm = { username: '', password: '' };
   readonly groupForm = { name: '' };
   readonly personForm = createPersonForm();
@@ -98,6 +104,7 @@ export class App {
   private lastLoadedKey = '';
 
   readonly todayIso = new Date().toISOString().slice(0, 10);
+  private readonly noAdmissionHint = 'У вас нет допуска к этому слоту. Обратитесь к преподавателю.';
   readonly visibleSlots = computed(() => {
     const user = this.auth.user();
 
@@ -132,27 +139,24 @@ export class App {
   );
   readonly filteredVisibleSlots = computed(() => {
     const query = this.slotSearch().trim().toLowerCase();
-    if (!query) {
-      return this.visibleSlots();
-    }
-
-    return this.visibleSlots().filter((slot) =>
-      [this.slotTitle(slot), this.fullName(slot.teacher), slot.location, slot.comment]
-        .filter(Boolean)
-        .some((value) => value!.toLowerCase().includes(query)),
-    );
+    return this.visibleSlots().filter((slot) => this.slotMatchesFilters(slot, query, this.slotCompletionFilter(), this.slotOnlyAdmitted()));
   });
   readonly filteredBookings = computed(() => {
     const query = this.bookingSearch().trim().toLowerCase();
-    if (!query) {
-      return this.data().bookings;
-    }
+    return this.data().bookings.filter((booking) => {
+      const slot = booking.slot;
+      if (slot && !this.slotMatchesStateFilters(slot, this.bookingCompletionFilter(), this.bookingOnlyAdmitted())) {
+        return false;
+      }
 
-    return this.data().bookings.filter((booking) =>
-      [this.fullName(booking.student), booking.slot ? this.slotTitle(booking.slot) : '', booking.slot?.location]
+      if (!query) {
+        return true;
+      }
+
+      return [this.fullName(booking.student), slot ? this.slotTitle(slot) : '', slot?.location]
         .filter(Boolean)
-        .some((value) => value!.toLowerCase().includes(query)),
-    );
+        .some((value) => value!.toLowerCase().includes(query));
+    });
   });
   readonly bookingSlots = computed(() => {
     const slots = new Map<string, SubmissionSlotView>();
@@ -167,7 +171,11 @@ export class App {
   });
   readonly filteredBookingSlots = computed(() => {
     const query = this.bookingSearch().trim().toLowerCase();
-    let slots = this.visibleSlots();
+    let slots = this.visibleSlots().filter(
+      (slot) =>
+        this.slotMatchesStateFilters(slot, this.bookingCompletionFilter(), this.bookingOnlyAdmitted()) &&
+        this.slotMatchesBookingQuery(slot, query),
+    );
 
     if (this.auth.hasRole('Student')) {
       const userId = this.auth.user()?.id;
@@ -179,16 +187,7 @@ export class App {
 
       slots = slots.filter((slot) => bookedSlotIds.has(slot.id));
     }
-
-    if (!query) {
-      return slots;
-    }
-
-    return slots.filter((slot) =>
-      [this.slotTitle(slot), this.fullName(slot.teacher), slot.location, slot.comment]
-        .filter(Boolean)
-        .some((value) => value!.toLowerCase().includes(query)),
-    );
+    return slots;
   });
   readonly selectedSlot = computed(() => this.data().slots.find((slot) => slot.id === this.selectedSlotId()) ?? this.visibleSlots()[0] ?? null);
 
@@ -951,16 +950,92 @@ export class App {
     return !!userId && this.data().bookings.some((booking) => booking.slot?.id === slotId && booking.student?.id === userId);
   }
 
+  slotMatchesFilters(slot: SubmissionSlotView, query: string, completion: SlotCompletionFilter, onlyAdmitted: boolean): boolean {
+    return this.slotMatchesStateFilters(slot, completion, onlyAdmitted) && this.slotMatchesQuery(slot, query);
+  }
+
+  slotMatchesStateFilters(slot: SubmissionSlotView, completion: SlotCompletionFilter, onlyAdmitted: boolean): boolean {
+    if (completion === 'active' && this.isSlotFinished(slot)) {
+      return false;
+    }
+
+    if (completion === 'finished' && !this.isSlotFinished(slot)) {
+      return false;
+    }
+
+    return !onlyAdmitted || !this.auth.hasRole('Student') || this.isAdmittedToCurrentStudent(slot);
+  }
+
+  slotMatchesQuery(slot: SubmissionSlotView, query: string): boolean {
+    if (!query) {
+      return true;
+    }
+
+    return [this.slotTitle(slot), this.fullName(slot.teacher), slot.location, slot.comment]
+      .filter(Boolean)
+      .some((value) => value!.toLowerCase().includes(query));
+  }
+
+  slotMatchesBookingQuery(slot: SubmissionSlotView, query: string): boolean {
+    if (this.slotMatchesQuery(slot, query)) {
+      return true;
+    }
+
+    return this.bookingsForSlot(slot.id).some((booking) =>
+      [this.fullName(booking.student), booking.student?.group?.name]
+        .filter(Boolean)
+        .some((value) => value!.toLowerCase().includes(query)),
+    );
+  }
+
+  isAdmittedToCurrentStudent(slot: SubmissionSlotView): boolean {
+    const userId = this.auth.user()?.id;
+    return !!userId && this.auth.hasRole('Student') && this.isAdmitted(slot, userId);
+  }
+
   slotBookingDisabledReason(slot: SubmissionSlotView): string {
     if (this.isBookedByCurrentUser(slot.id)) {
       return 'Вы уже записаны на этот слот.';
     }
 
-    if (!this.studentCanBookSlot(slot)) {
-      return 'Нельзя записаться: нет допуска к этому слоту.';
+    const admissionHint = this.slotAdmissionHint(slot);
+    if (admissionHint) {
+      return admissionHint;
     }
 
     return '';
+  }
+
+  slotAdmissionHint(slot: SubmissionSlotView): string {
+    return this.studentLacksAdmission(slot) ? this.noAdmissionHint : '';
+  }
+
+  showAdmissionTooltip(slot: SubmissionSlotView, event: MouseEvent): void {
+    const text = this.slotAdmissionHint(slot);
+    if (!text) {
+      this.hideAdmissionTooltip();
+      return;
+    }
+
+    this.admissionTooltip.set({ visible: true, text, x: event.clientX, y: event.clientY });
+  }
+
+  moveAdmissionTooltip(event: MouseEvent): void {
+    const tooltip = this.admissionTooltip();
+    if (!tooltip.visible) {
+      return;
+    }
+
+    this.admissionTooltip.set({ ...tooltip, x: event.clientX, y: event.clientY });
+  }
+
+  hideAdmissionTooltip(): void {
+    this.admissionTooltip.set({ visible: false, text: '', x: 0, y: 0 });
+  }
+
+  studentLacksAdmission(slot: SubmissionSlotView): boolean {
+    const user = this.auth.user();
+    return !!user && this.auth.hasRole('Student') && !this.isAdmitted(slot, user.id);
   }
 
   studentCanBookSlot(slot: SubmissionSlotView): boolean {
@@ -969,7 +1044,7 @@ export class App {
       return false;
     }
 
-    return slot.allowAllGroups || this.isAdmitted(slot, user.id);
+    return this.isAdmitted(slot, user.id);
   }
 
   isSlotFinished(slot: SubmissionSlotView): boolean {
