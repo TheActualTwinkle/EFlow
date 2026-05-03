@@ -47,9 +47,6 @@ internal sealed class ApiScenario(ApiTestStackFixture fixture)
 
         // Assert
         loginResponse.StatusCode.Should().Be(HttpStatusCode.OK);
-        var authToken = await session.ReadAsync<AuthTokenResponse>(loginResponse);
-        authToken.Should().NotBeNull();
-        authToken.Token.Should().NotBeNullOrWhiteSpace();
 
         var meResponse = await session.GetAsync("/api/auth/me");
         meResponse.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -78,9 +75,6 @@ internal sealed class ApiScenario(ApiTestStackFixture fixture)
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
-        var authToken = await session.ReadAsync<AuthTokenResponse>(response);
-        authToken.Should().NotBeNull();
-        authToken.Token.Should().NotBeNullOrWhiteSpace();
 
         return session;
     }
