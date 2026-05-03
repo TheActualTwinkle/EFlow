@@ -29,10 +29,6 @@ public class SubmissionSlotAdmissionConfiguration : IEntityTypeConfiguration<Sub
             .HasColumnName("student_id")
             .IsRequired();
 
-        builder.Property(admission => admission.CreatedAt)
-            .HasColumnName("created_at")
-            .IsRequired();
-
         builder.HasOne<SubmissionSlot>()
             .WithMany(slot => slot.Admissions)
             .HasForeignKey(admission => admission.SubmissionSlotId)
