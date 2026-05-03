@@ -28,24 +28,30 @@ public sealed class BookingRecordQueryService(ApplicationDbContext context) : IB
             .Select(MapToView())
             .ToListAsync(cancellationToken);
 
-    public async Task<IEnumerable<BookingRecordView>> GetBySlotIdAsync(SubmissionSlotId slotId, CancellationToken cancellationToken = new()) =>
+    public async Task<IEnumerable<BookingRecordView>> GetBySlotIdAsync(
+        SubmissionSlotId slotId,
+        bool fetchStudentsGroup,
+        CancellationToken cancellationToken = new()) =>
         await context.BookingRecords
             .Where(r => r.SlotId == slotId)
-            .Select(MapToView())
+            .Select(MapToView(fetchStudentsGroup))
             .ToListAsync(cancellationToken);
 
-    private Expression<Func<BookingRecord, BookingRecordView>> MapToView() =>
+    private Expression<Func<BookingRecord, BookingRecordView>> MapToView(bool fetchStudentsGroup = false) =>
         record => new BookingRecordView
         {
             Id = record.Id.Value,
             Student = context.Students
                 .Where(s => s.Id == record.StudentId)
-                .Select(s => s.ToStudentView())
-                .FirstOrDefault()!,
+                .Select(s => s.ToStudentView(
+                    fetchStudentsGroup ?
+                        context.Groups.FirstOrDefault(g => g.Id == s.GroupId) :
+                        null))
+                .FirstOrDefault(),
             Slot = context.SubmissionSlots
                 .Where(s => s.Id == record.SlotId)
                 .Select(s => s.ToSubmissionSlotView())
-                .FirstOrDefault()!,
+                .FirstOrDefault(),
             CreatedAt = record.CreatedAt
         };
 }

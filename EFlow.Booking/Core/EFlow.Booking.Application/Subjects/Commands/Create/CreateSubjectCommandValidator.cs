@@ -12,5 +12,8 @@ public class CreateSubjectCommandValidator : AbstractValidator<CreateSubjectComm
 
         RuleFor(x => x.TeacherId)
             .NotEmpty().WithMessage("Teacher ID is required");
+
+        RuleFor(x => x.GroupIds)
+            .NotEmpty().WithMessage("At least one group ID is required");
     }
 }

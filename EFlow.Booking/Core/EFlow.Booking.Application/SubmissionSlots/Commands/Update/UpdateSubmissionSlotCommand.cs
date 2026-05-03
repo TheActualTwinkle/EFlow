@@ -6,7 +6,7 @@ namespace EFlow.Booking.Application.SubmissionSlots.Commands.Update;
 
 public record UpdateSubmissionSlotCommand : IRequest<Result>, ITransactionalRequest
 {
-    public Guid Id { get; init; }
+    public required Guid Id { get; init; }
     
     public Guid? TeacherId { get; init; }
 

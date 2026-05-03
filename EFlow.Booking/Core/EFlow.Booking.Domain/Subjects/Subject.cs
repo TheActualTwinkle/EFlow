@@ -26,7 +26,7 @@ public sealed class Subject : Entity, IAggreagateRoot
         var trimmedName = name.Trim();
         
         ThrowIfBroken(new SubjectNameMustBeProperLengthRule(trimmedName));
-        
+        ThrowIfBroken(new GroupIdsMustNotBeEmpty(groupIds));
         ThrowIfBroken(new GroupIdsMustNotDuplicateRule(groupIds));
 
         Id = new SubjectId(Guid.CreateVersion7());

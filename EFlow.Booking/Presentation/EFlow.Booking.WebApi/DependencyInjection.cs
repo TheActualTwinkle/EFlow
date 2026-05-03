@@ -1,7 +1,6 @@
 using System.Text;
 using EFlow.Booking.Domain;
 using EFlow.Booking.Persistence.DatabaseContext;
-using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
@@ -10,22 +9,25 @@ namespace EFlow.Booking.WebApi;
 
 public static class DependencyInjection
 {
-    public static async Task<IApplicationBuilder> CreateRolesAsync(this IApplicationBuilder builder)
+    extension(IApplicationBuilder builder)
     {
-        using var scope = builder.ApplicationServices.CreateScope();
-
-        var services = scope.ServiceProvider;
-        var roleManager = services.GetRequiredService<RoleManager<IdentityRole<Guid>>>();
-
-        foreach (var role in Identity.Roles.GetAll())
+        public async Task<IApplicationBuilder> CreateRolesAsync()
         {
-            if (await roleManager.RoleExistsAsync(role))
-                continue;
+            using var scope = builder.ApplicationServices.CreateScope();
 
-            await roleManager.CreateAsync(new IdentityRole<Guid>(role));
+            var services = scope.ServiceProvider;
+            var roleManager = services.GetRequiredService<RoleManager<IdentityRole<Guid>>>();
+
+            foreach (var role in Identity.Roles.GetAll())
+            {
+                if (await roleManager.RoleExistsAsync(role))
+                    continue;
+
+                await roleManager.CreateAsync(new IdentityRole<Guid>(role));
+            }
+
+            return builder;
         }
-
-        return builder;
     }
 
     extension(IServiceCollection services)
@@ -41,35 +43,38 @@ public static class DependencyInjection
                     options.Password.RequiredLength = 6; // TODO сделать нормальные ограничения
                     options.Lockout.MaxFailedAccessAttempts = 3;
                     options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(1);
-                    options.Lockout.AllowedForNewUsers = true;
                 })
                 .AddEntityFrameworkStores<ApplicationDbContext>()
                 .AddDefaultTokenProviders();
 
+            services.ConfigureApplicationCookie(options =>
+            {
+                options.ExpireTimeSpan = TimeSpan.FromDays(7);
+
+                options.Events.OnRedirectToLogin = context =>
+                {
+                    context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+
+                    return Task.CompletedTask;
+                };
+
+                options.Events.OnRedirectToAccessDenied = context =>
+                {
+                    context.Response.StatusCode = StatusCodes.Status403Forbidden;
+
+                    return Task.CompletedTask;
+                };
+            });
+
+            const string jwtOrCookieScheme = "JWT_OR_COOKIE";
+
             services.AddAuthentication(options =>
                 {
-                    options.DefaultScheme = "JWT_OR_COOKIE";
-                    options.DefaultChallengeScheme = "JWT_OR_COOKIE";
+                    options.DefaultScheme = jwtOrCookieScheme;
+                    options.DefaultAuthenticateScheme = jwtOrCookieScheme;
+                    options.DefaultChallengeScheme = jwtOrCookieScheme;
+                    options.DefaultForbidScheme = jwtOrCookieScheme;
                 })
-                .AddCookie(
-                    CookieAuthenticationDefaults.AuthenticationScheme, options =>
-                    {
-                        options.ExpireTimeSpan = TimeSpan.FromDays(7);
-
-                        options.Events.OnRedirectToLogin = context =>
-                        {
-                            context.Response.StatusCode = StatusCodes.Status401Unauthorized;
-
-                            return Task.CompletedTask;
-                        };
-
-                        options.Events.OnRedirectToAccessDenied = context =>
-                        {
-                            context.Response.StatusCode = StatusCodes.Status403Forbidden;
-
-                            return Task.CompletedTask;
-                        };
-                    })
                 .AddJwtBearer(
                     JwtBearerDefaults.AuthenticationScheme, options =>
                     {
@@ -86,7 +91,7 @@ public static class DependencyInjection
                         };
                     })
                 .AddPolicyScheme(
-                    "JWT_OR_COOKIE", "JWT_OR_COOKIE", options =>
+                    jwtOrCookieScheme, jwtOrCookieScheme, options =>
                     {
                         options.ForwardDefaultSelector = context =>
                         {
@@ -94,7 +99,7 @@ public static class DependencyInjection
 
                             return authorization?.StartsWith("Bearer ") == true ?
                                 JwtBearerDefaults.AuthenticationScheme :
-                                CookieAuthenticationDefaults.AuthenticationScheme;
+                                IdentityConstants.ApplicationScheme;
                         };
                     });
 

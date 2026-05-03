@@ -1,0 +1,15 @@
+eflow-edu.ru {
+    encode gzip zstd
+
+    handle /api/* {
+        reverse_proxy booking-api:8081
+    }
+
+    handle {
+        reverse_proxy ui:80
+    }
+}
+
+www.eflow-edu.ru {
+    redir https://eflow-edu.ru{uri} permanent
+}

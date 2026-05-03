@@ -1,6 +1,7 @@
 using EFlow.Booking.Application.Groups.Commands;
 using EFlow.Booking.Application.Groups.Commands.Update;
 using EFlow.Booking.Application.Groups.Queries;
+using EFlow.Booking.Contracts.Groups;
 using EFlow.Booking.Domain;
 using EFlow.Booking.WebApi.Contracts.Groups;
 using EFlow.Booking.WebApi.Extensions;
@@ -32,6 +33,7 @@ public class GroupsController(ISender sender) : ControllerBase
 
     [HttpGet("{id:guid}")]
     [Authorize]
+    [ProducesResponseType(typeof(GroupView), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetGroup(Guid id, CancellationToken cancellationToken)
     {
         var result = await sender.Send(new GetGroupByIdQuery { Id = id }, cancellationToken);
@@ -43,6 +45,7 @@ public class GroupsController(ISender sender) : ControllerBase
 
     [HttpGet]
     [Authorize]
+    [ProducesResponseType(typeof(IEnumerable<GroupView>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetAllGroups(CancellationToken cancellationToken)
     {
         var result = await sender.Send(new GetAllGroupsQuery(), cancellationToken);

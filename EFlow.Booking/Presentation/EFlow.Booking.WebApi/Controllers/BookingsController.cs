@@ -2,6 +2,7 @@ using System.Security.Claims;
 using EFlow.Booking.Application.BookingRecords.Commands;
 using EFlow.Booking.Application.BookingRecords.Commands.Update;
 using EFlow.Booking.Application.BookingRecords.Queries;
+using EFlow.Booking.Contracts.BookingRecords;
 using EFlow.Booking.Domain;
 using EFlow.Booking.WebApi.Contracts.Bookings;
 using EFlow.Booking.WebApi.Extensions;
@@ -46,6 +47,7 @@ public class BookingsController(ISender sender) : ControllerBase
 
     [HttpGet("{id:guid}")]
     [Authorize]
+    [ProducesResponseType(typeof(BookingRecordView), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetBooking(Guid id, CancellationToken cancellationToken)
     {
         var result = await sender.Send(new GetBookingRecordByIdQuery { Id = id }, cancellationToken);
@@ -57,6 +59,7 @@ public class BookingsController(ISender sender) : ControllerBase
 
     [HttpGet]
     [Authorize(Roles = Identity.Roles.Admin)]
+    [ProducesResponseType(typeof(IEnumerable<BookingRecordView>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetAllBookings(CancellationToken cancellationToken)
     {
         var result = await sender.Send(new GetAllBookingRecordsQuery(), cancellationToken);
@@ -68,6 +71,7 @@ public class BookingsController(ISender sender) : ControllerBase
 
     [HttpGet("by-student/{studentId:guid}")]
     [Authorize]
+    [ProducesResponseType(typeof(IEnumerable<BookingRecordView>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetBookingsByStudent(Guid studentId, CancellationToken cancellationToken)
     {
         if (User.IsInRole(Identity.Roles.Student))
@@ -91,9 +95,19 @@ public class BookingsController(ISender sender) : ControllerBase
 
     [HttpGet("by-slot/{slotId:guid}")]
     [Authorize]
-    public async Task<IActionResult> GetBookingsBySlot(Guid slotId, CancellationToken cancellationToken)
+    [ProducesResponseType(typeof(IEnumerable<BookingRecordView>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetBookingsBySlot(
+        Guid slotId,
+        [FromQuery] bool fetchGroups = false,
+        CancellationToken cancellationToken = new())
     {
-        var result = await sender.Send(new GetBookingRecordsBySlotIdQuery { SlotId = slotId }, cancellationToken);
+        var result = await sender.Send(
+            new GetBookingRecordsBySlotIdQuery
+            {
+                SlotId = slotId,
+                FetchStudentsGroups = fetchGroups
+            },
+            cancellationToken);
 
         return result.IsFailed ?
             result.Errors[0].ToProblemDetails() :

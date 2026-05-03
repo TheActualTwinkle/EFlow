@@ -1,6 +1,7 @@
 using EFlow.Booking.Contracts.SubmissionSlots;
 using EFlow.Booking.Domain.Subjects;
 using EFlow.Booking.Domain.SubmissionSlots;
+using EFlow.Booking.Domain.Teachers;
 using EFlow.Booking.Persistence.DatabaseContext;
 using EFlow.Booking.Persistence.Extensions;
 using Microsoft.EntityFrameworkCore;
@@ -30,6 +31,15 @@ public sealed class SubmissionSlotQueryService(ApplicationDbContext context) : I
     {
         var slots = await QuerySlots()
             .Where(slot => slot.SubjectId == subjectId)
+            .ToListAsync(cancellationToken);
+
+        return await MapToViewsAsync(slots, cancellationToken);
+    }
+
+    public async Task<IEnumerable<SubmissionSlotView>> GetByTeacherIdAsync(TeacherId teacherId, CancellationToken cancellationToken = new())
+    {
+        var slots = await QuerySlots()
+            .Where(slot => slot.TeacherId == teacherId)
             .ToListAsync(cancellationToken);
 
         return await MapToViewsAsync(slots, cancellationToken);

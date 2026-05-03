@@ -1,0 +1,8 @@
+<div class="toast-stack" aria-live="polite">
+  @for (toast of toasts; track toast.id) {
+    <div class="toast" [class.success]="toast.tone === 'success'" [class.warning]="toast.tone === 'warning'" [class.error]="toast.tone === 'error'">
+      <span class="toast-dot"></span>
+      <span>{{ toast.text }}</span>
+    </div>
+  }
+</div>

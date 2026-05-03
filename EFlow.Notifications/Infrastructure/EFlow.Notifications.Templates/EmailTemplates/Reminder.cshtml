@@ -3,26 +3,37 @@
 <html lang="ru">
 <head>
     <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>@Model.Title</title>
 </head>
-<body style="margin:0;padding:24px;background:#fff7ed;font-family:'Segoe UI',Arial,sans-serif;color:#292524;">
-    <div style="max-width:720px;margin:0 auto;background:#ffffff;border-radius:24px;overflow:hidden;border:1px solid #fed7aa;box-shadow:0 24px 64px rgba(154,52,18,.08);">
-        <div style="padding:34px 36px;background:linear-gradient(135deg,#c2410c 0%,#ea580c 100%);color:#fff;">
-            <div style="display:inline-block;padding:8px 14px;border-radius:999px;background:rgba(255,255,255,.16);font-size:12px;letter-spacing:.08em;text-transform:uppercase;">Напоминание</div>
-            <h1 style="margin:18px 0 10px;font-size:30px;line-height:1.15;">@Model.Title</h1>
-            <p style="margin:0;font-size:16px;line-height:1.65;color:rgba(255,255,255,.88);">@Model.Lead</p>
+<body style="margin:0;padding:24px;background:#f5f5f5;font-family:Inter,'Segoe UI',Arial,sans-serif;color:#111111;letter-spacing:0;">
+    <div style="max-width:720px;margin:0 auto;border:1px solid #dedede;border-radius:8px;background:#ffffff;box-shadow:0 18px 44px rgba(0,0,0,.08);overflow:hidden;">
+        <div style="padding:22px 24px;border-bottom:1px solid #dedede;background:#ffffff;">
+            <div style="font-size:12px;font-weight:760;line-height:1;text-transform:uppercase;color:#666666;">Напоминание</div>
+            <h1 style="margin:8px 0 0;font-size:26px;line-height:1.2;font-weight:780;color:#111111;">@Model.Title</h1>
+            <p style="margin:12px 0 0;font-size:15px;line-height:1.6;color:#666666;">@Model.Lead</p>
         </div>
-        <div style="padding:28px 36px 32px;">
-            <div style="padding:22px;border-radius:20px;background:#fffaf5;border:1px solid #fed7aa;">
-                <div style="font-size:22px;font-weight:700;color:#7c2d12;">@Model.SubjectName</div>
-                <div style="margin-top:8px;font-size:16px;color:#44403c;">@Model.TeacherName</div>
-                <div style="margin-top:20px;font-size:14px;color:#78716c;">Время</div>
-                <div style="margin-top:6px;font-size:18px;font-weight:700;">@Model.TimeRange</div>
-                <div style="margin-top:18px;font-size:14px;color:#78716c;">Место</div>
-                <div style="margin-top:6px;font-size:16px;">@Model.Location</div>
-                <div style="margin-top:18px;font-size:14px;color:#78716c;">Доступ</div>
-                <div style="margin-top:6px;font-size:16px;">@Model.Audience</div>
+
+        <div style="padding:18px 24px 24px;background:#ffffff;">
+            <div style="border:1px solid #dedede;border-radius:8px;background:#fafafa;padding:16px;">
+                <div style="font-size:21px;font-weight:780;line-height:1.25;color:#111111;">@Model.SubjectName</div>
+                <div style="margin-top:6px;font-size:14px;line-height:1.45;color:#666666;">@Model.TeacherName</div>
             </div>
+
+            <table role="presentation" style="width:100%;margin-top:16px;border-collapse:separate;border-spacing:0 10px;">
+                <tr>
+                    <td style="width:160px;padding:0;color:#666666;font-size:13px;line-height:1.4;">Время</td>
+                    <td style="padding:0;color:#111111;font-size:15px;font-weight:720;line-height:1.4;">@Model.TimeRange</td>
+                </tr>
+                <tr>
+                    <td style="padding:0;color:#666666;font-size:13px;line-height:1.4;">Место</td>
+                    <td style="padding:0;color:#111111;font-size:15px;line-height:1.4;">@Model.Location</td>
+                </tr>
+                <tr>
+                    <td style="padding:0;color:#666666;font-size:13px;line-height:1.4;">Доступ</td>
+                    <td style="padding:0;color:#111111;font-size:15px;line-height:1.4;">@Model.Audience</td>
+                </tr>
+            </table>
         </div>
     </div>
 </body>

@@ -1,6 +1,7 @@
 using EFlow.Booking.Application.Subjects.Commands;
 using EFlow.Booking.Application.Subjects.Commands.Update;
 using EFlow.Booking.Application.Subjects.Queries;
+using EFlow.Booking.Contracts.Subjects;
 using EFlow.Booking.Domain;
 using EFlow.Booking.WebApi.Contracts.Subjects;
 using EFlow.Booking.WebApi.Extensions;
@@ -34,6 +35,7 @@ public class SubjectsController(ISender sender) : ControllerBase
 
     [HttpGet("{id:guid}")]
     [Authorize]
+    [ProducesResponseType(typeof(SubjectView), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetSubject(Guid id, CancellationToken cancellationToken)
     {
         var result = await sender.Send(new GetSubjectByIdQuery { Id = id }, cancellationToken);
@@ -45,6 +47,7 @@ public class SubjectsController(ISender sender) : ControllerBase
 
     [HttpGet]
     [Authorize]
+    [ProducesResponseType(typeof(IEnumerable<SubjectView>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetAllSubjects(CancellationToken cancellationToken)
     {
         var result = await sender.Send(new GetAllSubjectsQuery(), cancellationToken);
@@ -56,6 +59,7 @@ public class SubjectsController(ISender sender) : ControllerBase
 
     [HttpGet("by-teacher/{teacherId:guid}")]
     [Authorize]
+    [ProducesResponseType(typeof(IEnumerable<SubjectView>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetSubjectsByTeacher(Guid teacherId, CancellationToken cancellationToken)
     {
         var result = await sender.Send(new GetSubjectsByTeacherIdQuery { TeacherId = teacherId }, cancellationToken);
