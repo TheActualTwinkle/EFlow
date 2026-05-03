@@ -203,7 +203,7 @@ public sealed class SubmissionSlot : Entity
         if (existingAdmission is not null)
             return existingAdmission;
 
-        var admission = SubmissionSlotAdmission.Create(Id, studentId, nowUtc, nowUtc);
+        var admission = SubmissionSlotAdmission.Create(Id, studentId);
 
         Admissions.Add(admission);
 
@@ -223,8 +223,7 @@ public sealed class SubmissionSlot : Entity
     public void UpdateNotificationSettings(
         Guid userId,
         ICollection<SubmissionRemindTime> bookingRecordRemindTime,
-        BookingNotificationMode? bookingNotificationMode,
-        DateTime nowUtc)
+        BookingNotificationMode? bookingNotificationMode)
     {
         var existingSettings = NotificationSettings.FirstOrDefault(s => s.UserId == userId);
 
@@ -235,9 +234,7 @@ public sealed class SubmissionSlot : Entity
             Id,
             userId,
             bookingRecordRemindTime,
-            bookingNotificationMode,
-            nowUtc,
-            nowUtc);
+            bookingNotificationMode);
 
         NotificationSettings.Add(settings);
     }

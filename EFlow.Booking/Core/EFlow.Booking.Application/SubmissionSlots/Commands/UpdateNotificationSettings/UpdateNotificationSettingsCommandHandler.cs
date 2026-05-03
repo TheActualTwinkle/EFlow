@@ -11,7 +11,6 @@ namespace EFlow.Booking.Application.SubmissionSlots.Commands;
 
 public class UpdateNotificationSettingsCommandHandler(
     IUnitOfWork unitOfWork,
-    ISystemClock systemClock,
     UserManager<Identity> userManager)
     : IRequestHandler<UpdateNotificationSettingsCommand, Result>
 {
@@ -37,8 +36,7 @@ public class UpdateNotificationSettingsCommandHandler(
         slot.UpdateNotificationSettings(
             request.UserId,
             request.SubmissionRemindTimes,
-            request.BookingNotificationMode,
-            systemClock.UtcNow);
+            request.BookingNotificationMode);
 
         repository.Update(slot);
 

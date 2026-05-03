@@ -49,10 +49,6 @@ public class SubmissionSlotNotificationSettingsConfiguration : IEntityTypeConfig
             .HasColumnName("booking_notification_mode")
             .HasConversion<int?>();
 
-        builder.Property(settings => settings.CreatedAt)
-            .HasColumnName("created_at")
-            .IsRequired();
-
         builder.HasOne<SubmissionSlot>()
             .WithMany(slot => slot.NotificationSettings)
             .HasForeignKey(settings => settings.SubmissionSlotId)

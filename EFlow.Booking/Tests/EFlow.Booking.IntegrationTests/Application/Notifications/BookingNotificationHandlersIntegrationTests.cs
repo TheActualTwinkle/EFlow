@@ -102,8 +102,8 @@ public class BookingNotificationHandlersIntegrationTests
 
         var recipientId = Guid.NewGuid();
         var skippedRecipientId = Guid.NewGuid();
-        slot.UpdateNotificationSettings(recipientId, [SubmissionRemindTime.OneWeek], BookingNotificationMode.All, Utc(2026, 04, 28, 12));
-        slot.UpdateNotificationSettings(skippedRecipientId, [SubmissionRemindTime.FourHours], BookingNotificationMode.All, Utc(2026, 04, 28, 12));
+        slot.UpdateNotificationSettings(recipientId, [SubmissionRemindTime.OneWeek], BookingNotificationMode.All);
+        slot.UpdateNotificationSettings(skippedRecipientId, [SubmissionRemindTime.FourHours], BookingNotificationMode.All);
 
         var domainEvent = new SubmissionSlotUpdatedDomainEvent
         {
@@ -188,13 +188,13 @@ public class BookingNotificationHandlersIntegrationTests
         var notifyAllId = Guid.NewGuid();
         var notifyCreatedOnlyId = Guid.NewGuid();
         var notifyCancelledOnlyId = Guid.NewGuid();
-        slot.UpdateNotificationSettings(notifyAllId, [SubmissionRemindTime.OneWeek], BookingNotificationMode.All, Utc(2026, 04, 28, 12));
+        slot.UpdateNotificationSettings(notifyAllId, [SubmissionRemindTime.OneWeek], BookingNotificationMode.All);
 
         slot.UpdateNotificationSettings(
-            notifyCreatedOnlyId, [SubmissionRemindTime.TwoDays], BookingNotificationMode.OnlyNewBooking, Utc(2026, 04, 28, 12));
+            notifyCreatedOnlyId, [SubmissionRemindTime.TwoDays], BookingNotificationMode.OnlyNewBooking);
 
         slot.UpdateNotificationSettings(
-            notifyCancelledOnlyId, [SubmissionRemindTime.FourHours], BookingNotificationMode.OnlyCancellation, Utc(2026, 04, 28, 12));
+            notifyCancelledOnlyId, [SubmissionRemindTime.FourHours], BookingNotificationMode.OnlyCancellation);
 
         slot.AddAdmission(bookedStudent.Id, Utc(2026, 04, 28, 12));
         var bookingRecord = slot.BookToSlot(bookedStudent, [], Utc(2026, 04, 28, 12));
@@ -256,13 +256,13 @@ public class BookingNotificationHandlersIntegrationTests
         var notifyAllId = Guid.NewGuid();
         var notifyCreatedOnlyId = Guid.NewGuid();
         var notifyCancelledOnlyId = Guid.NewGuid();
-        slot.UpdateNotificationSettings(notifyAllId, [SubmissionRemindTime.OneWeek], BookingNotificationMode.All, Utc(2026, 04, 28, 12));
+        slot.UpdateNotificationSettings(notifyAllId, [SubmissionRemindTime.OneWeek], BookingNotificationMode.All);
 
         slot.UpdateNotificationSettings(
-            notifyCreatedOnlyId, [SubmissionRemindTime.TwoDays], BookingNotificationMode.OnlyNewBooking, Utc(2026, 04, 28, 12));
+            notifyCreatedOnlyId, [SubmissionRemindTime.TwoDays], BookingNotificationMode.OnlyNewBooking);
 
         slot.UpdateNotificationSettings(
-            notifyCancelledOnlyId, [SubmissionRemindTime.FourHours], BookingNotificationMode.OnlyCancellation, Utc(2026, 04, 28, 12));
+            notifyCancelledOnlyId, [SubmissionRemindTime.FourHours], BookingNotificationMode.OnlyCancellation);
 
         slot.AddAdmission(bookedStudent.Id, Utc(2026, 04, 28, 12));
         var bookingRecord = slot.BookToSlot(bookedStudent, [], Utc(2026, 04, 28, 12));
