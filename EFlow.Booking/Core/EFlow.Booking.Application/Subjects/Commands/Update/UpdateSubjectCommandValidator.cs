@@ -7,19 +7,19 @@ public class UpdateSubjectCommandValidator : AbstractValidator<UpdateSubjectComm
     public UpdateSubjectCommandValidator()
     {
         When(
-            x => x.Name is not null,
+            x => x.Patch.Name.HasValue,
             () =>
             {
-                RuleFor(x => x.Name)
+                RuleFor(x => x.Patch.Name.Value)
                     .NotEmpty().WithMessage("Subject name cannot be empty")
                     .MaximumLength(127).WithMessage("Subject name must not exceed 127 characters");
             });
 
         When(
-            x => x.TeacherId is not null,
+            x => x.Patch.TeacherId.HasValue,
             () =>
             {
-                RuleFor(x => x.TeacherId)
+                RuleFor(x => x.Patch.TeacherId.Value)
                     .NotEmpty().WithMessage("Teacher ID cannot be empty");
             });
     }

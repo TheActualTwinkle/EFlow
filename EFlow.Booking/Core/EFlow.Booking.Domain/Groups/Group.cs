@@ -48,16 +48,19 @@ public sealed class Group : Entity, IAggreagateRoot
         return Id;
     }
     
-    // public void Update(GroupUpdatePatch patch)
-    // {
-    //     var result = patch.ApplyTo(this);
-    //     
-    //     // TODO
-    //
-    //     AddDomainEvent(new GroupUpdatedDomainEvent
-    //     {
-    //         GroupId = Id,
-    //         UpdatedAt = 
-    //     });
-    // }
+    public void Update(
+        GroupUpdatePatch patch,
+        DateTime utcNow,
+        IEnumerable<string> existingGroupNames)
+    {
+        patch.ApplyInto(this);
+
+        _ = new Group(Name, existingGroupNames);
+
+        AddDomainEvent(new GroupUpdatedDomainEvent
+        {
+            GroupId = Id,
+            UpdatedAt = utcNow
+        });
+    }
 }

@@ -5,6 +5,7 @@ using EFlow.Booking.WebApi;
 using EFlow.Booking.WebApi.Extensions;
 using EFlow.Booking.WebApi.Middleware;
 using EFlow.Common.Messaging.Init;
+using FluentPatcher;
 using Hangfire;
 using HealthChecks.UI.Client;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
@@ -23,7 +24,10 @@ if (builder.Environment.IsOpenApiGenerator())
     builder.Services.AddEndpointsApiExplorer();
     builder.Services.AddOpenApi();
     
-    builder.Services.AddControllers();
+    builder.Services
+        .AddControllers()
+        .AddJsonOptions(options => 
+            options.JsonSerializerOptions.Converters.Add(new PatchableJsonConverterFactory()));
 
     var openApiApp = builder.Build();
 
@@ -66,7 +70,10 @@ builder.Services
     .AddHealthChecks()
     .AddHangfire(o => { o.MaximumJobsFailed = 1; }, "hangfire");
 
-builder.Services.AddControllers();
+builder.Services
+    .AddControllers()
+    .AddJsonOptions(options => 
+        options.JsonSerializerOptions.Converters.Add(new PatchableJsonConverterFactory()));
 
 builder.Services.AddApplication(builder.Configuration);
 builder.Services.AddPersistence(builder.Configuration);

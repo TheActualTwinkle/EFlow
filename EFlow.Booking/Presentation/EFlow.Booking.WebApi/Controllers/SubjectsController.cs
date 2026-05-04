@@ -3,6 +3,9 @@ using EFlow.Booking.Application.Subjects.Commands.Update;
 using EFlow.Booking.Application.Subjects.Queries;
 using EFlow.Booking.Contracts.Subjects;
 using EFlow.Booking.Domain;
+using EFlow.Booking.Domain.Groups;
+using EFlow.Booking.Domain.Subjects;
+using EFlow.Booking.Domain.Teachers;
 using EFlow.Booking.WebApi.Contracts.Subjects;
 using EFlow.Booking.WebApi.Extensions;
 using MediatR;
@@ -79,9 +82,13 @@ public class SubjectsController(ISender sender) : ControllerBase
         var command = new UpdateSubjectCommand
         {
             Id = id,
-            Name = request.Name,
-            TeacherId = request.TeacherId,
-            GroupIds = request.GroupIds
+            Patch = new SubjectUpdatePatch
+            {
+                Name = request.Name,
+                TeacherId = request.TeacherId.Map(teacherId => new TeacherId(teacherId)),
+                GroupIds = request.GroupIds.Map(ICollection<GroupId> (groupIds) =>
+                    groupIds.Select(groupId => new GroupId(groupId)).ToArray())
+            }
         };
 
         var result = await sender.Send(command, cancellationToken);

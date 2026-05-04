@@ -5,6 +5,10 @@ using EFlow.Booking.Application.SubmissionSlots.Queries;
 using EFlow.Booking.Application.SubmissionSlots.Queries.GetByTeacherId;
 using EFlow.Booking.Contracts.SubmissionSlots;
 using EFlow.Booking.Domain;
+using EFlow.Booking.Domain.Groups;
+using EFlow.Booking.Domain.SubmissionSlots;
+using EFlow.Booking.Domain.Subjects;
+using EFlow.Booking.Domain.Teachers;
 using EFlow.Booking.WebApi.Contracts.SubmissionSlots;
 using EFlow.Booking.WebApi.Extensions;
 using MediatR;
@@ -143,15 +147,19 @@ public class SubmissionSlotsController(ISender sender) : ControllerBase
         var command = new UpdateSubmissionSlotCommand
         {
             Id = id,
-            TeacherId = request.TeacherId,
-            SubjectId = request.SubjectId,
-            StartTime = request.StartTime,
-            EndTime = request.EndTime,
-            MaxStudents = request.MaxStudents,
-            AllowAllGroups = request.AllowAllGroups,
-            AllowedGroupIds = request.AllowedGroupIds,
-            Location = request.Location,
-            Comment = request.Comment
+            Patch = new SubmissionSlotPatch
+            {
+                TeacherId = request.TeacherId.Map(teacherId => new TeacherId(teacherId)),
+                SubjectId = request.SubjectId.Map(subjectId => new SubjectId(subjectId)),
+                StartTime = request.StartTime,
+                EndTime = request.EndTime,
+                MaxStudents = request.MaxStudents,
+                AllowAllGroups = request.AllowAllGroups,
+                AllowedGroupIds = request.AllowedGroupIds.Map(ICollection<GroupId> (groupIds) =>
+                    groupIds.Select(groupId => new GroupId(groupId)).ToArray()),
+                Location = request.Location,
+                Comment = request.Comment
+            }
         };
 
         var result = await sender.Send(command, cancellationToken);

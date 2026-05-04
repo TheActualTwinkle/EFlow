@@ -7,7 +7,7 @@ using MediatR;
 
 namespace EFlow.Booking.Application.Groups.Commands.Update;
 
-public class UpdateGroupCommandHandler(IUnitOfWork unitOfWork)
+public class UpdateGroupCommandHandler(IUnitOfWork unitOfWork, ISystemClock systemClock)
     : IRequestHandler<UpdateGroupCommand, Result>
 {
     public async Task<Result> Handle(UpdateGroupCommand request, CancellationToken cancellationToken)
@@ -22,7 +22,11 @@ public class UpdateGroupCommandHandler(IUnitOfWork unitOfWork)
                     .WithMessage("Group not found")
                     .WithId(request.Id));
 
-        // TODO: Update Domain Model
+        var existingGroupNames = (await repository.GetAllAsync(cancellationToken))
+            .Where(existingGroup => existingGroup.Id != group.Id)
+            .Select(existingGroup => existingGroup.GetName());
+
+        group.Update(request.Patch, systemClock.UtcNow, existingGroupNames);
 
         repository.Update(group);
 

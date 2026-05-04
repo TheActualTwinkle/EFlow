@@ -163,18 +163,46 @@ public sealed class SubmissionSlot : Entity
                 settings.BookingNotificationMode))
             .ToArray();
 
-    // public void Update(SubmissionSlotPatch patch, DateTime utcNow)
-    // {
-    //     var updatedSlot = patch.ApplyTo(this).Entity;
-    //     
-    //     // TODO
-    //     
-    //     AddDomainEvent(new SubmissionSlotUpdatedDomainEvent
-    //     {
-    //         SlotId = Id,
-    //         UpdatedAt = utcNow
-    //     });
-    // }
+    public void Update(SubmissionSlotPatch patch, DateTime utcNow)
+    {
+        var oldSlot = CreateSnapshot();
+        
+        patch.ApplyInto(this);
+
+        _ = new SubmissionSlot(
+            SubjectId,
+            TeacherId,
+            StartTime,
+            EndTime,
+            MaxStudents,
+            AllowAllGroups,
+            AllowedGroupIds,
+            Location,
+            Comment);
+
+        AddDomainEvent(new SubmissionSlotUpdatedDomainEvent
+        {
+            SlotId = Id,
+            OldSlot = oldSlot,
+            NewSlot = CreateSnapshot(),
+            UpdatedAt = utcNow
+        });
+    }
+
+    private SubmissionSlotSnapshot CreateSnapshot() =>
+        new()
+        {
+            SlotId = Id,
+            SubjectId = SubjectId,
+            TeacherId = TeacherId,
+            StartTime = StartTime,
+            EndTime = EndTime,
+            MaxStudents = MaxStudents,
+            Location = Location,
+            Comment = Comment,
+            AllowAllGroups = AllowAllGroups,
+            AllowedGroupIds = AllowedGroupIds.ToArray()
+        };
 
     public BookingRecord BookToSlot(
         Student student,

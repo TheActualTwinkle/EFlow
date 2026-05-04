@@ -30,9 +30,6 @@ public class BookingRecordRepository(ApplicationDbContext context) :
             .ThenBy(b => b.Id)
             .ToListAsync(cancellationToken);
 
-    public void Update(BookingRecord booking) =>
-        context.BookingRecords.Update(booking);
-
     public Task DeleteAsync(BookingRecord bookingRecord)
     {
         context.BookingRecords.Remove(bookingRecord);

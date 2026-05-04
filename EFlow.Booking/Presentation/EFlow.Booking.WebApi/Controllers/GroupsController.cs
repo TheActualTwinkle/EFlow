@@ -3,6 +3,7 @@ using EFlow.Booking.Application.Groups.Commands.Update;
 using EFlow.Booking.Application.Groups.Queries;
 using EFlow.Booking.Contracts.Groups;
 using EFlow.Booking.Domain;
+using EFlow.Booking.Domain.Groups;
 using EFlow.Booking.WebApi.Contracts.Groups;
 using EFlow.Booking.WebApi.Extensions;
 using MediatR;
@@ -65,7 +66,10 @@ public class GroupsController(ISender sender) : ControllerBase
         var command = new UpdateGroupCommand
         {
             Id = id,
-            Name = request.Name
+            Patch = new GroupUpdatePatch
+            {
+                Name = request.Name
+            }
         };
 
         var result = await sender.Send(command, cancellationToken);

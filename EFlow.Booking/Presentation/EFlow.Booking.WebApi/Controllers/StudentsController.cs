@@ -4,6 +4,7 @@ using EFlow.Booking.Application.Students.Commands.Update;
 using EFlow.Booking.Application.Students.Queries;
 using EFlow.Booking.Contracts.Students;
 using EFlow.Booking.Domain;
+using EFlow.Booking.Domain.Students;
 using EFlow.Booking.WebApi.Contracts.Students;
 using EFlow.Booking.WebApi.Extensions;
 using MediatR;
@@ -85,11 +86,13 @@ public class StudentsController(ISender sender) : ControllerBase
         var command = new UpdateStudentCommand
         {
             Id = id,
-            GroupId = request.GroupId,
-            FirstName = request.FirstName,
-            LastName = request.LastName,
-            MiddleName = request.MiddleName,
-            BirthDate = request.BirthDate
+            Patch = new StudentUpdatePatch
+            {
+                FirstName = request.FirstName,
+                LastName = request.LastName,
+                MiddleName = request.MiddleName,
+                BirthDate = request.BirthDate
+            }
         };
 
         var result = await sender.Send(command, cancellationToken);

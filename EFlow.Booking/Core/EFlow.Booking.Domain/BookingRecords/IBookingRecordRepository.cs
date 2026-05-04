@@ -16,7 +16,5 @@ public interface IBookingRecordRepository : IRepository
 
     public Task<IEnumerable<BookingRecord>> GetBySlotIdAsync(SubmissionSlotId slotId, CancellationToken cancellationToken = new());
 
-    public void Update(BookingRecord bookingRecord);
-
     public Task DeleteAsync(BookingRecord bookingRecord);
 }

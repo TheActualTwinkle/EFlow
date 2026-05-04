@@ -7,7 +7,7 @@ using MediatR;
 
 namespace EFlow.Booking.Application.Students.Commands.Update;
 
-public class UpdateStudentCommandHandler(IUnitOfWork unitOfWork)
+public class UpdateStudentCommandHandler(IUnitOfWork unitOfWork, ISystemClock systemClock)
     : IRequestHandler<UpdateStudentCommand, Result>
 {
     public async Task<Result> Handle(UpdateStudentCommand request, CancellationToken cancellationToken)
@@ -22,7 +22,7 @@ public class UpdateStudentCommandHandler(IUnitOfWork unitOfWork)
                     .WithMessage("Student not found")
                     .WithId(request.Id));
 
-        // TODO: Update Domain Model
+        student.Update(request.Patch, systemClock.UtcNow);
 
         repository.Update(student);
 

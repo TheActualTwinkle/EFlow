@@ -7,7 +7,7 @@ using MediatR;
 
 namespace EFlow.Booking.Application.SubmissionSlots.Commands.Update;
 
-public class UpdateSubmissionSlotCommandHandler(IUnitOfWork unitOfWork)
+public class UpdateSubmissionSlotCommandHandler(IUnitOfWork unitOfWork, ISystemClock systemClock)
     : IRequestHandler<UpdateSubmissionSlotCommand, Result>
 {
     public async Task<Result> Handle(UpdateSubmissionSlotCommand request, CancellationToken cancellationToken)
@@ -22,7 +22,7 @@ public class UpdateSubmissionSlotCommandHandler(IUnitOfWork unitOfWork)
                     .WithMessage("Submission slot not found")
                     .WithId(request.Id));
 
-        // TODO: Update Domain Model
+        slot.Update(request.Patch, systemClock.UtcNow);
 
         repository.Update(slot);
 

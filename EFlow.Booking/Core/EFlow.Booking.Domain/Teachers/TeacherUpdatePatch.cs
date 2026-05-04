@@ -4,13 +4,13 @@ using FluentPatcher.Attributes;
 namespace EFlow.Booking.Domain.Teachers;
 
 [PatchFor(typeof(Teacher))]
-public sealed record TeacherUpdatePatch
+public sealed class TeacherUpdatePatch
 {
-    public Patchable<string> FirstName { get; }
+    public Patchable<string> FirstName { get; init; }
 
-    public Patchable<string> LastName { get; }
+    public Patchable<string> LastName { get; init; }
 
-    public Patchable<string?> MiddleName { get; }
+    public Patchable<string?> MiddleName { get; init; }
 
-    public Patchable<DateOnly> BirthDate { get; }
+    public Patchable<DateOnly> BirthDate { get; init; }
 }
