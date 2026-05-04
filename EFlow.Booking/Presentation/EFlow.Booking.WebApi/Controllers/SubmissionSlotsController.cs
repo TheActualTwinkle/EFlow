@@ -155,8 +155,8 @@ public class SubmissionSlotsController(ISender sender) : ControllerBase
                 EndTime = request.EndTime,
                 MaxStudents = request.MaxStudents,
                 AllowAllGroups = request.AllowAllGroups,
-                AllowedGroupIds = request.AllowedGroupIds.Map(ICollection<GroupId> (groupIds) =>
-                    groupIds.Select(groupId => new GroupId(groupId)).ToArray()),
+                AllowedGroupIds = request.AllowedGroupIds.Map(groupIds =>
+                    groupIds.Select(groupId => new GroupId(groupId)).ToList()),
                 Location = request.Location,
                 Comment = request.Comment
             }

@@ -21,7 +21,7 @@ public class SubmissionSlotPatch
     
     public Patchable<bool> AllowAllGroups { get; init; }
     
-    public Patchable<ICollection<GroupId>> AllowedGroupIds { get; init; }
+    public Patchable<List<GroupId>> AllowedGroupIds { get; init; }
     
     public Patchable<string?> Location { get; init; }
 

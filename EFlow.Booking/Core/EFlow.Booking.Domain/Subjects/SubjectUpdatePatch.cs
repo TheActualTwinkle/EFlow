@@ -12,5 +12,5 @@ public sealed class SubjectUpdatePatch
 
     public Patchable<TeacherId> TeacherId { get; init; }
 
-    public Patchable<ICollection<GroupId>> GroupIds { get; init; }
+    public Patchable<List<GroupId>> GroupIds { get; init; }
 }

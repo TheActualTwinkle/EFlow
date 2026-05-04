@@ -36,7 +36,7 @@ public class CreateSubmissionSlotCommandHandler(IUnitOfWork unitOfWork, ISystemC
         
         var allowedGroupIds = request.AllowedGroupIds?
             .Select(id => new GroupId(id))
-            .ToArray();
+            .ToList();
 
         var slot = SubmissionSlot.Create(
             subject.Id,

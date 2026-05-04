@@ -86,8 +86,8 @@ public class SubjectsController(ISender sender) : ControllerBase
             {
                 Name = request.Name,
                 TeacherId = request.TeacherId.Map(teacherId => new TeacherId(teacherId)),
-                GroupIds = request.GroupIds.Map(ICollection<GroupId> (groupIds) =>
-                    groupIds.Select(groupId => new GroupId(groupId)).ToArray())
+                GroupIds = request.GroupIds.Map(groupIds =>
+                    groupIds.Select(groupId => new GroupId(groupId)).ToList())
             }
         };
 

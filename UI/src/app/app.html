@@ -404,7 +404,7 @@
           </div>
         }
 
-        @if (activeModal() === 'editSlot' && selectedSlot(); as slot) {
+        @if (activeModal() === 'editSlot' && editSlotDraft(); as slot) {
           <div class="modal-backdrop" (click)="closeModal()">
             <form class="panel form-panel modal-panel wide" [class.picker-open]="dateTimePickerOpen()" (ngSubmit)="updateSlot(slot)" (click)="$event.stopPropagation()">
               <div class="panel-heading modal-title-row">
@@ -1056,7 +1056,7 @@
   </div>
 }
 
-@if (activeModal() === 'editGroup' && selectedGroup(); as group) {
+@if (activeModal() === 'editGroup' && editGroupDraft(); as group) {
   <div class="modal-backdrop" (click)="closeModal()">
     <form class="panel form-panel modal-panel" (ngSubmit)="updateGroup(group)" (click)="$event.stopPropagation()">
       <div class="panel-heading"><div><p class="eyebrow">Редактирование</p><h2>Группа</h2></div></div>
@@ -1068,7 +1068,7 @@
   </div>
 }
 
-@if (activeModal() === 'editTeacher' && selectedTeacher(); as teacher) {
+@if (activeModal() === 'editTeacher' && editTeacherDraft(); as teacher) {
   <div class="modal-backdrop" (click)="closeModal()">
     <form class="panel form-panel modal-panel wide" (ngSubmit)="updateTeacher(teacher)" (click)="$event.stopPropagation()">
       <div class="panel-heading"><div><p class="eyebrow">Редактирование</p><h2>Преподаватель</h2></div></div>
@@ -1085,7 +1085,7 @@
   </div>
 }
 
-@if (activeModal() === 'editStudent' && selectedStudent(); as student) {
+@if (activeModal() === 'editStudent' && editStudentDraft(); as student) {
   <div class="modal-backdrop" (click)="closeModal()">
     <form class="panel form-panel modal-panel wide" (ngSubmit)="updateStudent(student)" (click)="$event.stopPropagation()">
       <div class="panel-heading"><div><p class="eyebrow">Редактирование</p><h2>Студент</h2></div></div>
@@ -1124,7 +1124,7 @@
   </div>
 }
 
-@if (activeModal() === 'editSubject' && selectedSubject(); as subject) {
+@if (activeModal() === 'editSubject' && editSubjectDraft(); as subject) {
   <div class="modal-backdrop" (click)="closeModal()">
     <form class="panel form-panel modal-panel wide" (ngSubmit)="updateSubject(subject)" (click)="$event.stopPropagation()">
       <div class="panel-heading"><div><p class="eyebrow">Редактирование</p><h2>Дисциплина</h2></div></div>

@@ -16,7 +16,7 @@ public class CreateSubjectCommandHandler(
         var subject = Subject.Create(
             request.Name,
             new TeacherId(request.TeacherId),
-            request.GroupIds.Select(id => new GroupId(id)).ToArray());
+            request.GroupIds.Select(id => new GroupId(id)).ToList());
 
         await unitOfWork
             .GetRepository<ISubjectRepository>()
