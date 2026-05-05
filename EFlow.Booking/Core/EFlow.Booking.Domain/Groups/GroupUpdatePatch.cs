@@ -1,10 +1,10 @@
+using FluentPatcher;
+using FluentPatcher.Attributes;
+
 namespace EFlow.Booking.Domain.Groups;
 
-public sealed record GroupUpdatePatch
+[PatchFor(typeof(Group))]
+public sealed class GroupUpdatePatch
 {
-    public GroupUpdatePatch(string? newName = null) =>
-        NewName = newName ??
-                  throw new ArgumentException("At least one property must be provided to update group.");
-
-    public string? NewName { get; }
+    public Patchable<string> Name { get; init; }
 }

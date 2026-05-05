@@ -71,16 +71,19 @@ public sealed class Subject : Entity, IAggreagateRoot
         return Id;
     }
     
-    // public void Update(SubjectUpdatePatch patch)
-    // {
-    //     var result = patch.ApplyTo(this);
-    //     
-    //     // TODO
-    //
-    //     AddDomainEvent(new SubjectUpdatedDomainEvent
-    //     {
-    //         SubjectId = Id,
-    //         UpdatedAt = 
-    //     });
-    // }
+    public void Update(SubjectUpdatePatch patch, DateTime utcNow)
+    {
+        patch.ApplyInto(this);
+
+        _ = new Subject(
+            Name,
+            TeacherId,
+            GroupIds);
+
+        AddDomainEvent(new SubjectUpdatedDomainEvent
+        {
+            SubjectId = Id,
+            UpdatedAt = utcNow
+        });
+    }
 }

@@ -1,8 +1,10 @@
 using System.Security.Claims;
 using EFlow.Booking.Application.Teachers.Commands;
+using EFlow.Booking.Application.Teachers.Commands.Update;
 using EFlow.Booking.Application.Teachers.Queries;
 using EFlow.Booking.Contracts.Teachers;
 using EFlow.Booking.Domain;
+using EFlow.Booking.Domain.Teachers;
 using EFlow.Booking.WebApi.Contracts.Teachers;
 using EFlow.Booking.WebApi.Extensions;
 using MediatR;
@@ -83,10 +85,13 @@ public class TeachersController(ISender sender) : ControllerBase
         var command = new UpdateTeacherCommand
         {
             Id = id,
-            FirstName = request.FirstName,
-            LastName = request.LastName,
-            MiddleName = request.MiddleName,
-            BirthDate = request.BirthDate
+            Patch = new TeacherUpdatePatch
+            {
+                FirstName = request.FirstName,
+                LastName = request.LastName,
+                MiddleName = request.MiddleName,
+                BirthDate = request.BirthDate
+            }
         };
 
         var result = await sender.Send(command, cancellationToken);

@@ -103,17 +103,25 @@ public sealed class Student : Entity, IAggreagateRoot
         return Id;
     }
     
-    // public void Update(StudentUpdatePatch patch, DateTime utcNow)
-    // {
-    //     var updatedStudent = patch.ApplyTo(this).Entity;
-    //     
-    //     // TODO.
-    //     
-    //     AddDomainEvent(
-    //         new StudentUpdatedDomainEvent
-    //         {
-    //             StudentId = updatedStudent.Id,
-    //             UpdatedAt = utcNow
-    //         });
-    // }
+    public void Update(StudentUpdatePatch patch, DateTime utcNow)
+    {
+        patch.ApplyInto(this);
+        
+        _ = new Student(
+            Id,
+            GroupId,
+            FirstName,
+            LastName,
+            MiddleName,
+            BirthDate,
+            CreatedAt,
+            utcNow);
+        
+        AddDomainEvent(
+            new StudentUpdatedDomainEvent
+            {
+                StudentId = Id,
+                UpdatedAt = utcNow
+            });
+    }
 }

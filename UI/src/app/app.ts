@@ -79,6 +79,11 @@ export class App {
   readonly selectedTeacher = signal<TeacherView | null>(null);
   readonly selectedStudent = signal<StudentView | null>(null);
   readonly selectedSubject = signal<SubjectView | null>(null);
+  readonly editGroupDraft = signal<GroupView | null>(null);
+  readonly editTeacherDraft = signal<TeacherView | null>(null);
+  readonly editStudentDraft = signal<StudentView | null>(null);
+  readonly editSubjectDraft = signal<SubjectView | null>(null);
+  readonly editSlotDraft = signal<SubmissionSlotView | null>(null);
   selectedAdmissionStudentId = '';
   selectedBookingSlotId = '';
   selectedNotificationSlotId = '';
@@ -876,6 +881,7 @@ export class App {
   openSlotEditor(slot: SubmissionSlotView): void {
     this.selectedSlotId.set(slot.id);
     this.slotGroupSearch.set('');
+    this.editSlotDraft.set(this.cloneSlot(slot));
     this.openModal('editSlot');
   }
 
@@ -901,21 +907,25 @@ export class App {
 
   editGroup(group: GroupView): void {
     this.selectedGroup.set(group);
+    this.editGroupDraft.set(this.cloneGroup(group));
     this.openModal('editGroup');
   }
 
   editTeacher(teacher: TeacherView): void {
     this.selectedTeacher.set(teacher);
+    this.editTeacherDraft.set(this.cloneTeacher(teacher));
     this.openModal('editTeacher');
   }
 
   editStudent(student: StudentView): void {
     this.selectedStudent.set(student);
+    this.editStudentDraft.set(this.cloneStudent(student));
     this.openModal('editStudent');
   }
 
   editSubject(subject: SubjectView): void {
     this.selectedSubject.set(subject);
+    this.editSubjectDraft.set(this.cloneSubject(subject));
     this.openModal('editSubject');
   }
 
@@ -924,6 +934,11 @@ export class App {
     this.fieldErrors.set({});
     this.dateTimePickerOpen.set(null);
     this.customSelectOpen.set(null);
+    this.editGroupDraft.set(null);
+    this.editTeacherDraft.set(null);
+    this.editStudentDraft.set(null);
+    this.editSubjectDraft.set(null);
+    this.editSlotDraft.set(null);
   }
 
   closeConfirmDialog(): void {
@@ -1602,6 +1617,13 @@ export class App {
     }
 
     const [kind, id] = target.split(':');
+    if (kind.startsWith('edit')) {
+      const draft = this.editSlotDraft();
+      if (draft?.id === id) {
+        return kind.endsWith('Start') ? (draft.startTime ?? '') : (draft.endTime ?? '');
+      }
+    }
+
     const slot = this.data().slots.find((item) => item.id === id);
     return kind.endsWith('Start') ? (slot?.startTime ?? '') : (slot?.endTime ?? '');
   }
@@ -1618,6 +1640,20 @@ export class App {
     }
 
     const [kind, id] = target.split(':');
+    if (kind.startsWith('edit')) {
+      const draft = this.editSlotDraft();
+      if (!draft || draft.id !== id) {
+        return;
+      }
+
+      if (kind.endsWith('Start')) {
+        draft.startTime = value;
+      } else {
+        draft.endTime = value;
+      }
+      return;
+    }
+
     const slot = this.data().slots.find((item) => item.id === id);
     if (!slot) {
       return;
@@ -1628,6 +1664,36 @@ export class App {
     } else {
       slot.endTime = value;
     }
+  }
+
+  private cloneGroup(group: GroupView): GroupView {
+    return { ...group };
+  }
+
+  private cloneTeacher(teacher: TeacherView): TeacherView {
+    return { ...teacher };
+  }
+
+  private cloneStudent(student: StudentView): StudentView {
+    return { ...student, group: student.group ?? null };
+  }
+
+  private cloneSubject(subject: SubjectView): SubjectView {
+    return {
+      ...subject,
+      teacher: subject.teacher ?? null,
+      groups: subject.groups ? [...subject.groups] : [],
+    };
+  }
+
+  private cloneSlot(slot: SubmissionSlotView): SubmissionSlotView {
+    return {
+      ...slot,
+      subject: slot.subject ?? null,
+      teacher: slot.teacher ?? null,
+      allowedGroups: slot.allowedGroups ? [...slot.allowedGroups] : [],
+      admittedStudents: slot.admittedStudents ? [...slot.admittedStudents] : [],
+    };
   }
 
   private resetBookingExpansion(): void {

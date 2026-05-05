@@ -12,17 +12,17 @@ public class UpdateTeacherCommandValidator : AbstractValidator<UpdateTeacherComm
             .NotEmpty().WithMessage("Teacher ID is required");
 
         When(
-            x => x.FirstName is not null,
-            () => { RuleFor(x => x.FirstName)!.ValidateFirstName(); });
+            x => x.Patch.FirstName.HasValue,
+            () => { RuleFor(x => x.Patch.FirstName.Value!).ValidateFirstName(); });
 
         When(
-            x => x.LastName is not null,
-            () => { RuleFor(x => x.LastName)!.ValidateLastName(); });
+            x => x.Patch.LastName.HasValue,
+            () => { RuleFor(x => x.Patch.LastName.Value!).ValidateLastName(); });
 
         When(
-            x => x.BirthDate is not null,
-            () => RuleFor(x => x.BirthDate)
-                .Must(birthDate => birthDate.HasValue && birthDate.Value < DateOnly.FromDateTime(systemClock.UtcNow.AddYears(-18)))
+            x => x.Patch.BirthDate.HasValue,
+            () => RuleFor(x => x.Patch.BirthDate.Value)
+                .Must(birthDate => birthDate < DateOnly.FromDateTime(systemClock.UtcNow.AddYears(-18)))
                 .WithMessage("Teacher must be at least 18 years old"));
     }
 }

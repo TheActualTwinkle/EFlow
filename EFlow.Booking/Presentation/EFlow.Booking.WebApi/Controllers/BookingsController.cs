@@ -1,6 +1,5 @@
 using System.Security.Claims;
 using EFlow.Booking.Application.BookingRecords.Commands;
-using EFlow.Booking.Application.BookingRecords.Commands.Update;
 using EFlow.Booking.Application.BookingRecords.Queries;
 using EFlow.Booking.Contracts.BookingRecords;
 using EFlow.Booking.Domain;
@@ -112,27 +111,6 @@ public class BookingsController(ISender sender) : ControllerBase
         return result.IsFailed ?
             result.Errors[0].ToProblemDetails() :
             Ok(result.Value);
-    }
-
-    [HttpPatch("{id:guid}")]
-    [Authorize(Roles = Identity.Roles.Admin)]
-    public async Task<IActionResult> UpdateBooking(
-        Guid id,
-        [FromBody] UpdateBookingRequest request,
-        CancellationToken cancellationToken)
-    {
-        var command = new UpdateBookingRecordCommand
-        {
-            Id = id,
-            StudentId = request.StudentId,
-            SlotId = request.SlotId
-        };
-
-        var result = await sender.Send(command, cancellationToken);
-
-        return result.IsFailed ?
-            result.Errors[0].ToProblemDetails() :
-            NoContent();
     }
 
     [HttpDelete("{id:guid}")]

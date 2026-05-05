@@ -7,7 +7,7 @@ using MediatR;
 
 namespace EFlow.Booking.Application.Subjects.Commands.Update;
 
-public class UpdateSubjectCommandHandler(IUnitOfWork unitOfWork)
+public class UpdateSubjectCommandHandler(IUnitOfWork unitOfWork, ISystemClock systemClock)
     : IRequestHandler<UpdateSubjectCommand, Result>
 {
     public async Task<Result> Handle(UpdateSubjectCommand request, CancellationToken cancellationToken)
@@ -22,7 +22,7 @@ public class UpdateSubjectCommandHandler(IUnitOfWork unitOfWork)
                     .WithMessage("Subject not found")
                     .WithId(request.Id));
 
-        // TODO: Update Domain Model
+        subject.Update(request.Patch, systemClock.UtcNow);
 
         repository.Update(subject);
 

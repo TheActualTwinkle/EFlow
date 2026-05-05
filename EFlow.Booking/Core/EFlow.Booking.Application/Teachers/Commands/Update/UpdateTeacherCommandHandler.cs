@@ -5,9 +5,9 @@ using EFlow.Common.Infrastructure;
 using FluentResults;
 using MediatR;
 
-namespace EFlow.Booking.Application.Teachers.Commands;
+namespace EFlow.Booking.Application.Teachers.Commands.Update;
 
-public class UpdateTeacherCommandHandler(IUnitOfWork unitOfWork) : IRequestHandler<UpdateTeacherCommand, Result>
+public class UpdateTeacherCommandHandler(IUnitOfWork unitOfWork, ISystemClock systemClock) : IRequestHandler<UpdateTeacherCommand, Result>
 {
     public async Task<Result> Handle(UpdateTeacherCommand request, CancellationToken cancellationToken)
     {
@@ -21,7 +21,7 @@ public class UpdateTeacherCommandHandler(IUnitOfWork unitOfWork) : IRequestHandl
                     .WithMessage("Teacher not found")
                     .WithId(request.Id));
 
-        // TODO: Update Domain Model
+        teacher.Update(request.Patch, systemClock.UtcNow);
 
         repository.Update(teacher);
 

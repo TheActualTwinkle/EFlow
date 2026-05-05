@@ -1,6 +1,6 @@
 <Project>
   <ItemGroup>
-    <PackageVersion Include="FluentPatcher" Version="0.1.5" />
+    <PackageVersion Include="FluentPatcher" Version="0.2.0" />
     <PackageVersion Include="MemoryPack.Core" Version="1.21.4" />
     <PackageVersion Include="Scalar.AspNetCore" Version="2.11.2" />
     <PackageVersion Include="System.Reactive" Version="6.0.1" />

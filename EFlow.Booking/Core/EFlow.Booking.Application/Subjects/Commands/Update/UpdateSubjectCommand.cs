@@ -1,4 +1,5 @@
 using EFlow.Booking.Application.Common.Markers;
+using EFlow.Booking.Domain.Subjects;
 using FluentResults;
 using MediatR;
 
@@ -8,9 +9,5 @@ public record UpdateSubjectCommand : IRequest<Result>, ITransactionalRequest
 {
     public required Guid Id { get; init; }
 
-    public string? Name { get; init; }
-
-    public Guid? TeacherId { get; init; }
-    
-    public IEnumerable<Guid>? GroupIds { get; init; }
+    public required SubjectUpdatePatch Patch { get; init; }
 }

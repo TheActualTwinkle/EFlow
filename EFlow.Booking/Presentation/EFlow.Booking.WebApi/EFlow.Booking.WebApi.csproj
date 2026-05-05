@@ -6,6 +6,7 @@
 
     <ItemGroup>
         <PackageReference Include="AspNetCore.HealthChecks.Hangfire"/>
+        <PackageReference Include="FluentPatcher"/>
         <PackageReference Include="AspNetCore.HealthChecks.UI.Client"/>
         <PackageReference Include="Microsoft.CodeAnalysis.Common"/>
         <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces"/>
