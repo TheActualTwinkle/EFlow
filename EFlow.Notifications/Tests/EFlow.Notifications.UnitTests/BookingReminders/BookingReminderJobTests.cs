@@ -172,7 +172,7 @@ public sealed class BookingReminderJobTests
                 Comment = "Bring slides",
                 MaxStudents = 5,
                 AllowAllGroups = true,
-                AllowedGroupNames = []
+                AllowedGroups = []
             },
             Recipients =
             [

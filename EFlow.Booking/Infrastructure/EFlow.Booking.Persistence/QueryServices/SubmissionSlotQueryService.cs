@@ -55,6 +55,66 @@ public sealed class SubmissionSlotQueryService(ApplicationDbContext context) : I
         return await MapToViewsAsync(slots, cancellationToken);
     }
 
+    public async Task<IEnumerable<SubmissionSlotReminderSnapshotView>> GetReminderSnapshotAsync(CancellationToken cancellationToken = new())
+    {
+        var slots = await QuerySlots()
+            .Include(slot => slot.NotificationSettings)
+            .ToListAsync(cancellationToken);
+
+        if (slots.Count == 0)
+            return [];
+
+        var recipientsBySlotId = slots.ToDictionary(
+            slot => slot.Id,
+            slot => slot.GetNotificationRecipients());
+
+        var userIds = recipientsBySlotId.Values
+            .SelectMany(recipients => recipients.Select(recipient => recipient.UserId))
+            .Distinct()
+            .ToArray();
+
+        var usersById = await context.Users
+            .AsNoTracking()
+            .Where(user => userIds.AsEnumerable().Contains(user.Id) && user.Email != null)
+            .ToDictionaryAsync(user => user.Id, cancellationToken);
+
+        var slotViewsById = (await MapToViewsAsync(slots, cancellationToken))
+            .ToDictionary(slot => new SubmissionSlotId(slot.Id));
+
+        return slots
+            .Select(slot =>
+            {
+                var recipients = recipientsBySlotId[slot.Id]
+                    .SelectMany(recipient =>
+                    {
+                        if (!usersById.TryGetValue(recipient.UserId, out var user) || user.Email is null)
+                            return [];
+
+                        return recipient.SubmissionRemindTimes.Select(
+                            remindTime => new SubmissionSlotReminderRecipientView
+                            {
+                                UserId = recipient.UserId,
+                                Email = user.Email,
+                                RemindTime = remindTime
+                            });
+                    })
+                    .ToArray();
+
+                return new
+                {
+                    Slot = slot,
+                    Recipients = recipients
+                };
+            })
+            .Where(snapshot => snapshot.Recipients.Length > 0 && slotViewsById.ContainsKey(snapshot.Slot.Id))
+            .Select(snapshot => new SubmissionSlotReminderSnapshotView
+            {
+                SubmissionSlot = slotViewsById[snapshot.Slot.Id],
+                Recipients = snapshot.Recipients
+            })
+            .ToArray();
+    }
+
     private IQueryable<SubmissionSlot> QuerySlots() =>
         context.SubmissionSlots
             .AsNoTracking()

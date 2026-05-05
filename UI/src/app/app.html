@@ -1096,25 +1096,12 @@
         <label><span>Дата рождения</span><input [(ngModel)]="student.birthDate" name="editStudentBirth" type="date" /></label>
         <label>
           <span>Группа <b>*</b></span>
-          <div class="custom-select" [class.open]="customSelectOpen() === 'editStudentGroup:' + student.id">
-            <button type="button" (click)="toggleCustomSelect('editStudentGroup:' + student.id)" [disabled]="!data().groups.length">
-              <span>{{ data().groups.length ? editStudentGroupLabel(student) : 'Нет групп' }}</span>
+          <div class="custom-select locked-select" title="Смена группы студента пока недоступна">
+            <button type="button" disabled aria-label="Смена группы студента пока недоступна">
+              <span>{{ editStudentGroupLabel(student) }}</span>
+              <lucide-icon name="lock" />
             </button>
-            @if (customSelectOpen() === 'editStudentGroup:' + student.id) {
-              <div class="custom-select-menu">
-                @for (group of data().groups; track group.id) {
-                  <button type="button" [class.selected]="studentGroupId(student) === group.id" (click)="selectEditStudentGroup(student, group)">
-                    {{ group.name }}
-                  </button>
-                }
-              </div>
-            }
           </div>
-          <select class="native-shadow" [ngModel]="studentGroupId(student)" (ngModelChange)="setStudentGroup(student, $event)" name="editStudentGroup" tabindex="-1">
-            @for (group of data().groups; track group.id) {
-              <option [value]="group.id">{{ group.name }}</option>
-            }
-          </select>
         </label>
       </div>
       <div class="action-row">

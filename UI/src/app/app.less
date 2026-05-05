@@ -442,6 +442,27 @@ textarea {
   color: var(--text);
 }
 
+.locked-select {
+  cursor: not-allowed;
+}
+
+.locked-select > button:disabled {
+  border-color: var(--line);
+  background: var(--surface-strong);
+  color: var(--muted);
+  cursor: not-allowed;
+  opacity: 0.72;
+
+  &::after {
+    display: none;
+  }
+
+  lucide-icon {
+    width: 16px;
+    height: 16px;
+  }
+}
+
 .ghost-button {
   width: 100%;
   justify-content: flex-start;

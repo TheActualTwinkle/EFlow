@@ -186,11 +186,15 @@ public sealed class SubmissionSlotsApiTests(ApiTestStackFixture fixture)
 
             // Assert
             response.StatusCode.Should().Be(HttpStatusCode.OK);
-            var snapshot = (await context.AdminSession.ReadAsync<SubmissionSlotReminderSnapshotDto[]>(response))!;
+            var snapshot = (await context.AdminSession.ReadAsync<SubmissionSlotReminderSnapshotView[]>(response))!;
             var slotSnapshot = snapshot.Should().ContainSingle(x => x.SubmissionSlot.Id == context.SlotId).Subject;
-            slotSnapshot.SubmissionSlot.SubjectName.Should().Be(context.SubjectName);
-            slotSnapshot.SubmissionSlot.TeacherFullName.Should().Contain("Ivanova").And.Contain("Anna");
-            slotSnapshot.SubmissionSlot.AllowedGroupNames.Should().BeEquivalentTo(context.GroupName);
+            slotSnapshot.SubmissionSlot.Subject.Should().NotBeNull();
+            slotSnapshot.SubmissionSlot.Subject!.Name.Should().Be(context.SubjectName);
+            slotSnapshot.SubmissionSlot.Teacher.Should().NotBeNull();
+            slotSnapshot.SubmissionSlot.Teacher!.LastName.Should().Be("Ivanova");
+            slotSnapshot.SubmissionSlot.Teacher.FirstName.Should().Be("Anna");
+            slotSnapshot.SubmissionSlot.AllowedGroups.Should().NotBeNull();
+            slotSnapshot.SubmissionSlot.AllowedGroups!.Select(group => group.Name).Should().BeEquivalentTo(context.GroupName);
 
             slotSnapshot.Recipients.Should().BeEquivalentTo(
                 [

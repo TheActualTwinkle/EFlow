@@ -1,4 +1,3 @@
-using EFlow.Booking.Domain.Groups;
 using FluentPatcher;
 
 namespace EFlow.Booking.WebApi.Extensions;

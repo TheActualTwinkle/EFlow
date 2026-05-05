@@ -64,7 +64,7 @@ public sealed class BookingNotificationTemplateService(ITemplateRenderer templat
             TeacherFullName = submissionSlot.TeacherFullName,
             TimeRange = TemplateFormatter.FormatTimeRange(submissionSlot.StartTime, submissionSlot.EndTime),
             Capacity = $"{submissionSlot.MaxStudents} чел.",
-            Audience = TemplateFormatter.FormatAudience(submissionSlot.AllowAllGroups, submissionSlot.AllowedGroupNames),
+            Audience = TemplateFormatter.FormatAudience(submissionSlot.AllowAllGroups, submissionSlot.AllowedGroups.Select(group => group.Name)),
             Location = TemplateFormatter.FormatOptionalText(submissionSlot.Location, "Место не было указано"),
             Comment = TemplateFormatter.FormatOptionalText(submissionSlot.Comment, "Комментарий отсутствует")
         };
@@ -107,7 +107,7 @@ public sealed class BookingNotificationTemplateService(ITemplateRenderer templat
             TeacherName = submissionSlot.TeacherFullName,
             TimeRange = TemplateFormatter.FormatTimeRange(submissionSlot.StartTime, submissionSlot.EndTime),
             Location = TemplateFormatter.FormatOptionalText(submissionSlot.Location, "Место не было указано"),
-            Audience = TemplateFormatter.FormatAudience(submissionSlot.AllowAllGroups, submissionSlot.AllowedGroupNames)
+            Audience = TemplateFormatter.FormatAudience(submissionSlot.AllowAllGroups, submissionSlot.AllowedGroups.Select(group => group.Name))
         };
 
         var body = await templateRenderer.RenderAsync("/EmailTemplates/Reminder.cshtml", model, cancellationToken);
@@ -125,7 +125,11 @@ public sealed class BookingNotificationTemplateService(ITemplateRenderer templat
         AddChangeIfNeeded(changes, "Преподаватель", oldSlot.TeacherFullName, newSlot.TeacherFullName);
         AddChangeIfNeeded(changes, "Время", TemplateFormatter.FormatTimeRange(oldSlot.StartTime, oldSlot.EndTime), TemplateFormatter.FormatTimeRange(newSlot.StartTime, newSlot.EndTime));
         AddChangeIfNeeded(changes, "Лимит студентов", oldSlot.MaxStudents.ToString(), newSlot.MaxStudents.ToString());
-        AddChangeIfNeeded(changes, "Доступ", TemplateFormatter.FormatAudience(oldSlot.AllowAllGroups, oldSlot.AllowedGroupNames), TemplateFormatter.FormatAudience(newSlot.AllowAllGroups, newSlot.AllowedGroupNames));
+        AddChangeIfNeeded(
+            changes,
+            "Доступ",
+            TemplateFormatter.FormatAudience(oldSlot.AllowAllGroups, oldSlot.AllowedGroups.Select(group => group.Name)),
+            TemplateFormatter.FormatAudience(newSlot.AllowAllGroups, newSlot.AllowedGroups.Select(group => group.Name)));
         AddChangeIfNeeded(changes, "Место", TemplateFormatter.FormatOptionalText(oldSlot.Location, "Не указано"), TemplateFormatter.FormatOptionalText(newSlot.Location, "Не указано"));
         AddChangeIfNeeded(changes, "Комментарий", TemplateFormatter.FormatOptionalText(oldSlot.Comment, "Отсутствует"), TemplateFormatter.FormatOptionalText(newSlot.Comment, "Отсутствует"));
 

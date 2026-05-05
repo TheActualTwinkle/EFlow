@@ -49,7 +49,7 @@ public sealed class SubmissionSlotCreatedDomainEventNotificationHandler(
             return;
         }
 
-        var affectedStudents = await GetStudentIdsAffectedBySubmissionSlot(
+        var affectedStudents = await GetNotificationRecipients(
             domainEvent.SubjectId,
             domainEvent.TeacherId,
             domainEvent.AllowAllGroups,
@@ -69,9 +69,9 @@ public sealed class SubmissionSlotCreatedDomainEventNotificationHandler(
                 Comment = domainEvent.Comment,
                 MaxStudents = domainEvent.MaxStudents,
                 AllowAllGroups = domainEvent.AllowAllGroups,
-                AllowedGroupNames = domainEvent.AllowAllGroups 
-                    ? [] 
-                    : await GetAllowedGroupNamesAsync(domainEvent.AllowedGroupIds, cancellationToken)
+                AllowedGroups = domainEvent.AllowAllGroups
+                    ? []
+                    : await GetAllowedGroupsAsync(domainEvent.AllowedGroupIds, cancellationToken)
             },
             NotificationRecipients = userManager.Users
                 .Where(u => affectedStudents.Contains(u.Id))
@@ -90,15 +90,19 @@ public sealed class SubmissionSlotCreatedDomainEventNotificationHandler(
             cancellationToken);
     }
 
-    private async Task<IEnumerable<string>> GetAllowedGroupNamesAsync(
+    private async Task<IEnumerable<GroupModel>> GetAllowedGroupsAsync(
         IEnumerable<GroupId> allowedGroupIds,
         CancellationToken cancellationToken = new()) =>
         (await unitOfWork
             .GetRepository<IGroupRepository>()
             .GetByIdsAsync(allowedGroupIds, cancellationToken))
-        .Select(g => g.GetName());
+        .Select(g => new GroupModel
+        {
+            Id = g.Id.Value,
+            Name = g.GetName()
+        });
 
-    private async Task<IEnumerable<Guid>> GetStudentIdsAffectedBySubmissionSlot(
+    private async Task<IEnumerable<Guid>> GetNotificationRecipients(
         SubjectId subjectId,
         TeacherId teacherId,
         bool allowAllGroups,

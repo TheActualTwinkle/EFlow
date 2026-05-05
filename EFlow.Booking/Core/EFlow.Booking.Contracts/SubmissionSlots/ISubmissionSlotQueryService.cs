@@ -16,4 +16,6 @@ public interface ISubmissionSlotQueryService : IQueryService
     public Task<IEnumerable<SubmissionSlotView>> GetByTeacherIdAsync(TeacherId teacherId, CancellationToken cancellationToken = new());
 
     public Task<IEnumerable<SubmissionSlotView>> GetAvailableSlotsAsync(DateTime fromDate, CancellationToken cancellationToken = new());
+
+    public Task<IEnumerable<SubmissionSlotReminderSnapshotView>> GetReminderSnapshotAsync(CancellationToken cancellationToken = new());
 }

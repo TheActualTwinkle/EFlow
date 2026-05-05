@@ -493,7 +493,6 @@ export class App {
         lastName: student.lastName,
         middleName: student.middleName,
         birthDate: student.birthDate,
-        groupId: student.group?.id,
       })
       .subscribe(() => {
         this.showToast('Студент обновлён', 'success');
