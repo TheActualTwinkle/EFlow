@@ -108,7 +108,9 @@ services:
       - "80"
     
   caddy:
-    image: caddy:2.11.2
+    build:
+      context: .
+      dockerfile: Caddy.Dockerfile
     restart: unless-stopped
     ports:
       - "80:80"

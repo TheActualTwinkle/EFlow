@@ -2,6 +2,15 @@ eflow-edu.ru {
     encode gzip zstd
 
     handle /api/* {
+        rate_limit {
+            zone api_per_ip {
+                key {http.request.remote.host}
+                window 1m
+                events 120
+            }
+            log_key
+        }
+
         reverse_proxy booking-api:8081
     }
 

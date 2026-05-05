@@ -7,7 +7,7 @@ RUN npm ci
 COPY UI/ ./
 RUN npm run build
 
-FROM nginx:1.27-alpine
-COPY UI/nginx.conf /etc/nginx/conf.d/default.conf
-COPY --from=build /app/dist/eflow-ui/browser /usr/share/nginx/html
+FROM caddy:2.11.2-alpine
+COPY UI/Caddyfile /etc/caddy/Caddyfile
+COPY --from=build /app/dist/eflow-ui/browser /srv
 EXPOSE 80
