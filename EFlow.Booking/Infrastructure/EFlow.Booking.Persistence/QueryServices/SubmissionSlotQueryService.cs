@@ -119,7 +119,8 @@ public sealed class SubmissionSlotQueryService(ApplicationDbContext context) : I
         context.SubmissionSlots
             .AsNoTracking()
             .Include(slot => slot.AllowedGroupIds)
-            .Include(slot => slot.Admissions);
+            .Include(slot => slot.Admissions)
+            .Include(slot => slot.NotificationSettings);
 
     private async Task<IReadOnlyCollection<SubmissionSlotView>> MapToViewsAsync(
         IReadOnlyCollection<SubmissionSlot> slots,
@@ -148,6 +149,10 @@ public sealed class SubmissionSlotQueryService(ApplicationDbContext context) : I
             .Distinct()
             .ToArray();
 
+        var slotIds = slots
+            .Select(slot => slot.Id)
+            .ToArray();
+
         var subjects = await context.Subjects
             .AsNoTracking()
             .Where(subject => subjectIds.AsEnumerable().Contains(subject.Id))
@@ -168,6 +173,17 @@ public sealed class SubmissionSlotQueryService(ApplicationDbContext context) : I
             .Where(student => admittedStudentIds.AsEnumerable().Contains(student.Id))
             .ToDictionaryAsync(student => student.Id, cancellationToken);
 
+        var bookingCounts = await context.BookingRecords
+            .AsNoTracking()
+            .Where(record => slotIds.AsEnumerable().Contains(record.SlotId))
+            .GroupBy(record => record.SlotId)
+            .Select(group => new
+            {
+                SlotId = group.Key,
+                Count = group.Count()
+            })
+            .ToDictionaryAsync(group => group.SlotId, group => group.Count, cancellationToken);
+
         return slots
             .Select(slot =>
             {
@@ -187,7 +203,8 @@ public sealed class SubmissionSlotQueryService(ApplicationDbContext context) : I
                     teacher,
                     subject,
                     slotAllowedGroups,
-                    slotAdmittedStudents);
+                    slotAdmittedStudents,
+                    bookingCounts.GetValueOrDefault(slot.Id));
             })
             .ToArray();
     }

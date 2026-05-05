@@ -1917,6 +1917,7 @@
           "startTime",
           "endTime",
           "maxStudents",
+          "bookingCount",
           "allowAllGroups"
         ],
         "type": "object",
@@ -1934,6 +1935,14 @@
             "format": "date-time"
           },
           "maxStudents": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "bookingCount": {
             "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "integer",

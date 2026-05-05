@@ -43,6 +43,7 @@ public class SubjectConfiguration : IEntityTypeConfiguration<Subject>
 
                 groupsBuilder.Property(groupId => groupId.Value)
                     .HasColumnName("group_id")
+                    .ValueGeneratedNever()
                     .IsRequired();
 
                 groupsBuilder.HasKey("subject_id", GroupIdValuePropertyName)

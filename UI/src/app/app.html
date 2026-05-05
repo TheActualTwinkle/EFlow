@@ -208,7 +208,7 @@
               <dl class="details">
                 <div><dt>Преподаватель</dt><dd>{{ fullName(slot.teacher) }}</dd></div>
                 <div><dt>Время</dt><dd>{{ formatDateTime(slot.startTime) }} - {{ slot.endTime | date: 'HH:mm' }}</dd></div>
-                <div><dt>Места</dt><dd>{{ bookingsForSlot(slot.id).length }} / {{ slot.maxStudents }}</dd></div>
+                <div><dt>Места</dt><dd>{{ slotBookingCount(slot) }} / {{ slot.maxStudents }}</dd></div>
                 <div><dt>Аудитория</dt><dd>{{ slot.location || 'Аудитория не указана' }}</dd></div>
                 <div><dt>Комментарий</dt><dd>{{ slot.comment || 'Без комментария' }}</dd></div>
               </dl>
@@ -533,7 +533,7 @@
                     <h3>{{ slotTitle(slot) }}</h3>
                     <p>{{ formatDateTime(slot.startTime) }} - {{ slot.endTime | date: 'HH:mm' }}</p>
                   </div>
-                  <span class="seat-badge">{{ bookingsForSlot(slot.id).length }} / {{ slot.maxStudents }}</span>
+                  <span class="seat-badge">{{ slotBookingCount(slot) }} / {{ slot.maxStudents }}</span>
                 </div>
                 <p class="muted">{{ fullName(slot.teacher) }} · {{ slot.location || 'аудитория не указана' }}</p>
                 <p>{{ slot.comment || 'Комментарий не указан.' }}</p>
@@ -543,20 +543,62 @@
                     <button class="primary-action" type="button" [disabled]="!!slotBookingDisabledReason(slot)" [title]="slotBookingDisabledReason(slot)" (click)="bookSlot(slot)">
                       {{ isBookedByCurrentUser(slot.id) ? 'Вы записаны' : 'Записаться' }}
                     </button>
-                    <button class="secondary-action" type="button" (click)="openNotificationsForSlot(slot)">
-                      <lucide-icon name="bell" />
-                      Уведомления
-                    </button>
+                    <span class="notification-action">
+                      @if (slotNotificationWarningHint(slot); as hint) {
+                        <button
+                          class="slot-warning-icon"
+                          type="button"
+                          aria-label="Предупреждение по слоту"
+                          (mouseenter)="showSlotWarningTooltip(hint, $event)"
+                          (mousemove)="moveAdmissionTooltip($event)"
+                          (mouseleave)="hideAdmissionTooltip()"
+                        >
+                          <lucide-icon name="triangle-alert" />
+                        </button>
+                      }
+                      <button class="secondary-action" type="button" (click)="openNotificationsForSlot(slot)">
+                        <lucide-icon name="bell" />
+                        Уведомления
+                      </button>
+                    </span>
                   </div>
                 }
                 @if (auth.hasRole('Admin', 'Teacher')) {
                   <div class="action-row">
                     <button class="secondary-action" type="button" (click)="openSlotEditor(slot)">Редактировать</button>
-                    <button class="secondary-action" type="button" (click)="openAdmissions(slot)">Допуски</button>
-                    <button class="secondary-action" type="button" (click)="openNotificationsForSlot(slot)">
-                      <lucide-icon name="bell" />
-                      Уведомления
-                    </button>
+                    <span class="notification-action">
+                      @if (slotAdmissionWarningHint(slot); as hint) {
+                        <button
+                          class="slot-warning-icon"
+                          type="button"
+                          aria-label="Предупреждение по слоту"
+                          (mouseenter)="showSlotWarningTooltip(hint, $event)"
+                          (mousemove)="moveAdmissionTooltip($event)"
+                          (mouseleave)="hideAdmissionTooltip()"
+                        >
+                          <lucide-icon name="triangle-alert" />
+                        </button>
+                      }
+                      <button class="secondary-action" type="button" (click)="openAdmissions(slot)">Допуски</button>
+                    </span>
+                    <span class="notification-action">
+                      @if (slotNotificationWarningHint(slot); as hint) {
+                        <button
+                          class="slot-warning-icon"
+                          type="button"
+                          aria-label="Предупреждение по слоту"
+                          (mouseenter)="showSlotWarningTooltip(hint, $event)"
+                          (mousemove)="moveAdmissionTooltip($event)"
+                          (mouseleave)="hideAdmissionTooltip()"
+                        >
+                          <lucide-icon name="triangle-alert" />
+                        </button>
+                      }
+                      <button class="secondary-action" type="button" (click)="openNotificationsForSlot(slot)">
+                        <lucide-icon name="bell" />
+                        Уведомления
+                      </button>
+                    </span>
                     <button class="icon-button danger" type="button" (click)="deleteSlot(slot.id)" aria-label="Удалить слот">
                       <lucide-icon name="trash-2" />
                     </button>
@@ -600,13 +642,16 @@
             @if (auth.hasRole('Teacher', 'Admin', 'Student')) {
               <div class="booking-slot-list">
                 @for (slot of filteredBookingSlots(); track slot.id) {
-                  <article class="booking-slot-card" [class.finished]="isSlotFinished(slot)">
+                  <article
+                    class="booking-slot-card"
+                    [class.finished]="isSlotFinished(slot)"
+                  >
                     <button class="booking-slot-head" type="button" (click)="toggleBookingSlot(slot)">
                       <span>
                         <strong>{{ slotTitle(slot) }}</strong>
                         <small>{{ formatDateTime(slot.startTime) }} · {{ slot.location || 'аудитория не указана' }} · {{ slotDurationPerStudentLabelFor(slot) }}</small>
                       </span>
-                      <span class="seat-badge">{{ bookingsForSlot(slot.id).length }} / {{ slot.maxStudents }}</span>
+                      <span class="seat-badge">{{ slotBookingCount(slot) }} / {{ slot.maxStudents }}</span>
                     </button>
                     @if (isBookingSlotExpanded(slot.id)) {
                       <div class="booking-list nested">

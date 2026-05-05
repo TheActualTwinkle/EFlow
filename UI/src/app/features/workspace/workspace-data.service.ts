@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { forkJoin, map, Observable, of, switchMap } from 'rxjs';
+import { forkJoin, map, Observable } from 'rxjs';
 
 import type { components } from '../../api/contracts';
 import { ApiService } from '../../core/api.service';
@@ -8,7 +8,6 @@ import { AdminView, WorkspaceData } from './workspace.models';
 type Schemas = components['schemas'];
 type CurrentUser = Schemas['CurrentUserView'];
 type GroupView = Schemas['GroupView'];
-type StudentView = Schemas['StudentView'];
 type SubjectView = Schemas['SubjectView'];
 
 @Injectable({ providedIn: 'root' })
@@ -19,11 +18,9 @@ export class WorkspaceDataService {
     if (roles.admin) {
       return forkJoin({
         groups: this.api.getGroups(),
-        students: this.api.getStudents(),
-        teachers: this.api.getTeachers(),
-        subjects: this.api.getSubjects(),
         slots: this.api.getSlots(),
-      }).pipe(switchMap((workspace) => this.withBookings(user.id, false, workspace.slots, workspace)));
+        bookings: this.api.getBookings(),
+      });
     }
 
     if (roles.student) {
@@ -34,28 +31,24 @@ export class WorkspaceDataService {
       return forkJoin({
         teacher: this.api.getTeacher(user.id),
         slots: this.api.getSlotsByTeacher(user.id),
-      }).pipe(
-        switchMap((workspace) =>
-          this.withBookings(user.id, false, workspace.slots, {
-            teachers: [workspace.teacher],
-            slots: workspace.slots,
-          }),
-        ),
-      );
+      }).pipe(map((workspace) => ({
+        teachers: [workspace.teacher],
+        slots: workspace.slots,
+      })));
     }
 
-    return this.api.getSlots().pipe(switchMap((slots) => this.withBookings(user.id, false, slots, { slots })));
+    return this.api.getSlots().pipe(map((slots) => ({ slots })));
   }
 
   loadSlots(user: CurrentUser, current: WorkspaceData, roles: RoleFlags): Observable<Partial<WorkspaceData>> {
     if (roles.admin) {
       return forkJoin({
         groups: this.api.getGroups(),
-        students: this.api.getStudents(),
         teachers: this.api.getTeachers(),
         subjects: this.api.getSubjects(),
         slots: this.api.getSlots(),
-      }).pipe(switchMap((workspace) => this.withBookings(user.id, false, workspace.slots, workspace)));
+        bookings: this.api.getBookings(),
+      });
     }
 
     if (roles.teacher) {
@@ -63,16 +56,12 @@ export class WorkspaceDataService {
         teacher: this.api.getTeacher(user.id),
         subjects: this.api.getSubjectsByTeacher(user.id),
         slots: this.api.getSlotsByTeacher(user.id),
-      }).pipe(
-        switchMap((workspace) =>
-          this.withBookings(user.id, false, workspace.slots, {
-            groups: groupsFromSubjects(workspace.subjects),
-            teachers: [workspace.teacher],
-            subjects: workspace.subjects,
-            slots: workspace.slots,
-          }),
-        ),
-      );
+      }).pipe(map((workspace) => ({
+        groups: groupsFromSubjects(workspace.subjects),
+        teachers: [workspace.teacher],
+        subjects: workspace.subjects,
+        slots: workspace.slots,
+      })));
     }
 
     return this.loadStudentSlots(user, current);
@@ -87,10 +76,20 @@ export class WorkspaceDataService {
       return forkJoin({
         teacher: this.api.getTeacher(user.id),
         slots: this.api.getSlotsByTeacher(user.id),
-      }).pipe(map((workspace) => ({ teachers: [workspace.teacher], slots: workspace.slots, bookings: [] })));
+      }).pipe(map((workspace) => ({
+        teachers: [workspace.teacher],
+        slots: workspace.slots,
+      })));
     }
 
-    return this.api.getSlots().pipe(map((slots) => ({ slots, bookings: [] })));
+    if (roles.admin) {
+      return forkJoin({
+        slots: this.api.getSlots(),
+        bookings: this.api.getBookings(),
+      });
+    }
+
+    return this.api.getSlots().pipe(map((slots) => ({ slots })));
   }
 
   loadAdminSection(section: AdminView): Observable<Partial<WorkspaceData>> {
@@ -113,38 +112,26 @@ export class WorkspaceDataService {
     });
   }
 
-  private withBookings(
-    userId: string,
-    isStudent: boolean,
-    slots: WorkspaceData['slots'],
-    workspace: Partial<WorkspaceData>,
-  ): Observable<Partial<WorkspaceData>> {
-    if (!slots.length) {
-      return of({ ...workspace, bookings: [] });
-    }
-
-    return this.api.loadBookingsForUser(userId, isStudent, slots).pipe(map((bookings) => ({ ...workspace, bookings })));
-  }
-
   private loadStudentSlots(user: CurrentUser, current: WorkspaceData): Observable<Partial<WorkspaceData>> {
     const cachedStudent = current.students.find((student) => student.id === user.id);
 
     if (cachedStudent) {
-      return this.api.getSlots().pipe(
-        switchMap((slots) => this.withBookings(user.id, true, visibleSlotsForStudent(slots, cachedStudent, user.id), { slots })),
-      );
+      return forkJoin({
+        slots: this.api.getSlots(),
+        bookings: this.api.getBookingsByStudent(user.id),
+      });
     }
 
     return forkJoin({
       student: this.api.getStudent(user.id),
       slots: this.api.getSlots(),
+      bookings: this.api.getBookingsByStudent(user.id),
     }).pipe(
-      switchMap((workspace) =>
-        this.withBookings(user.id, true, visibleSlotsForStudent(workspace.slots, workspace.student, user.id), {
-          students: [workspace.student],
-          slots: workspace.slots,
-        }),
-      ),
+      map((workspace) => ({
+        students: [workspace.student],
+        slots: workspace.slots,
+        bookings: workspace.bookings,
+      })),
     );
   }
 }
@@ -163,23 +150,4 @@ function groupsFromSubjects(subjects: SubjectView[]): GroupView[] {
     }
   }
   return [...groups.values()];
-}
-
-function visibleSlotsForStudent(slots: WorkspaceData['slots'], student: StudentView, studentId: string): WorkspaceData['slots'] {
-  const groupId = student.group?.id;
-
-  return slots.filter((slot) => {
-    if (slot.allowAllGroups || slot.admittedStudents?.some((admittedStudent) => admittedStudent.id === studentId)) {
-      return true;
-    }
-
-    if (!groupId) {
-      return false;
-    }
-
-    return (
-      slot.allowedGroups?.some((group) => group.id === groupId) ||
-      slot.subject?.groups?.some((group) => group.id === groupId)
-    );
-  });
 }

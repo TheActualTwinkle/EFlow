@@ -122,6 +122,8 @@ export class App {
 
   readonly todayIso = new Date().toISOString().slice(0, 10);
   private readonly noAdmissionHint = 'У вас нет допуска к этому слоту. Обратитесь к преподавателю.';
+  private readonly reminderKeysByValue = ['TwoWeeks', 'OneWeek', 'TwoDays', 'FourHours'];
+  private readonly bookingModeKeysByValue = ['None', 'All', 'OnlyCancellation', 'OnlyNewBooking'];
   readonly visibleSlots = computed(() => {
     const user = this.auth.user();
 
@@ -152,7 +154,7 @@ export class App {
     });
   });
   readonly freeSeats = computed(() =>
-    this.visibleSlots().reduce((total, slot) => total + Math.max(0, this.slotCapacity(slot) - this.bookingsForSlot(slot.id).length), 0),
+    this.visibleSlots().reduce((total, slot) => total + Math.max(0, this.slotCapacity(slot) - this.slotBookingCount(slot)), 0),
   );
   readonly filteredVisibleSlots = computed(() => {
     const query = this.slotSearch().trim().toLowerCase();
@@ -349,6 +351,9 @@ export class App {
     const current = this.data();
     const next = { ...current, ...partial };
     this.data.set(next);
+    if (partial.bookings && this.auth.hasRole('Admin')) {
+      this.loadedBookingSlotIds.set(next.slots.map((slot) => slot.id));
+    }
     this.loaded.set(true);
     this.syncDefaultSelections(next);
   }
@@ -357,9 +362,19 @@ export class App {
     const user = this.auth.user();
     const firstVisibleSlot = this.visibleSlots()[0];
 
-    this.selectedSlotId.set(firstVisibleSlot?.id ?? null);
-    this.selectedBookingSlotId = firstVisibleSlot?.id ?? '';
-    this.selectedNotificationSlotId = firstVisibleSlot?.id ?? '';
+    const visibleSlotIds = new Set(this.visibleSlots().map((slot) => slot.id));
+
+    if (!this.selectedSlotId() || !visibleSlotIds.has(this.selectedSlotId()!)) {
+      this.selectedSlotId.set(firstVisibleSlot?.id ?? null);
+    }
+
+    if (!this.selectedBookingSlotId || !visibleSlotIds.has(this.selectedBookingSlotId)) {
+      this.selectedBookingSlotId = firstVisibleSlot?.id ?? '';
+    }
+
+    if (!this.selectedNotificationSlotId || !visibleSlotIds.has(this.selectedNotificationSlotId)) {
+      this.selectedNotificationSlotId = firstVisibleSlot?.id ?? '';
+    }
 
     if (!this.personForm.groupId || !data.groups.some((group) => group.id === this.personForm.groupId)) {
       this.personForm.groupId = data.groups[0]?.id ?? '';
@@ -753,8 +768,13 @@ export class App {
     }
 
     this.api.bookSlot(this.selectedBookingSlotId, user.id).subscribe(() => {
+      const slot = this.data().slots.find((item) => item.id === this.selectedBookingSlotId);
       this.showToast('Запись создана', 'success');
-      this.closeModal();
+      if (slot) {
+        this.openNotificationsForSlot(slot);
+      } else {
+        this.closeModal();
+      }
       this.refresh();
     });
   }
@@ -901,6 +921,7 @@ export class App {
   openNotificationsForSlot(slot?: SubmissionSlotView): void {
     const target = slot ?? this.selectedSlot() ?? this.visibleSlots()[0] ?? null;
     this.selectedNotificationSlotId = target?.id ?? '';
+    this.prefillNotificationForm(target);
     this.openModal('notifications');
   }
 
@@ -994,6 +1015,10 @@ export class App {
     return this.data().bookings.filter((booking) => booking.slot?.id === slotId);
   }
 
+  slotBookingCount(slot: SubmissionSlotView): number {
+    return Math.max(Number(slot.bookingCount) || 0, this.bookingsForSlot(slot.id).length);
+  }
+
   isBookingSlotExpanded(slotId: string): boolean {
     return this.expandedBookingSlotIds().includes(slotId);
   }
@@ -1083,6 +1108,27 @@ export class App {
     return !!userId && this.data().bookings.some((booking) => booking.slot?.id === slotId && booking.student?.id === userId);
   }
 
+  slotHasNoAdmissions(slot: SubmissionSlotView): boolean {
+    return this.auth.hasRole('Teacher') && slot.teacher?.id === this.auth.user()?.id && !(slot.admittedStudents?.length ?? 0);
+  }
+
+  currentUserNotificationSettings(slot: SubmissionSlotView) {
+    const userId = this.auth.user()?.id;
+    return userId ? slot.notificationSettings?.find((settings) => settings.userId === userId) : undefined;
+  }
+
+  slotNeedsNotificationSetup(slot: SubmissionSlotView): boolean {
+    return this.auth.hasRole('Student') && this.isBookedByCurrentUser(slot.id) && !this.currentUserNotificationSettings(slot);
+  }
+
+  slotAdmissionWarningHint(slot: SubmissionSlotView): string {
+    return this.slotHasNoAdmissions(slot) ? 'Никому не выдан допуск к этому слоту!' : '';
+  }
+
+  slotNotificationWarningHint(slot: SubmissionSlotView): string {
+    return this.slotNeedsNotificationSetup(slot) ? 'Уведомления не настроены!' : '';
+  }
+
   slotMatchesFilters(slot: SubmissionSlotView, query: string, completion: SlotCompletionFilter, onlyAdmitted: boolean): boolean {
     return this.slotMatchesStateFilters(slot, completion, onlyAdmitted) && this.slotMatchesQuery(slot, query);
   }
@@ -1145,6 +1191,15 @@ export class App {
 
   showAdmissionTooltip(slot: SubmissionSlotView, event: MouseEvent): void {
     const text = this.slotAdmissionHint(slot);
+    if (!text) {
+      this.hideAdmissionTooltip();
+      return;
+    }
+
+    this.admissionTooltip.set({ visible: true, text, x: event.clientX, y: event.clientY });
+  }
+
+  showSlotWarningTooltip(text: string, event: MouseEvent): void {
     if (!text) {
       this.hideAdmissionTooltip();
       return;
@@ -1313,6 +1368,19 @@ export class App {
         OnlyNewBooking: 3,
       }[value] ?? null
     );
+  }
+
+  private prefillNotificationForm(slot: SubmissionSlotView | null): void {
+    const settings = slot ? this.currentUserNotificationSettings(slot) : undefined;
+
+    this.notificationForm.remindTimes = settings?.submissionRemindTimes?.length
+      ? settings.submissionRemindTimes.map((value) => this.reminderKeysByValue[value] ?? 'OneWeek')
+      : ['OneWeek', 'TwoDays'];
+
+    this.notificationForm.bookingMode =
+      typeof settings?.bookingNotificationMode === 'number'
+        ? (this.bookingModeKeysByValue[settings.bookingNotificationMode] ?? 'All')
+        : 'All';
   }
 
   roleLabel(value: string): string {

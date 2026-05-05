@@ -54,6 +54,32 @@ public sealed class SubmissionSlotsApiTests(ApiTestStackFixture fixture)
         });
 
     /// <summary>
+    /// Verifies that <c>UpdateSubmissionSlot</c> replaces the allowed groups stored for the slot.
+    /// </summary>
+    [Fact]
+    public Task UpdateSubmissionSlot_WhenAllowedGroupIdsChange_ShouldPersistAllowedGroups() =>
+        WithSubmissionSlotFixtureAsync(async (scenario, context) =>
+        {
+            // Arrange
+            var newGroupId = await scenario.CreateGroupAsync(context.AdminSession, $"New Group {context.Suffix}");
+            context.AddCleanup(ApiScenario.DeleteGroup(newGroupId));
+
+            // Act
+            var response = await context.AdminSession.PatchAsync(
+                $"/api/submission-slots/{context.SlotId}",
+                new
+                {
+                    allowedGroupIds = new[] { newGroupId }
+                });
+
+            // Assert
+            response.StatusCode.Should().Be(HttpStatusCode.NoContent);
+            var updatedSlot = await scenario.GetSlotAsync(context.AdminSession, context.SlotId);
+            updatedSlot.AllowedGroups.Should().NotBeNull();
+            updatedSlot.AllowedGroups!.Select(group => group.Id).Should().BeEquivalentTo([newGroupId]);
+        });
+
+    /// <summary>
     /// Verifies that <c>AddAdmission</c> succeeds when the caller is the assigned teacher.
     /// </summary>
     [Fact]

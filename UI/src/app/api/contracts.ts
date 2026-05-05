@@ -1448,6 +1448,8 @@ export interface components {
             endTime: string;
             /** Format: int32 */
             maxStudents: number | string;
+            /** Format: int32 */
+            bookingCount: number | string;
             allowAllGroups: boolean;
             location?: null | string;
             comment?: null | string;
@@ -1455,6 +1457,13 @@ export interface components {
             teacher?: null | components["schemas"]["TeacherView"];
             allowedGroups?: null | components["schemas"]["GroupView"][];
             admittedStudents?: null | components["schemas"]["StudentView"][];
+            notificationSettings?: null | components["schemas"]["SubmissionSlotNotificationSettingsView"][];
+        };
+        SubmissionSlotNotificationSettingsView: {
+            /** Format: uuid */
+            userId: string;
+            submissionRemindTimes: components["schemas"]["SubmissionRemindTime"][];
+            bookingNotificationMode?: null | components["schemas"]["BookingNotificationMode"];
         };
         TeacherView: {
             /** Format: uuid */
