@@ -1,6 +1,7 @@
 using EFlow.Booking.Application.Common.Errors;
 using EFlow.Booking.Application.Common.Errors.Abstractions;
 using EFlow.Booking.Domain;
+using EFlow.Booking.Domain.Admins;
 using EFlow.Booking.Domain.SubmissionSlots;
 using EFlow.Common.Infrastructure;
 using FluentResults;
@@ -33,8 +34,13 @@ public class UpdateNotificationSettingsCommandHandler(
                     .WithMessage("User not found")
                     .WithId(request.UserId));
 
+        var admins = await unitOfWork
+            .GetRepository<IAdminRepository>()
+            .GetAllAsync(cancellationToken);
+
         slot.UpdateNotificationSettings(
             request.UserId,
+            admins.Select(a => a.Id.Value).ToList(),
             request.SubmissionRemindTimes,
             request.BookingNotificationMode);
 

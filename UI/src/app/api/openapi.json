@@ -190,47 +190,6 @@
           }
         }
       },
-      "patch": {
-        "tags": [
-          "Bookings"
-        ],
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateBookingRequest"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateBookingRequest"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateBookingRequest"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "OK"
-          }
-        }
-      },
       "delete": {
         "tags": [
           "Bookings"
@@ -1813,6 +1772,101 @@
           }
         }
       },
+      "PatchableOfboolean": {
+        "type": "object",
+        "properties": {
+          "hasValue": {
+            "type": "boolean"
+          },
+          "value": {
+            "type": "boolean"
+          }
+        }
+      },
+      "PatchableOfDateOnly": {
+        "type": "object",
+        "properties": {
+          "hasValue": {
+            "type": "boolean"
+          },
+          "value": {
+            "type": "string",
+            "format": "date"
+          }
+        }
+      },
+      "PatchableOfDateTime": {
+        "type": "object",
+        "properties": {
+          "hasValue": {
+            "type": "boolean"
+          },
+          "value": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "PatchableOfGuid": {
+        "type": "object",
+        "properties": {
+          "hasValue": {
+            "type": "boolean"
+          },
+          "value": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      },
+      "PatchableOfICollectionOfGuid": {
+        "type": "object",
+        "properties": {
+          "hasValue": {
+            "type": "boolean"
+          },
+          "value": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        }
+      },
+      "PatchableOfint": {
+        "type": "object",
+        "properties": {
+          "hasValue": {
+            "type": "boolean"
+          },
+          "value": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          }
+        }
+      },
+      "PatchableOfstring": {
+        "type": "object",
+        "properties": {
+          "hasValue": {
+            "type": "boolean"
+          },
+          "value": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
       "StudentView": {
         "required": [
           "id",
@@ -1899,6 +1953,35 @@
       "SubmissionRemindTime": {
         "type": "integer"
       },
+      "SubmissionSlotNotificationSettingsView": {
+        "required": [
+          "userId",
+          "submissionRemindTimes"
+        ],
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "submissionRemindTimes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SubmissionRemindTime"
+            }
+          },
+          "bookingNotificationMode": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/BookingNotificationMode"
+              }
+            ]
+          }
+        }
+      },
       "SubmissionSlotView": {
         "required": [
           "id",
@@ -1933,9 +2016,9 @@
           "bookingCount": {
             "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
+              "null",
               "integer",
-              "string",
-              "null"
+              "string"
             ],
             "format": "int32"
           },
@@ -1991,6 +2074,15 @@
             "items": {
               "$ref": "#/components/schemas/StudentView"
             }
+          },
+          "notificationSettings": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {
+              "$ref": "#/components/schemas/SubmissionSlotNotificationSettingsView"
+            }
           }
         }
       },
@@ -2032,70 +2124,28 @@
           }
         }
       },
-      "UpdateBookingRequest": {
-        "type": "object",
-        "properties": {
-          "studentId": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "format": "uuid"
-          },
-          "slotId": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "format": "uuid"
-          }
-        }
-      },
       "UpdateGroupRequest": {
         "type": "object",
         "properties": {
           "name": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "$ref": "#/components/schemas/PatchableOfstring"
           }
         }
       },
       "UpdateStudentRequest": {
         "type": "object",
         "properties": {
-          "groupId": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "format": "uuid"
-          },
           "firstName": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "$ref": "#/components/schemas/PatchableOfstring"
           },
           "lastName": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "$ref": "#/components/schemas/PatchableOfstring"
           },
           "middleName": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "$ref": "#/components/schemas/PatchableOfstring"
           },
           "birthDate": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "format": "date"
+            "$ref": "#/components/schemas/PatchableOfDateOnly"
           }
         }
       },
@@ -2103,27 +2153,13 @@
         "type": "object",
         "properties": {
           "name": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "$ref": "#/components/schemas/PatchableOfstring"
           },
           "teacherId": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "format": "uuid"
+            "$ref": "#/components/schemas/PatchableOfGuid"
           },
           "groupIds": {
-            "type": [
-              "null",
-              "array"
-            ],
-            "items": {
-              "type": "string",
-              "format": "uuid"
-            }
+            "$ref": "#/components/schemas/PatchableOfICollectionOfGuid"
           }
         }
       },
@@ -2160,69 +2196,31 @@
         "type": "object",
         "properties": {
           "subjectId": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "format": "uuid"
+            "$ref": "#/components/schemas/PatchableOfGuid"
           },
           "teacherId": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "format": "uuid"
+            "$ref": "#/components/schemas/PatchableOfGuid"
           },
           "startTime": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "format": "date-time"
+            "$ref": "#/components/schemas/PatchableOfDateTime"
           },
           "endTime": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "format": "date-time"
+            "$ref": "#/components/schemas/PatchableOfDateTime"
           },
           "maxStudents": {
-            "pattern": "^-?(?:0|[1-9]\\d*)$",
-            "type": [
-              "null",
-              "integer",
-              "string"
-            ],
-            "format": "int32"
+            "$ref": "#/components/schemas/PatchableOfint"
           },
           "allowAllGroups": {
-            "type": [
-              "null",
-              "boolean"
-            ]
+            "$ref": "#/components/schemas/PatchableOfboolean"
           },
           "allowedGroupIds": {
-            "type": [
-              "null",
-              "array"
-            ],
-            "items": {
-              "type": "string",
-              "format": "uuid"
-            }
+            "$ref": "#/components/schemas/PatchableOfICollectionOfGuid"
           },
           "location": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "$ref": "#/components/schemas/PatchableOfstring"
           },
           "comment": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "$ref": "#/components/schemas/PatchableOfstring"
           }
         }
       },
@@ -2230,29 +2228,16 @@
         "type": "object",
         "properties": {
           "firstName": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "$ref": "#/components/schemas/PatchableOfstring"
           },
           "lastName": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "$ref": "#/components/schemas/PatchableOfstring"
           },
           "middleName": {
-            "type": [
-              "null",
-              "string"
-            ]
+            "$ref": "#/components/schemas/PatchableOfstring"
           },
           "birthDate": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "format": "date"
+            "$ref": "#/components/schemas/PatchableOfDateOnly"
           }
         }
       }

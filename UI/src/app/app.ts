@@ -424,7 +424,7 @@ export class App {
       password: this.personForm.password,
       email: this.personForm.email,
       firstName: this.personForm.firstName,
-      middleName: this.personForm.middleName || undefined,
+      middleName: this.personForm.middleName,
       lastName: this.personForm.lastName,
       birthDate: this.personForm.birthDate,
     };
@@ -870,6 +870,12 @@ export class App {
   saveNotificationSettings(): void {
     const user = this.auth.user();
 
+    if (!this.canConfigureSlotNotifications()) {
+      this.showToast('Настройки уведомлений недоступны для администратора', 'warning');
+      this.closeModal();
+      return;
+    }
+
     if (!user || !this.selectedNotificationSlotId) {
       this.setFieldErrors({ notificationSlot: 'Откройте уведомления у конкретного окна защиты.' });
       this.showToast('Откройте уведомления у конкретного окна защиты', 'warning');
@@ -919,6 +925,10 @@ export class App {
   }
 
   openNotificationsForSlot(slot?: SubmissionSlotView): void {
+    if (!this.canConfigureSlotNotifications()) {
+      return;
+    }
+
     const target = slot ?? this.selectedSlot() ?? this.visibleSlots()[0] ?? null;
     this.selectedNotificationSlotId = target?.id ?? '';
     this.prefillNotificationForm(target);
@@ -1118,6 +1128,10 @@ export class App {
   }
 
   slotNeedsNotificationSetup(slot: SubmissionSlotView): boolean {
+    if (!this.canConfigureSlotNotifications()) {
+      return false;
+    }
+
     if (this.currentUserNotificationSettings(slot)) {
       return false;
     }
@@ -1135,6 +1149,10 @@ export class App {
 
   slotNotificationWarningHint(slot: SubmissionSlotView): string {
     return this.slotNeedsNotificationSetup(slot) ? 'Уведомления не настроены!' : '';
+  }
+
+  canConfigureSlotNotifications(): boolean {
+    return !this.auth.hasRole('Admin') && this.auth.hasRole('Student', 'Teacher');
   }
 
   slotMatchesFilters(slot: SubmissionSlotView, query: string, completion: SlotCompletionFilter, onlyAdmitted: boolean): boolean {
