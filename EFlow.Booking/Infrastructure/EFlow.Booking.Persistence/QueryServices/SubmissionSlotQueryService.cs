@@ -57,9 +57,7 @@ public sealed class SubmissionSlotQueryService(ApplicationDbContext context) : I
 
     public async Task<IEnumerable<SubmissionSlotReminderSnapshotView>> GetReminderSnapshotAsync(CancellationToken cancellationToken = new())
     {
-        var slots = await QuerySlots()
-            .Include(slot => slot.NotificationSettings)
-            .ToListAsync(cancellationToken);
+        var slots = await QuerySlots().ToListAsync(cancellationToken);
 
         if (slots.Count == 0)
             return [];

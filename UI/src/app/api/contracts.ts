@@ -1416,7 +1416,7 @@ export interface components {
             /** Format: int32 */
             maxStudents: number | string;
             /** Format: int32 */
-            bookingCount: number | string;
+            bookingCount: number | string | null;
             allowAllGroups: boolean;
             location?: null | string;
             comment?: null | string;

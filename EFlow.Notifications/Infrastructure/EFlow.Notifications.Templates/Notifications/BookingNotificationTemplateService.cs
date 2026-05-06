@@ -37,7 +37,7 @@ public sealed class BookingNotificationTemplateService(ITemplateRenderer templat
         var model = new BookingEmailTemplateModel
         {
             Title = "Отмена записи на защиту",
-            Lead = $"Студент {bookingRecord.StudentFullName} отменил запись на слот защиты.",
+            Lead = $"Студент {bookingRecord.StudentFullName} отменил запись в окно защиты.",
             AccentLabel = "Запись отменена",
             SubjectName = bookingRecord.SubmissionSlotModel.SubjectName,
             TeacherName = bookingRecord.SubmissionSlotModel.TeacherFullName,
@@ -58,8 +58,8 @@ public sealed class BookingNotificationTemplateService(ITemplateRenderer templat
     {
         var model = new SubmissionSlotCreatedEmailTemplateModel
         {
-            Title = "Новый слот защиты",
-            Lead = "В расписании появился новый слот, по которому включены уведомления.",
+            Title = "Новое окно защиты",
+            Lead = "В расписании появилось новое окно защиты, по которому включены уведомления.",
             SubjectName = submissionSlot.SubjectName,
             TeacherFullName = submissionSlot.TeacherFullName,
             TimeRange = TemplateFormatter.FormatTimeRange(submissionSlot.StartTime, submissionSlot.EndTime),
@@ -71,7 +71,7 @@ public sealed class BookingNotificationTemplateService(ITemplateRenderer templat
 
         var body = await templateRenderer.RenderAsync("/EmailTemplates/SubmissionSlotCreated.cshtml", model, cancellationToken);
 
-        return ($"Создан новый слот по предмету «{submissionSlot.SubjectName}»", body);
+        return ($"Создано новое окно защиты по предмету «{submissionSlot.SubjectName}»", body);
     }
 
     public async Task<(string Subject, string Body)> CreateSubmissionSlotUpdatedAsync(
@@ -81,8 +81,8 @@ public sealed class BookingNotificationTemplateService(ITemplateRenderer templat
     {
         var model = new SubmissionSlotUpdatedEmailTemplateModel
         {
-            Title = "Слот защиты обновлён",
-            Lead = "Ниже собраны изменения по слоту, который вы отслеживаете.",
+            Title = "Окно защиты обновлено",
+            Lead = "Ниже собраны изменения по окну защиты, которое вы отслеживаете.",
             SubjectName = newSubmissionSlot.SubjectName,
             TeacherName = newSubmissionSlot.TeacherFullName,
             CurrentTimeRange = TemplateFormatter.FormatTimeRange(newSubmissionSlot.StartTime, newSubmissionSlot.EndTime),
@@ -91,7 +91,7 @@ public sealed class BookingNotificationTemplateService(ITemplateRenderer templat
         
         var body = await templateRenderer.RenderAsync("/EmailTemplates/SubmissionSlotUpdated.cshtml", model, cancellationToken);
 
-        return ($"Изменения в слоте по предмету «{newSubmissionSlot.SubjectName}»", body);
+        return ($"Изменения в окне защиты по предмету «{newSubmissionSlot.SubjectName}»", body);
     }
 
     public async Task<(string Subject, string Body)> CreateReminderAsync(
@@ -102,7 +102,7 @@ public sealed class BookingNotificationTemplateService(ITemplateRenderer templat
         var model = new ReminderEmailTemplateModel
         {
             Title = "Напоминание о защите",
-            Lead = $"Скоро начнётся слот защиты. Напоминание: {TemplateFormatter.FormatReminderSchedule(submissionRemindTime)}.",
+            Lead = $"Скоро начнётся окно защиты. Напоминание: {TemplateFormatter.FormatReminderSchedule(submissionRemindTime)}.",
             SubjectName = submissionSlot.SubjectName,
             TeacherName = submissionSlot.TeacherFullName,
             TimeRange = TemplateFormatter.FormatTimeRange(submissionSlot.StartTime, submissionSlot.EndTime),

@@ -74,7 +74,7 @@ public static class MappingExtensions
             Subject? subject = null,
             IEnumerable<Group>? allowedGroups = null,
             IEnumerable<Student>? admittedStudents = null,
-            int bookingCount = 0) =>
+            int? bookingCount = null) =>
             new()
             {
                 Id = submissionSlot.Id.Value,

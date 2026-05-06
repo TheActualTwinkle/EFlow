@@ -15,7 +15,7 @@ public sealed record SubmissionSlotView
 
     public required int MaxStudents { get; init; }
 
-    public required int BookingCount { get; init; }
+    public required int? BookingCount { get; init; }
 
     public required bool AllowAllGroups { get; init; }
 
