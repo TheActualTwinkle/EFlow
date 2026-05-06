@@ -201,13 +201,13 @@ public class BookingNotificationHandlersIntegrationTests
         var notifyAllId = Guid.NewGuid();
         var notifyCreatedOnlyId = Guid.NewGuid();
         var notifyCancelledOnlyId = Guid.NewGuid();
-        slot.UpdateNotificationSettings(notifyAllId, [SubmissionRemindTime.OneWeek], BookingNotificationMode.All);
+        slot.UpdateNotificationSettings(notifyAllId, [], [SubmissionRemindTime.OneWeek], BookingNotificationMode.All);
 
         slot.UpdateNotificationSettings(
-            notifyCreatedOnlyId, [SubmissionRemindTime.TwoDays], BookingNotificationMode.OnlyNewBooking);
+            notifyCreatedOnlyId, [], [SubmissionRemindTime.TwoDays], BookingNotificationMode.OnlyNewBooking);
 
         slot.UpdateNotificationSettings(
-            notifyCancelledOnlyId, [SubmissionRemindTime.FourHours], BookingNotificationMode.OnlyCancellation);
+            notifyCancelledOnlyId, [], [SubmissionRemindTime.FourHours], BookingNotificationMode.OnlyCancellation);
 
         slot.AddAdmission(bookedStudent.Id, Utc(2026, 04, 28, 12));
         var bookingRecord = slot.BookToSlot(bookedStudent, [], Utc(2026, 04, 28, 12));
@@ -269,13 +269,13 @@ public class BookingNotificationHandlersIntegrationTests
         var notifyAllId = Guid.NewGuid();
         var notifyCreatedOnlyId = Guid.NewGuid();
         var notifyCancelledOnlyId = Guid.NewGuid();
-        slot.UpdateNotificationSettings(notifyAllId, [SubmissionRemindTime.OneWeek], BookingNotificationMode.All);
+        slot.UpdateNotificationSettings(notifyAllId, [], [SubmissionRemindTime.OneWeek], BookingNotificationMode.All);
 
         slot.UpdateNotificationSettings(
-            notifyCreatedOnlyId, [SubmissionRemindTime.TwoDays], BookingNotificationMode.OnlyNewBooking);
+            notifyCreatedOnlyId, [], [SubmissionRemindTime.TwoDays], BookingNotificationMode.OnlyNewBooking);
 
         slot.UpdateNotificationSettings(
-            notifyCancelledOnlyId, [SubmissionRemindTime.FourHours], BookingNotificationMode.OnlyCancellation);
+            notifyCancelledOnlyId, [], [SubmissionRemindTime.FourHours], BookingNotificationMode.OnlyCancellation);
 
         slot.AddAdmission(bookedStudent.Id, Utc(2026, 04, 28, 12));
         var bookingRecord = slot.BookToSlot(bookedStudent, [], Utc(2026, 04, 28, 12));

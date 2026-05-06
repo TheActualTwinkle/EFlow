@@ -228,32 +228,7 @@ export interface paths {
         };
         options?: never;
         head?: never;
-        patch: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    id: string;
-                };
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["UpdateBookingRequest"];
-                    "text/json": components["schemas"]["UpdateBookingRequest"];
-                    "application/*+json": components["schemas"]["UpdateBookingRequest"];
-                };
-            };
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-            };
-        };
+        patch?: never;
         trace?: never;
     };
     "/api/bookings/by-student/{studentId}": {
@@ -1386,6 +1361,38 @@ export interface components {
             username: string;
             password: string;
         };
+        PatchableOfboolean: {
+            hasValue?: boolean;
+            value?: boolean;
+        };
+        PatchableOfDateOnly: {
+            hasValue?: boolean;
+            /** Format: date */
+            value?: string;
+        };
+        PatchableOfDateTime: {
+            hasValue?: boolean;
+            /** Format: date-time */
+            value?: string;
+        };
+        PatchableOfGuid: {
+            hasValue?: boolean;
+            /** Format: uuid */
+            value?: string;
+        };
+        PatchableOfICollectionOfGuid: {
+            hasValue?: boolean;
+            value?: null | string[];
+        };
+        PatchableOfint: {
+            hasValue?: boolean;
+            /** Format: int32 */
+            value?: number | string;
+        };
+        PatchableOfstring: {
+            hasValue?: boolean;
+            value?: null | string;
+        };
         StudentView: {
             /** Format: uuid */
             id: string;
@@ -1406,6 +1413,12 @@ export interface components {
             groups: null | components["schemas"]["GroupView"][];
         };
         SubmissionRemindTime: number;
+        SubmissionSlotNotificationSettingsView: {
+            /** Format: uuid */
+            userId: string;
+            submissionRemindTimes: components["schemas"]["SubmissionRemindTime"][];
+            bookingNotificationMode?: null | components["schemas"]["BookingNotificationMode"];
+        };
         SubmissionSlotView: {
             /** Format: uuid */
             id: string;
@@ -1416,7 +1429,7 @@ export interface components {
             /** Format: int32 */
             maxStudents: number | string;
             /** Format: int32 */
-            bookingCount: number | string | null;
+            bookingCount: null | number | string;
             allowAllGroups: boolean;
             location?: null | string;
             comment?: null | string;
@@ -1425,12 +1438,6 @@ export interface components {
             allowedGroups?: null | components["schemas"]["GroupView"][];
             admittedStudents?: null | components["schemas"]["StudentView"][];
             notificationSettings?: null | components["schemas"]["SubmissionSlotNotificationSettingsView"][];
-        };
-        SubmissionSlotNotificationSettingsView: {
-            /** Format: uuid */
-            userId: string;
-            submissionRemindTimes: components["schemas"]["SubmissionRemindTime"][];
-            bookingNotificationMode?: null | components["schemas"]["BookingNotificationMode"];
         };
         TeacherView: {
             /** Format: uuid */
@@ -1443,29 +1450,19 @@ export interface components {
             /** Format: date-time */
             createdAt?: null | string;
         };
-        UpdateBookingRequest: {
-            /** Format: uuid */
-            studentId?: null | string;
-            /** Format: uuid */
-            slotId?: null | string;
-        };
         UpdateGroupRequest: {
-            name?: null | string;
+            name?: components["schemas"]["PatchableOfstring"];
         };
         UpdateStudentRequest: {
-            /** Format: uuid */
-            groupId?: null | string;
-            firstName?: null | string;
-            lastName?: null | string;
-            middleName?: null | string;
-            /** Format: date */
-            birthDate?: null | string;
+            firstName?: components["schemas"]["PatchableOfstring"];
+            lastName?: components["schemas"]["PatchableOfstring"];
+            middleName?: components["schemas"]["PatchableOfstring"];
+            birthDate?: components["schemas"]["PatchableOfDateOnly"];
         };
         UpdateSubjectRequest: {
-            name?: null | string;
-            /** Format: uuid */
-            teacherId?: null | string;
-            groupIds?: null | string[];
+            name?: components["schemas"]["PatchableOfstring"];
+            teacherId?: components["schemas"]["PatchableOfGuid"];
+            groupIds?: components["schemas"]["PatchableOfICollectionOfGuid"];
         };
         UpdateSubmissionSlotNotificationSettingsRequest: {
             /** Format: uuid */
@@ -1474,27 +1471,21 @@ export interface components {
             bookingNotificationMode?: null | components["schemas"]["BookingNotificationMode"];
         };
         UpdateSubmissionSlotRequest: {
-            /** Format: uuid */
-            subjectId?: null | string;
-            /** Format: uuid */
-            teacherId?: null | string;
-            /** Format: date-time */
-            startTime?: null | string;
-            /** Format: date-time */
-            endTime?: null | string;
-            /** Format: int32 */
-            maxStudents?: null | number | string;
-            allowAllGroups?: null | boolean;
-            allowedGroupIds?: null | string[];
-            location?: null | string;
-            comment?: null | string;
+            subjectId?: components["schemas"]["PatchableOfGuid"];
+            teacherId?: components["schemas"]["PatchableOfGuid"];
+            startTime?: components["schemas"]["PatchableOfDateTime"];
+            endTime?: components["schemas"]["PatchableOfDateTime"];
+            maxStudents?: components["schemas"]["PatchableOfint"];
+            allowAllGroups?: components["schemas"]["PatchableOfboolean"];
+            allowedGroupIds?: components["schemas"]["PatchableOfICollectionOfGuid"];
+            location?: components["schemas"]["PatchableOfstring"];
+            comment?: components["schemas"]["PatchableOfstring"];
         };
         UpdateTeacherRequest: {
-            firstName?: null | string;
-            lastName?: null | string;
-            middleName?: null | string;
-            /** Format: date */
-            birthDate?: null | string;
+            firstName?: components["schemas"]["PatchableOfstring"];
+            lastName?: components["schemas"]["PatchableOfstring"];
+            middleName?: components["schemas"]["PatchableOfstring"];
+            birthDate?: components["schemas"]["PatchableOfDateOnly"];
         };
     };
     responses: never;

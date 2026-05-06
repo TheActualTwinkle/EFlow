@@ -16,10 +16,6 @@ type StudentView = Schemas['StudentView'];
 type SubjectView = Schemas['SubjectView'];
 type SubmissionSlotView = Schemas['SubmissionSlotView'];
 type TeacherView = Schemas['TeacherView'];
-type UpdateStudentRequest = Schemas['UpdateStudentRequest'];
-type UpdateSubjectRequest = Schemas['UpdateSubjectRequest'];
-type UpdateSubmissionSlotRequest = Schemas['UpdateSubmissionSlotRequest'];
-type UpdateTeacherRequest = Schemas['UpdateTeacherRequest'];
 
 interface ApiProblem {
   title?: string;
@@ -27,6 +23,35 @@ interface ApiProblem {
   status?: number;
   errors?: Record<string, string[]>;
 }
+
+type PersonRequestWithMiddleName = {
+  middleName?: string | null;
+};
+
+type UpdatePersonFormRequest = {
+  firstName: string;
+  lastName: string;
+  middleName?: string | null;
+  birthDate: string;
+};
+
+type UpdateSubjectFormRequest = {
+  name: string;
+  teacherId?: string;
+  groupIds: string[];
+};
+
+type UpdateSubmissionSlotFormRequest = {
+  subjectId?: string;
+  teacherId?: string;
+  startTime: string;
+  endTime: string;
+  maxStudents: number;
+  allowAllGroups: boolean;
+  allowedGroupIds: string[];
+  location?: string | null;
+  comment?: string | null;
+};
 
 @Injectable({ providedIn: 'root' })
 export class ApiService {
@@ -100,11 +125,11 @@ export class ApiService {
   }
 
   createTeacher(request: CreateTeacherRequest) {
-    return this.postLocation(`${apiBaseUrl}/teachers`, request);
+    return this.postLocation(`${apiBaseUrl}/teachers`, this.normalizePersonRequest(request));
   }
 
   createStudent(request: CreateStudentRequest) {
-    return this.postLocation(`${apiBaseUrl}/students`, request);
+    return this.postLocation(`${apiBaseUrl}/students`, this.normalizePersonRequest(request));
   }
 
   createSubject(name: string, teacherId: string, groupIds: string[]) {
@@ -119,23 +144,25 @@ export class ApiService {
     return this.http.patch<void>(`${apiBaseUrl}/groups/${id}`, { name }).pipe(catchError((error) => this.fail(error)));
   }
 
-  updateTeacher(id: string, request: UpdateTeacherRequest) {
-    return this.http.patch<void>(`${apiBaseUrl}/teachers/${id}`, request).pipe(catchError((error) => this.fail(error)));
+  updateTeacher(id: string, request: UpdatePersonFormRequest) {
+    return this.http.patch<void>(`${apiBaseUrl}/teachers/${id}`, this.normalizePersonRequest(request)).pipe(catchError((error) => this.fail(error)));
   }
 
-  updateStudent(id: string, request: UpdateStudentRequest) {
-    return this.http.patch<void>(`${apiBaseUrl}/students/${id}`, request).pipe(catchError((error) => this.fail(error)));
+  updateStudent(id: string, request: UpdatePersonFormRequest) {
+    return this.http.patch<void>(`${apiBaseUrl}/students/${id}`, this.normalizePersonRequest(request)).pipe(catchError((error) => this.fail(error)));
   }
 
-  updateSubject(id: string, request: UpdateSubjectRequest) {
+  updateSubject(id: string, request: UpdateSubjectFormRequest) {
     return this.http.patch<void>(`${apiBaseUrl}/subjects/${id}`, request).pipe(catchError((error) => this.fail(error)));
   }
 
   updateSlot(
     id: string,
-    request: UpdateSubmissionSlotRequest,
+    request: UpdateSubmissionSlotFormRequest,
   ) {
-    return this.http.patch<void>(`${apiBaseUrl}/submission-slots/${id}`, request).pipe(catchError((error) => this.fail(error)));
+    return this.http
+      .patch<void>(`${apiBaseUrl}/submission-slots/${id}`, this.normalizeSubmissionSlotRequest(request))
+      .pipe(catchError((error) => this.fail(error)));
   }
 
   deleteSlot(id: string) {
@@ -194,6 +221,26 @@ export class ApiService {
       map((response) => response.headers.get('Location') ?? ''),
       catchError((error) => this.fail(error)),
     );
+  }
+
+  private normalizePersonRequest<T extends PersonRequestWithMiddleName>(request: T): T {
+    return {
+      ...request,
+      middleName: this.optionalString(request.middleName),
+    };
+  }
+
+  private normalizeSubmissionSlotRequest<T extends UpdateSubmissionSlotFormRequest>(request: T): T {
+    return {
+      ...request,
+      location: this.optionalString(request.location),
+      comment: this.optionalString(request.comment),
+    };
+  }
+
+  private optionalString(value: string | null | undefined): string | null {
+    const normalized = value?.trim();
+    return normalized ? normalized : null;
   }
 
   private fail(error: HttpErrorResponse) {

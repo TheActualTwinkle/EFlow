@@ -556,10 +556,12 @@
                           <lucide-icon name="triangle-alert" />
                         </button>
                       }
-                      <button class="secondary-action" type="button" (click)="openNotificationsForSlot(slot)">
-                        <lucide-icon name="bell" />
-                        Уведомления
-                      </button>
+                      @if (canConfigureSlotNotifications()) {
+                        <button class="secondary-action" type="button" (click)="openNotificationsForSlot(slot)">
+                          <lucide-icon name="bell" />
+                          Уведомления
+                        </button>
+                      }
                     </span>
                   </div>
                 }
@@ -581,24 +583,26 @@
                       }
                       <button class="secondary-action" type="button" (click)="openAdmissions(slot)">Допуски</button>
                     </span>
-                    <span class="notification-action">
-                      @if (slotNotificationWarningHint(slot); as hint) {
-                        <button
-                          class="slot-warning-icon"
-                          type="button"
-                          aria-label="Предупреждение по окну защиты"
-                          (mouseenter)="showSlotWarningTooltip(hint, $event)"
-                          (mousemove)="moveAdmissionTooltip($event)"
-                          (mouseleave)="hideAdmissionTooltip()"
-                        >
-                          <lucide-icon name="triangle-alert" />
+                    @if (canConfigureSlotNotifications()) {
+                      <span class="notification-action">
+                        @if (slotNotificationWarningHint(slot); as hint) {
+                          <button
+                            class="slot-warning-icon"
+                            type="button"
+                            aria-label="Предупреждение по окну защиты"
+                            (mouseenter)="showSlotWarningTooltip(hint, $event)"
+                            (mousemove)="moveAdmissionTooltip($event)"
+                            (mouseleave)="hideAdmissionTooltip()"
+                          >
+                            <lucide-icon name="triangle-alert" />
+                          </button>
+                        }
+                        <button class="secondary-action" type="button" (click)="openNotificationsForSlot(slot)">
+                          <lucide-icon name="bell" />
+                          Уведомления
                         </button>
-                      }
-                      <button class="secondary-action" type="button" (click)="openNotificationsForSlot(slot)">
-                        <lucide-icon name="bell" />
-                        Уведомления
-                      </button>
-                    </span>
+                      </span>
+                    }
                     <button class="icon-button danger" type="button" (click)="deleteSlot(slot.id)" aria-label="Удалить окно защиты">
                       <lucide-icon name="trash-2" />
                     </button>

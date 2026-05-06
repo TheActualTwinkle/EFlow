@@ -250,6 +250,7 @@ public sealed class SubmissionSlot : Entity
 
     public void UpdateNotificationSettings(
         Guid userId,
+        ICollection<Guid> usersWithoutNotifications,
         ICollection<SubmissionRemindTime> bookingRecordRemindTime,
         BookingNotificationMode? bookingNotificationMode)
     {
@@ -261,6 +262,7 @@ public sealed class SubmissionSlot : Entity
         var settings = SubmissionSlotNotificationSettings.Create(
             Id,
             userId,
+            usersWithoutNotifications,
             bookingRecordRemindTime,
             bookingNotificationMode);
 

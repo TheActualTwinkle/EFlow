@@ -1,6 +1,7 @@
 using System.Net;
 using EFlow.Booking.ApiTests.Infrastructure.Assertions;
 using EFlow.Booking.ApiTests.Infrastructure.Collections;
+using EFlow.Booking.ApiTests.Infrastructure.Contracts;
 using EFlow.Booking.ApiTests.Infrastructure.Fixtures;
 using EFlow.Booking.ApiTests.Infrastructure.Scenarios;
 using EFlow.Booking.ApiTests.Infrastructure.Sessions;
@@ -208,6 +209,38 @@ public sealed class SubmissionSlotsApiTests(ApiTestStackFixture fixture)
 
             // Assert
             await context.StudentSession.AssertProblemAsync(response, HttpStatusCode.Forbidden, "Forbidden", "own notification settings");
+        });
+
+    /// <summary>
+    /// Verifies that <c>UpdateNotificationSettings</c> rejects users that must not receive notifications.
+    /// </summary>
+    [Fact]
+    public Task UpdateNotificationSettings_WhenUserIsInUsersWithoutNotifications_ShouldReturnBusinessRuleError() =>
+        WithSubmissionSlotFixtureAsync(async (scenario, context) =>
+        {
+            // Arrange
+            var meResponse = await context.AdminSession.GetAsync("/api/auth/me");
+            meResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+            var admin = (await context.AdminSession.ReadAsync<CurrentUserResponse>(meResponse))!;
+
+            // Act
+            var response = await context.AdminSession.PutAsync(
+                $"/api/submission-slots/{context.SlotId}/notification-settings",
+                new
+                {
+                    userId = admin.Id,
+                    submissionRemindTimes = new[] { SubmissionRemindTime.OneWeek },
+                    bookingNotificationMode = BookingNotificationMode.All
+                });
+
+            // Assert
+            await context.AdminSession.AssertProblemAsync(
+                response,
+                HttpStatusCode.InternalServerError,
+                "User must not be in users without notifications.");
+
+            var slot = await scenario.GetSlotAsync(context.AdminSession, context.SlotId);
+            slot.NotificationSettings.Should().NotContain(settings => settings.UserId == admin.Id);
         });
 
     /// <summary>
