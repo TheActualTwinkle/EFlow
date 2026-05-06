@@ -221,8 +221,19 @@ public sealed class SubmissionSlot : Entity
         return BookingRecord.Create(student.Id, Id, nowUtc, nowUtc);
     }
 
-    public void CancelBooking(BookingRecord bookingRecord, DateTime nowUtc) =>
+    public void CancelBooking(BookingRecord bookingRecord, DateTime nowUtc)
+    {
         bookingRecord.Cancel(nowUtc);
+
+        var studentId = bookingRecord.StudentId.Value;
+        
+        var existingSettings = NotificationSettings.FirstOrDefault(s => s.UserId == studentId);
+
+        if (existingSettings is null)
+            return;
+
+        NotificationSettings.Remove(existingSettings);
+    }
 
     public SubmissionSlotAdmission AddAdmission(StudentId studentId, DateTime nowUtc)
     {

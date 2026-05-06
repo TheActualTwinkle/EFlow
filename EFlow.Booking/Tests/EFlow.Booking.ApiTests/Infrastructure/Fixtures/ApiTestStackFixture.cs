@@ -53,7 +53,7 @@ public sealed class ApiTestStackFixture : IAsyncLifetime
         AdminPassword = Environment.GetEnvironmentVariable("ADMIN_PASSWORD")
                         ?? env.GetValueOrDefault("ADMIN_PASSWORD", "admin123");
         AdminEmail = Environment.GetEnvironmentVariable("ADMIN_EMAIL")
-                     ?? env.GetValueOrDefault("ADMIN_EMAIL", "admin@eflow.ru");
+                     ?? env.GetValueOrDefault("ADMIN_EMAIL", "admin@eflow.com");
     }
 
     /// <summary>

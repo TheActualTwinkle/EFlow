@@ -540,9 +540,16 @@
 
                 @if (auth.hasRole('Student')) {
                   <div class="action-row">
-                    <button class="primary-action" type="button" [disabled]="!!slotBookingDisabledReason(slot)" [title]="slotBookingDisabledReason(slot)" (click)="bookSlot(slot)">
-                      {{ isBookedByCurrentUser(slot.id) ? 'Вы записаны' : 'Записаться' }}
-                    </button>
+                    @if (currentUserBookingForSlot(slot.id)) {
+                      <button class="secondary-action danger" type="button" (click)="cancelCurrentUserBookingForSlot(slot)">
+                        <lucide-icon name="trash-2" />
+                        Отменить запись
+                      </button>
+                    } @else {
+                      <button class="primary-action" type="button" [disabled]="!!slotBookingDisabledReason(slot)" [title]="slotBookingDisabledReason(slot)" (click)="bookSlot(slot)">
+                        Записаться
+                      </button>
+                    }
                     <span class="notification-action">
                       @if (slotNotificationWarningHint(slot); as hint) {
                         <button
