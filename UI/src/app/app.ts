@@ -790,13 +790,23 @@ export class App {
     this.bookSelectedSlot();
   }
 
+  cancelCurrentUserBookingForSlot(slot: SubmissionSlotView): void {
+    const booking = this.currentUserBookingForSlot(slot.id);
+    if (!booking) {
+      this.showToast('Запись для отмены не найдена', 'warning');
+      return;
+    }
+
+    this.cancelBooking(booking.id);
+  }
+
   cancelBooking(id: string): void {
     const booking = this.data().bookings.find((item) => item.id === id);
     const studentName = booking?.student ? this.fullName(booking.student) : 'Запись';
     const slotName = booking?.slot ? this.slotTitle(booking.slot) : 'окно защиты';
     this.confirmDestructiveAction({
       title: 'Отменить запись?',
-      message: `${studentName} будет удалён из очереди на «${slotName}».`,
+      message: `${studentName} будет удалён из очереди на «${slotName}». Уведомления для этой записи также будут отключены.`,
       confirmLabel: 'Отменить запись',
       action: () => {
         this.api.cancelBooking(id).subscribe(() => {
@@ -1025,6 +1035,11 @@ export class App {
     return this.data().bookings.filter((booking) => booking.slot?.id === slotId);
   }
 
+  currentUserBookingForSlot(slotId: string): BookingRecordView | null {
+    const userId = this.auth.user()?.id;
+    return this.data().bookings.find((booking) => booking.slot?.id === slotId && booking.student?.id === userId) ?? null;
+  }
+
   slotBookingCount(slot: SubmissionSlotView): number {
     return Math.max(Number(slot.bookingCount) || 0, this.bookingsForSlot(slot.id).length);
   }
@@ -1114,8 +1129,7 @@ export class App {
   }
 
   isBookedByCurrentUser(slotId: string): boolean {
-    const userId = this.auth.user()?.id;
-    return !!userId && this.data().bookings.some((booking) => booking.slot?.id === slotId && booking.student?.id === userId);
+    return !!this.currentUserBookingForSlot(slotId);
   }
 
   slotHasNoAdmissions(slot: SubmissionSlotView): boolean {
