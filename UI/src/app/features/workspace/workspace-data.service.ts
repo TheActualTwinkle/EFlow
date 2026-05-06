@@ -19,7 +19,6 @@ export class WorkspaceDataService {
       return forkJoin({
         groups: this.api.getGroups(),
         slots: this.api.getSlots(),
-        bookings: this.api.getBookings(),
       });
     }
 
@@ -47,7 +46,6 @@ export class WorkspaceDataService {
         teachers: this.api.getTeachers(),
         subjects: this.api.getSubjects(),
         slots: this.api.getSlots(),
-        bookings: this.api.getBookings(),
       });
     }
 
@@ -85,7 +83,6 @@ export class WorkspaceDataService {
     if (roles.admin) {
       return forkJoin({
         slots: this.api.getSlots(),
-        bookings: this.api.getBookings(),
       });
     }
 

@@ -126,12 +126,9 @@ public sealed class SubmissionSlotCreatedDomainEventNotificationHandler(
         if (targetGroupIds.Count == 0)
             return [];
 
-        var studentRepository = unitOfWork.GetRepository<IStudentRepository>();
-        
-        var students = new List<Student>();
-
-        foreach (var groupId in targetGroupIds)
-            students.AddRange(await studentRepository.GetByGroupIdAsync(groupId, cancellationToken));
+        var students = await unitOfWork
+            .GetRepository<IStudentRepository>()
+            .GetByGroupIdsAsync(targetGroupIds, cancellationToken);
 
         return students
             .Select(student => student.Id.Value)

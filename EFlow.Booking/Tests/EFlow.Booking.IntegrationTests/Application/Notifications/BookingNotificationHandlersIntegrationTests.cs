@@ -451,6 +451,10 @@ public class BookingNotificationHandlersIntegrationTests
         mock.Setup(x => x.GetByGroupIdAsync(It.IsAny<GroupId>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((GroupId id, CancellationToken _) => students.Where(x => x.GroupId == id).Select(x => x.Student).ToArray());
 
+        mock.Setup(x => x.GetByGroupIdsAsync(It.IsAny<IEnumerable<GroupId>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((IEnumerable<GroupId> ids, CancellationToken _) =>
+                students.Where(x => ids.Contains(x.GroupId)).Select(x => x.Student).ToArray());
+
         return mock.Object;
     }
 

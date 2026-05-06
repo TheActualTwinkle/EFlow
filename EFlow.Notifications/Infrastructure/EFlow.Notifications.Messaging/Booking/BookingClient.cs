@@ -8,7 +8,7 @@ public sealed class BookingClient(HttpClient httpClient) : IBookingClient
 {
     public async Task<IEnumerable<SubmissionSlotReminderSnapshot>> GetReminderSnapshotAsync(CancellationToken cancellationToken)
     {
-        var response = await httpClient.GetAsync("api/submission-slots/reminder-snapshot", cancellationToken);
+        var response = await httpClient.GetAsync("api/internal/submission-slots/reminder-snapshot", cancellationToken);
         
         response.EnsureSuccessStatusCode();
 

@@ -1088,18 +1088,6 @@
         }
       }
     },
-    "/api/submission-slots/reminder-snapshot": {
-      "get": {
-        "tags": [
-          "SubmissionSlots"
-        ],
-        "responses": {
-          "200": {
-            "description": "OK"
-          }
-        }
-      }
-    },
     "/api/submission-slots/by-subject/{subjectId}": {
       "get": {
         "tags": [

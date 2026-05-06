@@ -62,7 +62,7 @@
         </button>
         <button type="button" [class.active]="activeView() === 'slots'" (click)="go('slots')">
           <lucide-icon name="clock-3" />
-          Слоты
+          Окна защиты
         </button>
         <button type="button" [class.active]="activeView() === 'bookings'" (click)="go('bookings')">
           <lucide-icon name="check-circle-2" />
@@ -151,7 +151,7 @@
             <strong>{{ data().groups.length }}</strong>
           </article>
           <article>
-            <span>Активные слоты</span>
+            <span>Активные окна защиты</span>
             <strong>{{ visibleSlots().length }}</strong>
           </article>
           <article>
@@ -191,7 +191,7 @@
                   <small>{{ slot.location || 'Аудитория не указана' }}</small>
                 </button>
               } @empty {
-                <p class="empty">Доступных слотов пока нет.</p>
+                <p class="empty">Доступных окон защиты пока нет.</p>
               }
             </div>
           </div>
@@ -200,7 +200,7 @@
             <div class="panel-heading">
               <div>
                 <p class="eyebrow">Детали</p>
-                <h2>{{ selectedSlot() ? slotTitle(selectedSlot()!) : 'Выберете слот' }}</h2>
+                <h2>{{ selectedSlot() ? slotTitle(selectedSlot()!) : 'Выберите окно защиты' }}</h2>
               </div>
               <lucide-icon name="map-pin" />
             </div>
@@ -220,7 +220,7 @@
       @if (activeView() === 'slots') {
         <section class="section-head">
           <div>
-            <p class="eyebrow">Слоты</p>
+            <p class="eyebrow">Окна защиты</p>
             <h2>Расписание защит</h2>
           </div>
           @if (auth.hasRole('Admin', 'Teacher')) {
@@ -237,7 +237,7 @@
               <div class="panel-heading modal-title-row">
                 <div>
                   <p class="eyebrow">Преподаватель</p>
-                  <h2>Создать слот защиты</h2>
+                  <h2>Создать окно защиты</h2>
                 </div>
                 <lucide-icon name="plus" />
               </div>
@@ -398,7 +398,7 @@
               </div>
               <button class="primary-action" type="submit" [disabled]="!slotForm.subjectId || !slotForm.startTime || !slotForm.endTime || (auth.hasRole('Admin') && !slotForm.teacherId)">
                 <lucide-icon name="plus" />
-                Создать слот
+                Создать окно защиты
               </button>
             </form>
           </div>
@@ -503,7 +503,7 @@
             <input [ngModel]="slotSearch()" (ngModelChange)="slotSearch.set($event)" name="slotSearch" placeholder="Дисциплина, преподаватель, аудитория" />
           </label>
           <div class="filter-toolbar">
-            <div class="filter-pills" aria-label="Фильтр слотов по статусу">
+            <div class="filter-pills" aria-label="Фильтр окон защиты по статусу">
               <button type="button" [class.active]="slotCompletionFilter() === 'all'" (click)="slotCompletionFilter.set('all')">Все</button>
               <button type="button" [class.active]="slotCompletionFilter() === 'active'" (click)="slotCompletionFilter.set('active')">Активные</button>
               <button type="button" [class.active]="slotCompletionFilter() === 'finished'" (click)="slotCompletionFilter.set('finished')">Завершенные</button>
@@ -526,7 +526,7 @@
                 (mouseleave)="hideAdmissionTooltip()"
               >
                 @if (isSlotFinished(slot)) {
-                <p class="slot-hint">Слот уже завершён.</p>
+                <p class="slot-hint">Окно защиты уже завершено.</p>
                 }
                 <div class="slot-card-head">
                   <div>
@@ -548,7 +548,7 @@
                         <button
                           class="slot-warning-icon"
                           type="button"
-                          aria-label="Предупреждение по слоту"
+                          aria-label="Предупреждение по окну защиты"
                           (mouseenter)="showSlotWarningTooltip(hint, $event)"
                           (mousemove)="moveAdmissionTooltip($event)"
                           (mouseleave)="hideAdmissionTooltip()"
@@ -571,7 +571,7 @@
                         <button
                           class="slot-warning-icon"
                           type="button"
-                          aria-label="Предупреждение по слоту"
+                          aria-label="Предупреждение по окну защиты"
                           (mouseenter)="showSlotWarningTooltip(hint, $event)"
                           (mousemove)="moveAdmissionTooltip($event)"
                           (mouseleave)="hideAdmissionTooltip()"
@@ -586,7 +586,7 @@
                         <button
                           class="slot-warning-icon"
                           type="button"
-                          aria-label="Предупреждение по слоту"
+                          aria-label="Предупреждение по окну защиты"
                           (mouseenter)="showSlotWarningTooltip(hint, $event)"
                           (mousemove)="moveAdmissionTooltip($event)"
                           (mouseleave)="hideAdmissionTooltip()"
@@ -599,14 +599,14 @@
                         Уведомления
                       </button>
                     </span>
-                    <button class="icon-button danger" type="button" (click)="deleteSlot(slot.id)" aria-label="Удалить слот">
+                    <button class="icon-button danger" type="button" (click)="deleteSlot(slot.id)" aria-label="Удалить окно защиты">
                       <lucide-icon name="trash-2" />
                     </button>
                   </div>
                 }
               </article>
             } @empty {
-              <p class="empty">Слоты не найдены.</p>
+              <p class="empty">Окна защиты не найдены.</p>
             }
           </div>
         </section>
@@ -626,7 +626,7 @@
             <input [ngModel]="bookingSearch()" (ngModelChange)="bookingSearch.set($event)" name="bookingSearch" [placeholder]="auth.hasRole('Student') ? 'Дисциплина, аудитория' : 'Студент, дисциплина, аудитория'" />
           </label>
           <div class="filter-toolbar">
-            <div class="filter-pills" aria-label="Фильтр записей по статусу слота">
+            <div class="filter-pills" aria-label="Фильтр записей по статусу окна защиты">
               <button type="button" [class.active]="bookingCompletionFilter() === 'all'" (click)="bookingCompletionFilter.set('all')">Все</button>
               <button type="button" [class.active]="bookingCompletionFilter() === 'active'" (click)="bookingCompletionFilter.set('active')">Активные</button>
               <button type="button" [class.active]="bookingCompletionFilter() === 'finished'" (click)="bookingCompletionFilter.set('finished')">Завершенные</button>
@@ -675,14 +675,14 @@
                             }
                           </article>
                         } @empty {
-                          <p class="empty">На этот слот пока никто не записан.</p>
+                          <p class="empty">На это окно защиты пока никто не записан.</p>
                         }
                         }
                       </div>
                     }
                   </article>
                 } @empty {
-                  <p class="empty">Слоты не найдены.</p>
+                  <p class="empty">Окна защиты не найдены.</p>
                 }
               </div>
             } @else {
@@ -693,7 +693,7 @@
                   <div>
                     <strong>{{ fullName(booking.student) }}</strong>
                     <span>{{ booking.student?.group?.name || 'Группа не указана' }}</span>
-                    <span>{{ booking.slot ? slotTitle(booking.slot) : 'Слот удалён' }} · {{ formatDateTime(booking.slot?.startTime) }}</span>
+                    <span>{{ booking.slot ? slotTitle(booking.slot) : 'Окно защиты удалено' }} · {{ formatDateTime(booking.slot?.startTime) }}</span>
                   </div>
                   @if (auth.hasRole('Student', 'Admin')) {
                     <button class="icon-button danger" type="button" (click)="cancelBooking(booking.id)" aria-label="Отменить запись">
@@ -1041,10 +1041,10 @@
           <span>{{ formatDateTime(slot.startTime) }} · {{ slot.location || 'аудитория не указана' }}</span>
         </div>
       } @else {
-        <p class="field-error">{{ fieldError('notificationSlot') || 'Слот не выбран' }}</p>
+        <p class="field-error">{{ fieldError('notificationSlot') || 'Окно защиты не выбрано' }}</p>
       }
       <label>
-        Время напоминаний
+        Напоминать о начале за
       </label>
       <div class="chips">
         @for (time of ['TwoWeeks', 'OneWeek', 'TwoDays', 'FourHours']; track time) {
@@ -1055,7 +1055,7 @@
       </div>
       @if (auth.hasRole('Teacher')) {
         <label>
-          Уведомления о записях
+          Уведомления о записях студентов
         </label>
         <div class="chips">
           @for (mode of ['All', 'OnlyCancellation', 'OnlyNewBooking', 'None']; track mode) {

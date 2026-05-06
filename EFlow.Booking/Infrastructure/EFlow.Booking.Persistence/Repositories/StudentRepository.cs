@@ -22,6 +22,18 @@ public class StudentRepository(ApplicationDbContext context) :
             .Where(s => s.GroupId == groupId)
             .ToListAsync(cancellationToken);
 
+    public async Task<IEnumerable<Student>> GetByGroupIdsAsync(IEnumerable<GroupId> groupIds, CancellationToken cancellationToken = new())
+    {
+        var targetGroupIds = groupIds.Distinct().ToArray();
+
+        if (targetGroupIds.Length == 0)
+            return [];
+
+        return await context.Students
+            .Where(student => targetGroupIds.AsEnumerable().Contains(student.GroupId))
+            .ToListAsync(cancellationToken);
+    }
+
     public void Update(Student student) =>
         context.Students.Update(student);
 
