@@ -3,6 +3,7 @@ using EFlow.Common.Infrastructure;
 using EFlow.Notifications.Application.Email.Interfaces;
 using EFlow.Notifications.Application.Email.Models;
 using EFlow.Notifications.Messaging.Booking.Interfaces;
+using EFlow.Notifications.Messaging.Booking.Models;
 using EFlow.Notifications.Messaging.Booking.Settings;
 using EFlow.Notifications.Templates.Notifications.Interfaces;
 using Microsoft.Extensions.Logging;
@@ -35,7 +36,7 @@ public sealed class BookingReminderJob(
                     continue;
 
                 var (subject, body) = await templateService.CreateReminderAsync(
-                    snapshot.SubmissionSlot,
+                    MapToModel(snapshot.SubmissionSlot),
                     recipient.RemindTime,
                     cancellationToken);
 
@@ -64,4 +65,25 @@ public sealed class BookingReminderJob(
             SubmissionRemindTimeModel.FourHours => slotStartTime.AddHours(-4),
             _ => throw new ArgumentOutOfRangeException(nameof(remindTime), remindTime, null)
         };
+
+    private SubmissionSlotModel MapToModel(SubmissionSlot slot)
+    {
+        var teacherFullName = string.Join(
+            ' ',
+            new[] { slot.Teacher.LastName, slot.Teacher.FirstName, slot.Teacher.MiddleName }.Where(name => !string.IsNullOrWhiteSpace(name)));
+
+        return new SubmissionSlotModel
+        {
+            Id = slot.Id,
+            StartTime = slot.StartTime,
+            EndTime = slot.EndTime,
+            MaxStudents = slot.MaxStudents,
+            AllowAllGroups = slot.AllowAllGroups,
+            Location = slot.Location,
+            Comment = slot.Comment,
+            SubjectName = slot.Subject.Name,
+            TeacherFullName = teacherFullName,
+            AllowedGroups = slot.AllowedGroups.Select(g => new GroupModel { Id = g.Id, Name = g.Name })
+        };
+    }
 }

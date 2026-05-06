@@ -15,6 +15,8 @@ public sealed record SubmissionSlotView
 
     public required int MaxStudents { get; init; }
 
+    public required int? BookingCount { get; init; }
+
     public required bool AllowAllGroups { get; init; }
 
     public string? Location { get; init; }
@@ -28,4 +30,6 @@ public sealed record SubmissionSlotView
     public IReadOnlyCollection<GroupView>? AllowedGroups { get; init; }
 
     public IReadOnlyCollection<StudentView>? AdmittedStudents { get; init; }
+
+    public IReadOnlyCollection<SubmissionSlotNotificationSettingsView>? NotificationSettings { get; init; }
 }

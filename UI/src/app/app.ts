@@ -121,7 +121,9 @@ export class App {
   private lastLoadedKey = '';
 
   readonly todayIso = new Date().toISOString().slice(0, 10);
-  private readonly noAdmissionHint = 'У вас нет допуска к этому слоту. Обратитесь к преподавателю.';
+  private readonly noAdmissionHint = 'У вас нет допуска к этому окну защиты. Обратитесь к преподавателю.';
+  private readonly reminderKeysByValue = ['TwoWeeks', 'OneWeek', 'TwoDays', 'FourHours'];
+  private readonly bookingModeKeysByValue = ['None', 'All', 'OnlyCancellation', 'OnlyNewBooking'];
   readonly visibleSlots = computed(() => {
     const user = this.auth.user();
 
@@ -152,7 +154,7 @@ export class App {
     });
   });
   readonly freeSeats = computed(() =>
-    this.visibleSlots().reduce((total, slot) => total + Math.max(0, this.slotCapacity(slot) - this.bookingsForSlot(slot.id).length), 0),
+    this.visibleSlots().reduce((total, slot) => total + Math.max(0, this.slotCapacity(slot) - this.slotBookingCount(slot)), 0),
   );
   readonly filteredVisibleSlots = computed(() => {
     const query = this.slotSearch().trim().toLowerCase();
@@ -349,6 +351,9 @@ export class App {
     const current = this.data();
     const next = { ...current, ...partial };
     this.data.set(next);
+    if (partial.bookings && this.auth.hasRole('Admin')) {
+      this.loadedBookingSlotIds.set(next.slots.map((slot) => slot.id));
+    }
     this.loaded.set(true);
     this.syncDefaultSelections(next);
   }
@@ -357,9 +362,19 @@ export class App {
     const user = this.auth.user();
     const firstVisibleSlot = this.visibleSlots()[0];
 
-    this.selectedSlotId.set(firstVisibleSlot?.id ?? null);
-    this.selectedBookingSlotId = firstVisibleSlot?.id ?? '';
-    this.selectedNotificationSlotId = firstVisibleSlot?.id ?? '';
+    const visibleSlotIds = new Set(this.visibleSlots().map((slot) => slot.id));
+
+    if (!this.selectedSlotId() || !visibleSlotIds.has(this.selectedSlotId()!)) {
+      this.selectedSlotId.set(firstVisibleSlot?.id ?? null);
+    }
+
+    if (!this.selectedBookingSlotId || !visibleSlotIds.has(this.selectedBookingSlotId)) {
+      this.selectedBookingSlotId = firstVisibleSlot?.id ?? '';
+    }
+
+    if (!this.selectedNotificationSlotId || !visibleSlotIds.has(this.selectedNotificationSlotId)) {
+      this.selectedNotificationSlotId = firstVisibleSlot?.id ?? '';
+    }
 
     if (!this.personForm.groupId || !data.groups.some((group) => group.id === this.personForm.groupId)) {
       this.personForm.groupId = data.groups[0]?.id ?? '';
@@ -493,7 +508,6 @@ export class App {
         lastName: student.lastName,
         middleName: student.middleName,
         birthDate: student.birthDate,
-        groupId: student.group?.id,
       })
       .subscribe(() => {
         this.showToast('Студент обновлён', 'success');
@@ -522,7 +536,7 @@ export class App {
 
   updateSlot(slot: SubmissionSlotView): void {
     if (!this.auth.hasRole('Admin', 'Teacher')) {
-      this.showToast('Недостаточно прав для изменения слота', 'warning');
+      this.showToast('Недостаточно прав для изменения окна защиты', 'warning');
       return;
     }
 
@@ -541,7 +555,7 @@ export class App {
         comment: slot.comment,
       })
       .subscribe(() => {
-        this.showToast('Слот обновлён', 'success');
+        this.showToast('Окно защиты обновлено', 'success');
         this.closeModal();
         this.refresh();
       });
@@ -557,7 +571,7 @@ export class App {
 
   createSlot(): void {
     if (!this.auth.hasRole('Admin', 'Teacher')) {
-      this.showToast('Недостаточно прав для создания слота', 'warning');
+      this.showToast('Недостаточно прав для создания окна защиты', 'warning');
       return;
     }
 
@@ -584,7 +598,7 @@ export class App {
         comment: this.slotForm.comment || undefined,
       })
       .subscribe(() => {
-        this.showToast('Слот защиты создан', 'success');
+        this.showToast('Окно защиты создано', 'success');
         this.closeModal();
         this.refresh();
       });
@@ -694,16 +708,16 @@ export class App {
   deleteSlot(slotId: string): void {
     const slot = this.data().slots.find((item) => item.id === slotId);
     this.confirmDestructiveAction({
-      title: 'Удалить слот?',
+      title: 'Удалить окно защиты?',
       summaryTitle: slot ? this.slotTitle(slot) : undefined,
       summaryMeta: slot ? this.formatDateTime(slot.startTime) : undefined,
       message: slot
         ? 'Связанные записи и допуски станут недоступны.'
-        : 'Слот будет удалён из расписания.',
-      confirmLabel: 'Удалить слот',
+        : 'Окно защиты будет удалено из расписания.',
+      confirmLabel: 'Удалить окно защиты',
       action: () => {
         this.api.deleteSlot(slotId).subscribe(() => {
-          this.showToast('Слот удалён', 'success');
+          this.showToast('Окно защиты удалено', 'success');
           this.refresh();
         });
       },
@@ -748,14 +762,19 @@ export class App {
     const user = this.auth.user();
 
     if (!user || !this.selectedBookingSlotId) {
-      this.setFieldErrors({ bookingSlot: 'Выберите доступный слот.' });
-      this.showToast('Выберите доступный слот', 'warning');
+      this.setFieldErrors({ bookingSlot: 'Выберите доступное окно защиты.' });
+      this.showToast('Выберите доступное окно защиты', 'warning');
       return;
     }
 
     this.api.bookSlot(this.selectedBookingSlotId, user.id).subscribe(() => {
+      const slot = this.data().slots.find((item) => item.id === this.selectedBookingSlotId);
       this.showToast('Запись создана', 'success');
-      this.closeModal();
+      if (slot) {
+        this.openNotificationsForSlot(slot);
+      } else {
+        this.closeModal();
+      }
       this.refresh();
     });
   }
@@ -774,7 +793,7 @@ export class App {
   cancelBooking(id: string): void {
     const booking = this.data().bookings.find((item) => item.id === id);
     const studentName = booking?.student ? this.fullName(booking.student) : 'Запись';
-    const slotName = booking?.slot ? this.slotTitle(booking.slot) : 'слот';
+    const slotName = booking?.slot ? this.slotTitle(booking.slot) : 'окно защиты';
     this.confirmDestructiveAction({
       title: 'Отменить запись?',
       message: `${studentName} будет удалён из очереди на «${slotName}».`,
@@ -791,7 +810,7 @@ export class App {
   deleteGroup(group: GroupView): void {
     this.confirmDestructiveAction({
       title: 'Удалить группу?',
-      message: `Группа «${group.name}» будет удалена. Это может повлиять на студентов, дисциплины и доступ к слотам.`,
+      message: `Группа «${group.name}» будет удалена. Это может повлиять на студентов, дисциплины и доступ к окнам защиты.`,
       confirmLabel: 'Удалить группу',
       action: () => {
         this.api.deleteGroup(group.id).subscribe(() => {
@@ -852,8 +871,8 @@ export class App {
     const user = this.auth.user();
 
     if (!user || !this.selectedNotificationSlotId) {
-      this.setFieldErrors({ notificationSlot: 'Откройте уведомления у конкретного слота.' });
-      this.showToast('Откройте уведомления у конкретного слота', 'warning');
+      this.setFieldErrors({ notificationSlot: 'Откройте уведомления у конкретного окна защиты.' });
+      this.showToast('Откройте уведомления у конкретного окна защиты', 'warning');
       return;
     }
 
@@ -902,6 +921,7 @@ export class App {
   openNotificationsForSlot(slot?: SubmissionSlotView): void {
     const target = slot ?? this.selectedSlot() ?? this.visibleSlots()[0] ?? null;
     this.selectedNotificationSlotId = target?.id ?? '';
+    this.prefillNotificationForm(target);
     this.openModal('notifications');
   }
 
@@ -995,6 +1015,10 @@ export class App {
     return this.data().bookings.filter((booking) => booking.slot?.id === slotId);
   }
 
+  slotBookingCount(slot: SubmissionSlotView): number {
+    return Math.max(Number(slot.bookingCount) || 0, this.bookingsForSlot(slot.id).length);
+  }
+
   isBookingSlotExpanded(slotId: string): boolean {
     return this.expandedBookingSlotIds().includes(slotId);
   }
@@ -1084,6 +1108,35 @@ export class App {
     return !!userId && this.data().bookings.some((booking) => booking.slot?.id === slotId && booking.student?.id === userId);
   }
 
+  slotHasNoAdmissions(slot: SubmissionSlotView): boolean {
+    return this.auth.hasRole('Teacher') && slot.teacher?.id === this.auth.user()?.id && !(slot.admittedStudents?.length ?? 0);
+  }
+
+  currentUserNotificationSettings(slot: SubmissionSlotView) {
+    const userId = this.auth.user()?.id;
+    return userId ? slot.notificationSettings?.find((settings) => settings.userId === userId) : undefined;
+  }
+
+  slotNeedsNotificationSetup(slot: SubmissionSlotView): boolean {
+    if (this.currentUserNotificationSettings(slot)) {
+      return false;
+    }
+
+    if (this.auth.hasRole('Student')) {
+      return this.isBookedByCurrentUser(slot.id);
+    }
+
+    return this.auth.hasRole('Teacher') && slot.teacher?.id === this.auth.user()?.id;
+  }
+
+  slotAdmissionWarningHint(slot: SubmissionSlotView): string {
+    return this.slotHasNoAdmissions(slot) ? 'Никому не выдан допуск к этому окну защиты!' : '';
+  }
+
+  slotNotificationWarningHint(slot: SubmissionSlotView): string {
+    return this.slotNeedsNotificationSetup(slot) ? 'Уведомления не настроены!' : '';
+  }
+
   slotMatchesFilters(slot: SubmissionSlotView, query: string, completion: SlotCompletionFilter, onlyAdmitted: boolean): boolean {
     return this.slotMatchesStateFilters(slot, completion, onlyAdmitted) && this.slotMatchesQuery(slot, query);
   }
@@ -1129,7 +1182,7 @@ export class App {
 
   slotBookingDisabledReason(slot: SubmissionSlotView): string {
     if (this.isBookedByCurrentUser(slot.id)) {
-      return 'Вы уже записаны на этот слот.';
+      return 'Вы уже записаны на это окно защиты.';
     }
 
     const admissionHint = this.slotAdmissionHint(slot);
@@ -1146,6 +1199,15 @@ export class App {
 
   showAdmissionTooltip(slot: SubmissionSlotView, event: MouseEvent): void {
     const text = this.slotAdmissionHint(slot);
+    if (!text) {
+      this.hideAdmissionTooltip();
+      return;
+    }
+
+    this.admissionTooltip.set({ visible: true, text, x: event.clientX, y: event.clientY });
+  }
+
+  showSlotWarningTooltip(text: string, event: MouseEvent): void {
     if (!text) {
       this.hideAdmissionTooltip();
       return;
@@ -1276,7 +1338,7 @@ export class App {
   }
 
   slotTitle(slot: SubmissionSlotView): string {
-    return slot.subject?.name ?? 'Защита работы';
+    return slot.subject?.name ?? 'Окно защиты';
   }
 
   remindTimeLabel(value: string): string {
@@ -1314,6 +1376,19 @@ export class App {
         OnlyNewBooking: 3,
       }[value] ?? null
     );
+  }
+
+  private prefillNotificationForm(slot: SubmissionSlotView | null): void {
+    const settings = slot ? this.currentUserNotificationSettings(slot) : undefined;
+
+    this.notificationForm.remindTimes = settings?.submissionRemindTimes?.length
+      ? settings.submissionRemindTimes.map((value) => this.reminderKeysByValue[value] ?? 'OneWeek')
+      : ['OneWeek', 'TwoDays'];
+
+    this.notificationForm.bookingMode =
+      typeof settings?.bookingNotificationMode === 'number'
+        ? (this.bookingModeKeysByValue[settings.bookingNotificationMode] ?? 'All')
+        : 'All';
   }
 
   roleLabel(value: string): string {

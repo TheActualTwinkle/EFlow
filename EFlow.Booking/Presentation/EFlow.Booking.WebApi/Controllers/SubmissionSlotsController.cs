@@ -61,7 +61,7 @@ public class SubmissionSlotsController(ISender sender) : ControllerBase
 
         return result.IsFailed ?
             result.Errors[0].ToProblemDetails() :
-            Ok(result.Value);
+            Ok(FilterNotificationSettings([result.Value]).Single());
     }
 
     [HttpGet]
@@ -73,18 +73,7 @@ public class SubmissionSlotsController(ISender sender) : ControllerBase
 
         return result.IsFailed ?
             result.Errors[0].ToProblemDetails() :
-            Ok(result.Value);
-    }
-
-    [HttpGet("reminder-snapshot")]
-    [Authorize]
-    public async Task<IActionResult> GetReminderSnapshot(CancellationToken cancellationToken)
-    {
-        var result = await sender.Send(new GetSubmissionSlotReminderSnapshotQuery(), cancellationToken);
-
-        return result.IsFailed ?
-            result.Errors[0].ToProblemDetails() :
-            Ok(result.Value);
+            Ok(FilterNotificationSettings(result.Value));
     }
 
     [HttpGet("by-subject/{subjectId:guid}")]
@@ -96,7 +85,7 @@ public class SubmissionSlotsController(ISender sender) : ControllerBase
 
         return result.IsFailed ?
             result.Errors[0].ToProblemDetails() :
-            Ok(result.Value);
+            Ok(FilterNotificationSettings(result.Value));
     }
 
     [HttpGet("by-teacher/{teacherId:guid}")]
@@ -108,7 +97,7 @@ public class SubmissionSlotsController(ISender sender) : ControllerBase
         
         return result.IsFailed ?
             result.Errors[0].ToProblemDetails() :
-            Ok(result.Value);
+            Ok(FilterNotificationSettings(result.Value));
     }
 
     [HttpGet("available")]
@@ -120,7 +109,7 @@ public class SubmissionSlotsController(ISender sender) : ControllerBase
 
         return result.IsFailed ?
             result.Errors[0].ToProblemDetails() :
-            Ok(result.Value);
+            Ok(FilterNotificationSettings(result.Value));
     }
 
     [HttpPatch("{id:guid}")]
@@ -294,4 +283,24 @@ public class SubmissionSlotsController(ISender sender) : ControllerBase
             result.Errors[0].ToProblemDetails() :
             NoContent();
     }
+
+    private IEnumerable<SubmissionSlotView> FilterNotificationSettings(IEnumerable<SubmissionSlotView> slots) =>
+        slots.Select(slot =>
+        {
+            if (User.IsInRole(Identity.Roles.Admin) ||
+                User.IsInRole(Identity.Roles.Teacher))
+                return slot;
+
+            var currentUserIdValue = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (!Guid.TryParse(currentUserIdValue, out var currentUserId))
+                return slot with { NotificationSettings = [] };
+
+            return slot with
+            {
+                NotificationSettings = slot.NotificationSettings?
+                    .Where(settings => settings.UserId == currentUserId)
+                    .ToArray() ?? []
+            };
+        });
 }

@@ -1,4 +1,5 @@
 using System.Text;
+using System.Security.Claims;
 using EFlow.Booking.Domain;
 using EFlow.Booking.Persistence.DatabaseContext;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -103,7 +104,16 @@ public static class DependencyInjection
                         };
                     });
 
-            services.AddAuthorization();
+            services.AddAuthorization(options =>
+            {
+                options.AddPolicy(
+                    InternalAuthorizationPolicies.Notifications,
+                    policy => policy
+                        .RequireAuthenticatedUser()
+                        .RequireAssertion(context =>
+                            context.User.HasClaim(ClaimTypes.NameIdentifier, "eflow-notifications") ||
+                            context.User.HasClaim("sub", "eflow-notifications")));
+            });
 
             return services;
         }

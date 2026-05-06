@@ -73,6 +73,7 @@ public class SubmissionSlotConfiguration : IEntityTypeConfiguration<SubmissionSl
 
                 allowedGroupsBuilder.Property(groupId => groupId.Value)
                     .HasColumnName("group_id")
+                    .ValueGeneratedNever()
                     .IsRequired();
 
                 allowedGroupsBuilder.HasKey("submission_slot_id", GroupIdValuePropertyName)

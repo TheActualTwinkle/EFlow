@@ -947,39 +947,6 @@ export interface paths {
         };
         trace?: never;
     };
-    "/api/submission-slots/reminder-snapshot": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/submission-slots/by-subject/{subjectId}": {
         parameters: {
             query?: never;
@@ -1448,6 +1415,8 @@ export interface components {
             endTime: string;
             /** Format: int32 */
             maxStudents: number | string;
+            /** Format: int32 */
+            bookingCount: number | string | null;
             allowAllGroups: boolean;
             location?: null | string;
             comment?: null | string;
@@ -1455,6 +1424,13 @@ export interface components {
             teacher?: null | components["schemas"]["TeacherView"];
             allowedGroups?: null | components["schemas"]["GroupView"][];
             admittedStudents?: null | components["schemas"]["StudentView"][];
+            notificationSettings?: null | components["schemas"]["SubmissionSlotNotificationSettingsView"][];
+        };
+        SubmissionSlotNotificationSettingsView: {
+            /** Format: uuid */
+            userId: string;
+            submissionRemindTimes: components["schemas"]["SubmissionRemindTime"][];
+            bookingNotificationMode?: null | components["schemas"]["BookingNotificationMode"];
         };
         TeacherView: {
             /** Format: uuid */

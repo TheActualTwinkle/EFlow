@@ -1088,18 +1088,6 @@
         }
       }
     },
-    "/api/submission-slots/reminder-snapshot": {
-      "get": {
-        "tags": [
-          "SubmissionSlots"
-        ],
-        "responses": {
-          "200": {
-            "description": "OK"
-          }
-        }
-      }
-    },
     "/api/submission-slots/by-subject/{subjectId}": {
       "get": {
         "tags": [
@@ -1917,6 +1905,7 @@
           "startTime",
           "endTime",
           "maxStudents",
+          "bookingCount",
           "allowAllGroups"
         ],
         "type": "object",
@@ -1938,6 +1927,15 @@
             "type": [
               "integer",
               "string"
+            ],
+            "format": "int32"
+          },
+          "bookingCount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string",
+              "null"
             ],
             "format": "int32"
           },

@@ -37,7 +37,7 @@ public sealed class BookingNotificationTemplateService(ITemplateRenderer templat
         var model = new BookingEmailTemplateModel
         {
             Title = "Отмена записи на защиту",
-            Lead = $"Студент {bookingRecord.StudentFullName} отменил запись на слот защиты.",
+            Lead = $"Студент {bookingRecord.StudentFullName} отменил запись в окно защиты.",
             AccentLabel = "Запись отменена",
             SubjectName = bookingRecord.SubmissionSlotModel.SubjectName,
             TeacherName = bookingRecord.SubmissionSlotModel.TeacherFullName,
@@ -58,20 +58,20 @@ public sealed class BookingNotificationTemplateService(ITemplateRenderer templat
     {
         var model = new SubmissionSlotCreatedEmailTemplateModel
         {
-            Title = "Новый слот защиты",
-            Lead = "В расписании появился новый слот, по которому включены уведомления.",
+            Title = "Новое окно защиты",
+            Lead = "В расписании появилось новое окно защиты, по которому включены уведомления.",
             SubjectName = submissionSlot.SubjectName,
             TeacherFullName = submissionSlot.TeacherFullName,
             TimeRange = TemplateFormatter.FormatTimeRange(submissionSlot.StartTime, submissionSlot.EndTime),
             Capacity = $"{submissionSlot.MaxStudents} чел.",
-            Audience = TemplateFormatter.FormatAudience(submissionSlot.AllowAllGroups, submissionSlot.AllowedGroupNames),
+            Audience = TemplateFormatter.FormatAudience(submissionSlot.AllowAllGroups, submissionSlot.AllowedGroups.Select(group => group.Name)),
             Location = TemplateFormatter.FormatOptionalText(submissionSlot.Location, "Место не было указано"),
             Comment = TemplateFormatter.FormatOptionalText(submissionSlot.Comment, "Комментарий отсутствует")
         };
 
         var body = await templateRenderer.RenderAsync("/EmailTemplates/SubmissionSlotCreated.cshtml", model, cancellationToken);
 
-        return ($"Создан новый слот по предмету «{submissionSlot.SubjectName}»", body);
+        return ($"Создано новое окно защиты по предмету «{submissionSlot.SubjectName}»", body);
     }
 
     public async Task<(string Subject, string Body)> CreateSubmissionSlotUpdatedAsync(
@@ -81,8 +81,8 @@ public sealed class BookingNotificationTemplateService(ITemplateRenderer templat
     {
         var model = new SubmissionSlotUpdatedEmailTemplateModel
         {
-            Title = "Слот защиты обновлён",
-            Lead = "Ниже собраны изменения по слоту, который вы отслеживаете.",
+            Title = "Окно защиты обновлено",
+            Lead = "Ниже собраны изменения по окну защиты, которое вы отслеживаете.",
             SubjectName = newSubmissionSlot.SubjectName,
             TeacherName = newSubmissionSlot.TeacherFullName,
             CurrentTimeRange = TemplateFormatter.FormatTimeRange(newSubmissionSlot.StartTime, newSubmissionSlot.EndTime),
@@ -91,7 +91,7 @@ public sealed class BookingNotificationTemplateService(ITemplateRenderer templat
         
         var body = await templateRenderer.RenderAsync("/EmailTemplates/SubmissionSlotUpdated.cshtml", model, cancellationToken);
 
-        return ($"Изменения в слоте по предмету «{newSubmissionSlot.SubjectName}»", body);
+        return ($"Изменения в окне защиты по предмету «{newSubmissionSlot.SubjectName}»", body);
     }
 
     public async Task<(string Subject, string Body)> CreateReminderAsync(
@@ -102,12 +102,12 @@ public sealed class BookingNotificationTemplateService(ITemplateRenderer templat
         var model = new ReminderEmailTemplateModel
         {
             Title = "Напоминание о защите",
-            Lead = $"Скоро начнётся слот защиты. Напоминание: {TemplateFormatter.FormatReminderSchedule(submissionRemindTime)}.",
+            Lead = $"Скоро начнётся окно защиты. Напоминание: {TemplateFormatter.FormatReminderSchedule(submissionRemindTime)}.",
             SubjectName = submissionSlot.SubjectName,
             TeacherName = submissionSlot.TeacherFullName,
             TimeRange = TemplateFormatter.FormatTimeRange(submissionSlot.StartTime, submissionSlot.EndTime),
             Location = TemplateFormatter.FormatOptionalText(submissionSlot.Location, "Место не было указано"),
-            Audience = TemplateFormatter.FormatAudience(submissionSlot.AllowAllGroups, submissionSlot.AllowedGroupNames)
+            Audience = TemplateFormatter.FormatAudience(submissionSlot.AllowAllGroups, submissionSlot.AllowedGroups.Select(group => group.Name))
         };
 
         var body = await templateRenderer.RenderAsync("/EmailTemplates/Reminder.cshtml", model, cancellationToken);
@@ -125,7 +125,11 @@ public sealed class BookingNotificationTemplateService(ITemplateRenderer templat
         AddChangeIfNeeded(changes, "Преподаватель", oldSlot.TeacherFullName, newSlot.TeacherFullName);
         AddChangeIfNeeded(changes, "Время", TemplateFormatter.FormatTimeRange(oldSlot.StartTime, oldSlot.EndTime), TemplateFormatter.FormatTimeRange(newSlot.StartTime, newSlot.EndTime));
         AddChangeIfNeeded(changes, "Лимит студентов", oldSlot.MaxStudents.ToString(), newSlot.MaxStudents.ToString());
-        AddChangeIfNeeded(changes, "Доступ", TemplateFormatter.FormatAudience(oldSlot.AllowAllGroups, oldSlot.AllowedGroupNames), TemplateFormatter.FormatAudience(newSlot.AllowAllGroups, newSlot.AllowedGroupNames));
+        AddChangeIfNeeded(
+            changes,
+            "Доступ",
+            TemplateFormatter.FormatAudience(oldSlot.AllowAllGroups, oldSlot.AllowedGroups.Select(group => group.Name)),
+            TemplateFormatter.FormatAudience(newSlot.AllowAllGroups, newSlot.AllowedGroups.Select(group => group.Name)));
         AddChangeIfNeeded(changes, "Место", TemplateFormatter.FormatOptionalText(oldSlot.Location, "Не указано"), TemplateFormatter.FormatOptionalText(newSlot.Location, "Не указано"));
         AddChangeIfNeeded(changes, "Комментарий", TemplateFormatter.FormatOptionalText(oldSlot.Comment, "Отсутствует"), TemplateFormatter.FormatOptionalText(newSlot.Comment, "Отсутствует"));
 

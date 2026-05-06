@@ -6,9 +6,7 @@ using EFlow.Booking.ApiTests.Infrastructure.Scenarios;
 using EFlow.Booking.ApiTests.Infrastructure.Sessions;
 using EFlow.Booking.ApiTests.SubmissionSlots.Support;
 using EFlow.Booking.Contracts.SubmissionSlots;
-using EFlow.Booking.Application.SubmissionSlots;
 using EFlow.Booking.Domain.Notifications;
-using EFlow.Common.IntegrationEvents.Booking.Models;
 using FluentAssertions;
 
 namespace EFlow.Booking.ApiTests.SubmissionSlots;
@@ -51,6 +49,32 @@ public sealed class SubmissionSlotsApiTests(ApiTestStackFixture fixture)
             var availableSlots = (await context.AdminSession.ReadAsync<SubmissionSlotView[]>(availableResponse))!;
             slotsBySubject.Should().Contain(x => x.Id == context.SlotId && x.Subject != null && x.Subject.Id == context.SubjectId);
             availableSlots.Should().Contain(x => x.Id == context.SlotId);
+        });
+
+    /// <summary>
+    /// Verifies that <c>UpdateSubmissionSlot</c> replaces the allowed groups stored for the slot.
+    /// </summary>
+    [Fact]
+    public Task UpdateSubmissionSlot_WhenAllowedGroupIdsChange_ShouldPersistAllowedGroups() =>
+        WithSubmissionSlotFixtureAsync(async (scenario, context) =>
+        {
+            // Arrange
+            var newGroupId = await scenario.CreateGroupAsync(context.AdminSession, $"New Group {context.Suffix}");
+            context.AddCleanup(ApiScenario.DeleteGroup(newGroupId));
+
+            // Act
+            var response = await context.AdminSession.PatchAsync(
+                $"/api/submission-slots/{context.SlotId}",
+                new
+                {
+                    allowedGroupIds = new[] { newGroupId }
+                });
+
+            // Assert
+            response.StatusCode.Should().Be(HttpStatusCode.NoContent);
+            var updatedSlot = await scenario.GetSlotAsync(context.AdminSession, context.SlotId);
+            updatedSlot.AllowedGroups.Should().NotBeNull();
+            updatedSlot.AllowedGroups!.Select(group => group.Id).Should().BeEquivalentTo([newGroupId]);
         });
 
     /// <summary>
@@ -122,6 +146,50 @@ public sealed class SubmissionSlotsApiTests(ApiTestStackFixture fixture)
         });
 
     /// <summary>
+    /// Verifies that slot reads do not expose notification settings belonging to other users.
+    /// </summary>
+    [Fact]
+    public Task GetSubmissionSlot_WhenStudentReadsSlot_ShouldReturnOnlyOwnNotificationSettings() =>
+        WithSubmissionSlotFixtureAsync(async (scenario, context) =>
+        {
+            // Arrange
+            var studentSettingsResponse = await context.StudentSession.PutAsync(
+                $"/api/submission-slots/{context.SlotId}/notification-settings",
+                new
+                {
+                    userId = context.StudentId,
+                    submissionRemindTimes = new[] { SubmissionRemindTime.TwoDays },
+                    bookingNotificationMode = BookingNotificationMode.OnlyNewBooking
+                });
+
+            var teacherSettingsResponse = await context.AdminSession.PutAsync(
+                $"/api/submission-slots/{context.SlotId}/notification-settings",
+                new
+                {
+                    userId = context.TeacherId,
+                    submissionRemindTimes = new[] { SubmissionRemindTime.OneWeek },
+                    bookingNotificationMode = BookingNotificationMode.All
+                });
+
+            studentSettingsResponse.StatusCode.Should().Be(HttpStatusCode.NoContent);
+            teacherSettingsResponse.StatusCode.Should().Be(HttpStatusCode.NoContent);
+
+            // Act
+            var slot = await scenario.GetSlotAsync(context.StudentSession, context.SlotId);
+            var allSlotsResponse = await context.StudentSession.GetAsync("/api/submission-slots");
+
+            // Assert
+            slot.NotificationSettings.Should().NotBeNull();
+            slot.NotificationSettings!.Select(settings => settings.UserId).Should().BeEquivalentTo([context.StudentId]);
+
+            allSlotsResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+            var allSlots = (await context.StudentSession.ReadAsync<SubmissionSlotView[]>(allSlotsResponse))!;
+            var returnedSlot = allSlots.Should().ContainSingle(x => x.Id == context.SlotId).Subject;
+            returnedSlot.NotificationSettings.Should().NotBeNull();
+            returnedSlot.NotificationSettings!.Select(settings => settings.UserId).Should().BeEquivalentTo([context.StudentId]);
+        });
+
+    /// <summary>
     /// Verifies that <c>UpdateNotificationSettings</c> returns <c>Forbidden</c> when a student targets another user.
     /// </summary>
     [Fact]
@@ -162,42 +230,6 @@ public sealed class SubmissionSlotsApiTests(ApiTestStackFixture fixture)
             // Assert
             await context.AdminSession.AssertProblemAsync(
                 response, HttpStatusCode.UnprocessableEntity, "Validation Error", "Reminder schedules must not contain duplicates");
-        });
-
-    /// <summary>
-    /// Verifies that <c>GetReminderSnapshot</c> returns the expected recipients when notification settings exist.
-    /// </summary>
-    [Fact]
-    public Task GetReminderSnapshot_WhenNotificationSettingsExist_ShouldReturnExpectedRecipients() =>
-        WithSubmissionSlotFixtureAsync(async (_, context) =>
-        {
-            // Arrange
-            await context.StudentSession.PutAsync(
-                $"/api/submission-slots/{context.SlotId}/notification-settings",
-                new
-                {
-                    userId = context.StudentId,
-                    submissionRemindTimes = new[] { SubmissionRemindTime.TwoDays, SubmissionRemindTime.FourHours },
-                    bookingNotificationMode = BookingNotificationMode.OnlyNewBooking
-                });
-
-            // Act
-            var response = await context.AdminSession.GetAsync("/api/submission-slots/reminder-snapshot");
-
-            // Assert
-            response.StatusCode.Should().Be(HttpStatusCode.OK);
-            var snapshot = (await context.AdminSession.ReadAsync<SubmissionSlotReminderSnapshotDto[]>(response))!;
-            var slotSnapshot = snapshot.Should().ContainSingle(x => x.SubmissionSlot.Id == context.SlotId).Subject;
-            slotSnapshot.SubmissionSlot.SubjectName.Should().Be(context.SubjectName);
-            slotSnapshot.SubmissionSlot.TeacherFullName.Should().Contain("Ivanova").And.Contain("Anna");
-            slotSnapshot.SubmissionSlot.AllowedGroupNames.Should().BeEquivalentTo(context.GroupName);
-
-            slotSnapshot.Recipients.Should().BeEquivalentTo(
-                [
-                    new { UserId = context.StudentId, Email = context.StudentEmail, RemindTime = SubmissionRemindTimeModel.TwoDays },
-                    new { UserId = context.StudentId, Email = context.StudentEmail, RemindTime = SubmissionRemindTimeModel.FourHours }
-                ],
-                options => options.ExcludingMissingMembers());
         });
 
     /// <summary>

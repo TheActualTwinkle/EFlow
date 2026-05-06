@@ -78,7 +78,7 @@ public class BookingNotificationHandlersIntegrationTests
         // Assert
         integrationEvent.Should().NotBeNull();
         integrationEvent.SubmissionSlot.SubjectName.Should().Be("Distributed Systems");
-        integrationEvent.SubmissionSlot.AllowedGroupNames.Should().BeEquivalentTo("M8O-411B-22");
+        integrationEvent.SubmissionSlot.AllowedGroups.Select(group => group.Name).Should().BeEquivalentTo("M8O-411B-22");
 
         integrationEvent.NotificationRecipients.Should().ContainSingle(x =>
             x.UserId == recipientStudent.Id.Value &&
@@ -86,24 +86,25 @@ public class BookingNotificationHandlersIntegrationTests
     }
 
     [Fact]
-    public async Task Publish_WhenSubmissionSlotUpdated_ShouldCreateOutboxMessageWithNotificationSettingsRecipients()
+    public async Task Publish_WhenSubmissionSlotUpdated_ShouldCreateOutboxMessageWithRecipientsFromOldAndNewAllowedGroups()
     {
         // Arrange
         var oldGroup = Group.Create("M8O-411B-22", []);
         var newGroup = Group.Create("M8O-413B-22", []);
+        var skippedGroup = Group.Create("M8O-414B-22", []);
         var teacher = CreateTeacher(Guid.NewGuid(), "Ivan", "Petrov");
-        var subject = Subject.Create("Algorithms", teacher.Id, [oldGroup.Id, newGroup.Id]);
+        var subject = Subject.Create("Algorithms", teacher.Id, [oldGroup.Id, newGroup.Id, skippedGroup.Id]);
+
+        var oldGroupStudent = CreateStudent(Guid.NewGuid(), oldGroup.Id, "Petr", "Ivanov");
+        var newGroupStudent = CreateStudent(Guid.NewGuid(), newGroup.Id, "Sergey", "Petrov");
+        var skippedStudent = CreateStudent(Guid.NewGuid(), skippedGroup.Id, "Nikita", "Volkov");
+        var noEmailStudent = CreateStudent(Guid.NewGuid(), oldGroup.Id, "No", "Email");
 
         var slot = SubmissionSlot.Create(
             subject.Id, teacher.Id, Utc(2026, 05, 10, 10), Utc(2026, 05, 10, 12), 5, false, Utc(2026, 04, 28, 12), [oldGroup.Id], "A-101",
             "Bring slides");
 
         slot.DequeueDomainEvents();
-
-        var recipientId = Guid.NewGuid();
-        var skippedRecipientId = Guid.NewGuid();
-        slot.UpdateNotificationSettings(recipientId, [SubmissionRemindTime.OneWeek], BookingNotificationMode.All);
-        slot.UpdateNotificationSettings(skippedRecipientId, [SubmissionRemindTime.FourHours], BookingNotificationMode.All);
 
         var domainEvent = new SubmissionSlotUpdatedDomainEvent
         {
@@ -144,12 +145,19 @@ public class BookingNotificationHandlersIntegrationTests
                 submissionSlotRepository: CreateSubmissionSlotRepository(slot),
                 teacherRepository: CreateTeacherRepository(teacher),
                 subjectRepository: CreateSubjectRepository(subject),
-                groupRepository: CreateGroupRepository(oldGroup, newGroup),
+                groupRepository: CreateGroupRepository(oldGroup, newGroup, skippedGroup),
+                studentRepository: CreateStudentRepository(
+                    (oldGroupStudent, oldGroup.Id),
+                    (newGroupStudent, newGroup.Id),
+                    (skippedStudent, skippedGroup.Id),
+                    (noEmailStudent, oldGroup.Id)),
                 outboxRepository: outboxRepository),
             new OutboxMessageFactory(),
             CreateUserManager(
-                CreateIdentity(recipientId, "slot-update@example.com"),
-                CreateIdentity(skippedRecipientId, null)),
+                CreateIdentity(oldGroupStudent.Id.Value, "old-group@example.com"),
+                CreateIdentity(newGroupStudent.Id.Value, "new-group@example.com"),
+                CreateIdentity(skippedStudent.Id.Value, "skipped@example.com"),
+                CreateIdentity(noEmailStudent.Id.Value, null)),
             NullLogger<SubmissionSlotUpdatedDomainEventNotificationHandler>.Instance);
 
         // Act
@@ -165,12 +173,17 @@ public class BookingNotificationHandlersIntegrationTests
 
         // Assert
         integrationEvent.Should().NotBeNull();
-        integrationEvent.OldSubmissionSlot.AllowedGroupNames.Should().BeEquivalentTo("M8O-411B-22");
-        integrationEvent.NewSubmissionSlot.AllowedGroupNames.Should().BeEquivalentTo("M8O-413B-22");
+        integrationEvent.OldSubmissionSlot.AllowedGroups.Select(group => group.Name).Should().BeEquivalentTo("M8O-411B-22");
+        integrationEvent.NewSubmissionSlot.AllowedGroups.Select(group => group.Name).Should().BeEquivalentTo("M8O-413B-22");
 
-        integrationEvent.NotificationRecipients.Should().ContainSingle(x =>
-            x.UserId == recipientId &&
-            x.Email == "slot-update@example.com");
+        integrationEvent.NotificationRecipients
+            .Select(x => new { x.Email, x.UserId })
+            .Should()
+            .BeEquivalentTo(
+            [
+                new { Email = "old-group@example.com", UserId = oldGroupStudent.Id.Value },
+                new { Email = "new-group@example.com", UserId = newGroupStudent.Id.Value }
+            ]);
     }
 
     [Fact]
@@ -437,6 +450,10 @@ public class BookingNotificationHandlersIntegrationTests
 
         mock.Setup(x => x.GetByGroupIdAsync(It.IsAny<GroupId>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((GroupId id, CancellationToken _) => students.Where(x => x.GroupId == id).Select(x => x.Student).ToArray());
+
+        mock.Setup(x => x.GetByGroupIdsAsync(It.IsAny<IEnumerable<GroupId>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((IEnumerable<GroupId> ids, CancellationToken _) =>
+                students.Where(x => ids.Contains(x.GroupId)).Select(x => x.Student).ToArray());
 
         return mock.Object;
     }

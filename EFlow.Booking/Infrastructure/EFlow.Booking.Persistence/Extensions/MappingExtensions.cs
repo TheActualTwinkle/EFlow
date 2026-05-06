@@ -9,6 +9,7 @@ using EFlow.Booking.Domain.Groups;
 using EFlow.Booking.Domain.Students;
 using EFlow.Booking.Domain.Subjects;
 using EFlow.Booking.Domain.SubmissionSlots;
+using EFlow.Booking.Domain.SubmissionSlots.NotificationSettings;
 using EFlow.Booking.Domain.Teachers;
 
 namespace EFlow.Booking.Persistence.Extensions;
@@ -72,20 +73,34 @@ public static class MappingExtensions
             Teacher? teacher = null,
             Subject? subject = null,
             IEnumerable<Group>? allowedGroups = null,
-            IEnumerable<Student>? admittedStudents = null) =>
+            IEnumerable<Student>? admittedStudents = null,
+            int? bookingCount = null) =>
             new()
             {
                 Id = submissionSlot.Id.Value,
                 StartTime = submissionSlot.StartTime,
                 EndTime = submissionSlot.EndTime,
                 MaxStudents = submissionSlot.MaxStudents,
+                BookingCount = bookingCount,
                 AllowAllGroups = submissionSlot.AllowAllGroups,
                 Location = submissionSlot.Location,
                 Comment = submissionSlot.Comment,
                 Teacher = teacher?.ToTeacherView(),
                 Subject = subject?.ToSubjectView(teacher),
                 AllowedGroups = allowedGroups?.Select(g => g.ToGroupView()).ToList(),
-                AdmittedStudents = admittedStudents?.Select(s => s.ToStudentView()).ToList()
+                AdmittedStudents = admittedStudents?.Select(s => s.ToStudentView()).ToList(),
+                NotificationSettings = submissionSlot.NotificationSettings.Select(s => s.ToSubmissionSlotNotificationSettingsView()).ToList()
+            };
+    }
+
+    extension(SubmissionSlotNotificationSettings settings)
+    {
+        public SubmissionSlotNotificationSettingsView ToSubmissionSlotNotificationSettingsView() =>
+            new()
+            {
+                UserId = settings.UserId,
+                SubmissionRemindTimes = settings.SubmissionRemindTimes.ToArray(),
+                BookingNotificationMode = settings.BookingNotificationMode
             };
     }
     

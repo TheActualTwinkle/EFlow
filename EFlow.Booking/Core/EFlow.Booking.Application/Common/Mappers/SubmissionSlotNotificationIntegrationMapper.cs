@@ -40,9 +40,9 @@ internal static class SubmissionSlotNotificationIntegrationMapper
             Comment = slot.GetComment(),
             MaxStudents = slot.GetMaxStudents(),
             AllowAllGroups = slot.GetAllowAllGroups(),
-            AllowedGroupNames = slot.GetAllowAllGroups()
+            AllowedGroups = slot.GetAllowAllGroups()
                 ? []
-                : await GetAllowedGroupNamesAsync(unitOfWork, slot.GetAllowedGroupIds(), cancellationToken)
+                : await GetAllowedGroupsAsync(unitOfWork, slot.GetAllowedGroupIds(), cancellationToken)
         };
     }
 
@@ -73,9 +73,9 @@ internal static class SubmissionSlotNotificationIntegrationMapper
             Comment = snapshot.Comment,
             MaxStudents = snapshot.MaxStudents,
             AllowAllGroups = snapshot.AllowAllGroups,
-            AllowedGroupNames = snapshot.AllowAllGroups
+            AllowedGroups = snapshot.AllowAllGroups
                 ? []
-                : await GetAllowedGroupNamesAsync(unitOfWork, snapshot.AllowedGroupIds, cancellationToken)
+                : await GetAllowedGroupsAsync(unitOfWork, snapshot.AllowedGroupIds, cancellationToken)
         };
     }
 
@@ -134,7 +134,7 @@ internal static class SubmissionSlotNotificationIntegrationMapper
         return result.ToArray();
     }
 
-    private static async Task<IEnumerable<string>> GetAllowedGroupNamesAsync(
+    private static async Task<IEnumerable<GroupModel>> GetAllowedGroupsAsync(
         IUnitOfWork unitOfWork,
         IEnumerable<GroupId> allowedGroupIds,
         CancellationToken cancellationToken)
@@ -147,7 +147,11 @@ internal static class SubmissionSlotNotificationIntegrationMapper
         return (await unitOfWork
                 .GetRepository<IGroupRepository>()
                 .GetByIdsAsync(groupIds, cancellationToken))
-            .Select(group => group.GetName())
+            .Select(group => new GroupModel
+            {
+                Id = group.Id.Value,
+                Name = group.GetName()
+            })
             .ToArray();
     }
 }

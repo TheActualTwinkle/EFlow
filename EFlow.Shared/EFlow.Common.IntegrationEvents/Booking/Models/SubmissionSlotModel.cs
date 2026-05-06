@@ -23,5 +23,5 @@ public sealed partial record SubmissionSlotModel
 
     public required bool AllowAllGroups { get; init; }
 
-    public required IEnumerable<string> AllowedGroupNames { get; init; }
+    public required IEnumerable<GroupModel> AllowedGroups { get; init; }
 }

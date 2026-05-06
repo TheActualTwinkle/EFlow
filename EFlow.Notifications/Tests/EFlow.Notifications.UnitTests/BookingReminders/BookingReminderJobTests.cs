@@ -161,18 +161,19 @@ public sealed class BookingReminderJobTests
         DateTime slotStartTime) =>
         new()
         {
-            SubmissionSlot = new SubmissionSlotModel
+            SubmissionSlot = new SubmissionSlot
             {
                 Id = Guid.NewGuid(),
-                SubjectName = "Distributed Systems",
-                TeacherFullName = "Petrov Ivan",
+                Teacher = new Teacher { Id = Guid.NewGuid(), FirstName = "Ivan", LastName = "Petrov" },
+                Subject = new Subject { Id = Guid.NewGuid(), Name = "Distributed Systems" },
                 StartTime = slotStartTime,
                 EndTime = slotStartTime.AddHours(2),
+                BookingCount = 3,
                 Location = "A-101",
                 Comment = "Bring slides",
                 MaxStudents = 5,
                 AllowAllGroups = true,
-                AllowedGroupNames = []
+                AllowedGroups = [],
             },
             Recipients =
             [

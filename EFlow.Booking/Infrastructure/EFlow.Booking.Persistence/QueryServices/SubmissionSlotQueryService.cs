@@ -55,11 +55,70 @@ public sealed class SubmissionSlotQueryService(ApplicationDbContext context) : I
         return await MapToViewsAsync(slots, cancellationToken);
     }
 
+    public async Task<IEnumerable<SubmissionSlotReminderSnapshotView>> GetReminderSnapshotAsync(CancellationToken cancellationToken = new())
+    {
+        var slots = await QuerySlots().ToListAsync(cancellationToken);
+
+        if (slots.Count == 0)
+            return [];
+
+        var recipientsBySlotId = slots.ToDictionary(
+            slot => slot.Id,
+            slot => slot.GetNotificationRecipients());
+
+        var userIds = recipientsBySlotId.Values
+            .SelectMany(recipients => recipients.Select(recipient => recipient.UserId))
+            .Distinct()
+            .ToArray();
+
+        var usersById = await context.Users
+            .AsNoTracking()
+            .Where(user => userIds.AsEnumerable().Contains(user.Id) && user.Email != null)
+            .ToDictionaryAsync(user => user.Id, cancellationToken);
+
+        var slotViewsById = (await MapToViewsAsync(slots, cancellationToken))
+            .ToDictionary(slot => new SubmissionSlotId(slot.Id));
+
+        return slots
+            .Select(slot =>
+            {
+                var recipients = recipientsBySlotId[slot.Id]
+                    .SelectMany(recipient =>
+                    {
+                        if (!usersById.TryGetValue(recipient.UserId, out var user) || user.Email is null)
+                            return [];
+
+                        return recipient.SubmissionRemindTimes.Select(
+                            remindTime => new SubmissionSlotReminderRecipientView
+                            {
+                                UserId = recipient.UserId,
+                                Email = user.Email,
+                                RemindTime = remindTime
+                            });
+                    })
+                    .ToArray();
+
+                return new
+                {
+                    Slot = slot,
+                    Recipients = recipients
+                };
+            })
+            .Where(snapshot => snapshot.Recipients.Length > 0 && slotViewsById.ContainsKey(snapshot.Slot.Id))
+            .Select(snapshot => new SubmissionSlotReminderSnapshotView
+            {
+                SubmissionSlot = slotViewsById[snapshot.Slot.Id],
+                Recipients = snapshot.Recipients
+            })
+            .ToArray();
+    }
+
     private IQueryable<SubmissionSlot> QuerySlots() =>
         context.SubmissionSlots
             .AsNoTracking()
             .Include(slot => slot.AllowedGroupIds)
-            .Include(slot => slot.Admissions);
+            .Include(slot => slot.Admissions)
+            .Include(slot => slot.NotificationSettings);
 
     private async Task<IReadOnlyCollection<SubmissionSlotView>> MapToViewsAsync(
         IReadOnlyCollection<SubmissionSlot> slots,
@@ -88,6 +147,10 @@ public sealed class SubmissionSlotQueryService(ApplicationDbContext context) : I
             .Distinct()
             .ToArray();
 
+        var slotIds = slots
+            .Select(slot => slot.Id)
+            .ToArray();
+
         var subjects = await context.Subjects
             .AsNoTracking()
             .Where(subject => subjectIds.AsEnumerable().Contains(subject.Id))
@@ -108,6 +171,17 @@ public sealed class SubmissionSlotQueryService(ApplicationDbContext context) : I
             .Where(student => admittedStudentIds.AsEnumerable().Contains(student.Id))
             .ToDictionaryAsync(student => student.Id, cancellationToken);
 
+        var bookingCounts = await context.BookingRecords
+            .AsNoTracking()
+            .Where(record => slotIds.AsEnumerable().Contains(record.SlotId))
+            .GroupBy(record => record.SlotId)
+            .Select(group => new
+            {
+                SlotId = group.Key,
+                Count = group.Count()
+            })
+            .ToDictionaryAsync(group => group.SlotId, group => group.Count, cancellationToken);
+
         return slots
             .Select(slot =>
             {
@@ -127,7 +201,8 @@ public sealed class SubmissionSlotQueryService(ApplicationDbContext context) : I
                     teacher,
                     subject,
                     slotAllowedGroups,
-                    slotAdmittedStudents);
+                    slotAdmittedStudents,
+                    bookingCounts.GetValueOrDefault(slot.Id));
             })
             .ToArray();
     }

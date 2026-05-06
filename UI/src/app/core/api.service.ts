@@ -1,6 +1,6 @@
 import { HttpClient, HttpErrorResponse, HttpParams } from '@angular/common/http';
 import { Injectable, inject, signal } from '@angular/core';
-import { catchError, forkJoin, map, of, throwError } from 'rxjs';
+import { catchError, map, of, throwError } from 'rxjs';
 
 import type { components } from '../api/contracts';
 import { apiBaseUrl } from './environment';
@@ -86,19 +86,13 @@ export class ApiService {
     return this.http.get<BookingRecordView[]>(`${apiBaseUrl}/bookings/by-student/${studentId}`).pipe(catchError((error) => this.fail(error)));
   }
 
+  getBookings() {
+    return this.http.get<BookingRecordView[]>(`${apiBaseUrl}/bookings`).pipe(catchError((error) => this.fail(error)));
+  }
+
   getBookingsBySlot(slotId: string, fetchGroups = false) {
     const params = fetchGroups ? new HttpParams().set('fetchGroups', true) : undefined;
     return this.http.get<BookingRecordView[]>(`${apiBaseUrl}/bookings/by-slot/${slotId}`, { params }).pipe(catchError((error) => this.fail(error)));
-  }
-
-  loadBookingsForUser(_userId: string, _isStudent: boolean, slots: SubmissionSlotView[]) {
-    if (!slots.length) {
-      return of([]);
-    }
-
-    return forkJoin(slots.map((slot) => this.getBookingsBySlot(slot.id, true).pipe(catchError(() => of([]))))).pipe(
-      map((chunks) => chunks.flat()),
-    );
   }
 
   createGroup(name: string) {
