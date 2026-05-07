@@ -292,6 +292,14 @@ export class ApiService {
       return 'Неверный текущий пароль.';
     }
 
+    if (key === 'CurrentPassword' && value.toLowerCase().includes('invalid')) {
+      return 'Неверный текущий пароль.';
+    }
+
+    if (key === 'CurrentPassword' && value.toLowerCase().includes('required')) {
+      return 'Введите текущий пароль.';
+    }
+
     return value;
   }
 }

@@ -23,10 +23,8 @@ public sealed class UsersController(UserManager<Identity> userManager) : Control
         if (user is null)
             return NotFound("User not found");
 
-        user.Email = request.Email.Trim();
-        user.NormalizedEmail = userManager.NormalizeEmail(user.Email);
-
-        var result = await userManager.UpdateAsync(user);
+        var email = request.Email.Trim();
+        var result = await userManager.SetEmailAsync(user, email);
 
         return result.Succeeded ? NoContent() : IdentityProblem(result);
     }

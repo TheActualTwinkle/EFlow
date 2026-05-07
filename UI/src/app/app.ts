@@ -1837,8 +1837,12 @@ export class App {
       return null;
     }
 
-    if (passwordErrors.some((message) => message === 'Incorrect password.')) {
+    if (passwordErrors.some((message) => message === 'Incorrect password.' || message.toLowerCase().includes('invalid'))) {
       return 'Неверный текущий пароль.';
+    }
+
+    if (passwordErrors.some((message) => message.toLowerCase().includes('required'))) {
+      return 'Введите текущий пароль.';
     }
 
     return passwordErrors.join('\n');
