@@ -4,13 +4,13 @@ public interface ICacheService
 {
     public ValueTask<T?> GetAsync<T>(
         string key,
-        CancellationToken cancellationToken = default) where T : class;
+        CancellationToken cancellationToken = new()) where T : class;
     
     public ValueTask SetAsync<T>(
         string key,
         T value,
         TimeSpan expirationTime,
-        CancellationToken cancellationToken = default) where T : class;
+        CancellationToken cancellationToken = new()) where T : class;
 
     public ValueTask RemoveAsync(
         string key,

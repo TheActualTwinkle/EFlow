@@ -10,6 +10,7 @@ public static class DependencyInjection
     {
         public IServiceCollection AddCaching(IConfiguration configuration)
         {
+            services.AddMemoryCache();
             services.AddSingleton<ICacheService, InMemoryCacheService>();
             
             return services;

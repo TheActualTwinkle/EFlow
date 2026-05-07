@@ -1,16 +1,14 @@
-﻿using System.Collections.Concurrent;
-using EFlow.Booking.Caching.Interfaces;
+﻿using EFlow.Booking.Caching.Interfaces;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace EFlow.Booking.Caching;
 
-public sealed class InMemoryCacheService : ICacheService
+public sealed class InMemoryCacheService(IMemoryCache memoryCache) : ICacheService
 {
-    private readonly ConcurrentDictionary<string, object> _collection = new();
-
     public ValueTask<T?> GetAsync<T>(
         string key,
         CancellationToken cancellationToken = new()) where T : class =>
-        ValueTask.FromResult(_collection.GetValueOrDefault(key) as T);
+        ValueTask.FromResult(memoryCache.Get<T>(key));
 
     public ValueTask SetAsync<T>(
         string key,
@@ -18,7 +16,13 @@ public sealed class InMemoryCacheService : ICacheService
         TimeSpan expirationTime,
         CancellationToken cancellationToken = new()) where T : class
     {
-        _collection.AddOrUpdate(key, value, (_, _) => value);
+        memoryCache.Set(
+            key,
+            value,
+            new MemoryCacheEntryOptions
+            {
+                AbsoluteExpirationRelativeToNow = expirationTime
+            });
 
         return ValueTask.CompletedTask;
     }
@@ -27,7 +31,7 @@ public sealed class InMemoryCacheService : ICacheService
         string key,
         CancellationToken cancellationToken = new())
     {
-        _collection.TryRemove(key, out _);
+        memoryCache.Remove(key);
 
         return ValueTask.CompletedTask;
     }

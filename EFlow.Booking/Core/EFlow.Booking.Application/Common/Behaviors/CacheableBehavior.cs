@@ -14,7 +14,7 @@ public sealed class CacheableBehavior<TRequest, TResponse>(
     public async Task<TResponse> Handle(
         TRequest request,
         RequestHandlerDelegate<TResponse> next,
-        CancellationToken cancellationToken = new())
+        CancellationToken cancellationToken)
     {
         var cachedResponse = await cacheService.GetAsync<TResponse>(request.CacheKey, cancellationToken);
 
