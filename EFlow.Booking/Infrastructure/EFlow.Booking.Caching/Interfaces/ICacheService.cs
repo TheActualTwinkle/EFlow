@@ -2,11 +2,11 @@
 
 public interface ICacheService
 {
-    public Task<T?> GetAsync<T>(
+    public ValueTask<T?> GetAsync<T>(
         string key,
         CancellationToken cancellationToken = default) where T : class;
     
-    public Task SetAsync<T>(
+    public ValueTask SetAsync<T>(
         string key,
         T value,
         TimeSpan expirationTime,
