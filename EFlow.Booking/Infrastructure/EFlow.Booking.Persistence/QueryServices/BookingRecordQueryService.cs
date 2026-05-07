@@ -34,6 +34,8 @@ public sealed class BookingRecordQueryService(ApplicationDbContext context) : IB
         CancellationToken cancellationToken = new()) =>
         await context.BookingRecords
             .Where(r => r.SlotId == slotId)
+            .OrderBy(r => r.CreatedAt)
+            .ThenBy(r => r.Id)
             .Select(MapToView(fetchStudentsGroup))
             .ToListAsync(cancellationToken);
 

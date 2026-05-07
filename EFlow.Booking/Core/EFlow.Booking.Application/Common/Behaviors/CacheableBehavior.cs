@@ -1,17 +1,15 @@
 ﻿using EFlow.Booking.Application.Common.Markers;
 using EFlow.Booking.Caching.Interfaces;
-using EFlow.Booking.Caching.Settings;
+using FluentResults;
 using MediatR;
-using Microsoft.Extensions.Options;
 
 namespace EFlow.Booking.Application.Common.Behaviors;
 
 public sealed class CacheableBehavior<TRequest, TResponse>(
-    ICacheService cacheService,
-    IOptions<CacheSettings> cacheSettings)
+    ICacheService cacheService)
     : IPipelineBehavior<TRequest, TResponse>
     where TRequest : ICacheableRequest
-    where TResponse : class
+    where TResponse : ResultBase
 {
     public async Task<TResponse> Handle(
         TRequest request,
@@ -25,11 +23,12 @@ public sealed class CacheableBehavior<TRequest, TResponse>(
         
         var response = await next(cancellationToken);
         
-        await cacheService.SetAsync(
-            request.CacheKey,
-            response,
-            cacheSettings.Value.DefaultExpirationTime,
-            cancellationToken);
+        if (response.IsSuccess)
+            await cacheService.SetAsync(
+                request.CacheKey,
+                response,
+                request.ExpirationTime,
+                cancellationToken);
         
         return response;
     }

@@ -11,4 +11,8 @@ public interface ICacheService
         T value,
         TimeSpan expirationTime,
         CancellationToken cancellationToken = default) where T : class;
+
+    public ValueTask RemoveAsync(
+        string key,
+        CancellationToken cancellationToken = new());
 }

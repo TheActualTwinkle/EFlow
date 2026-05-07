@@ -1,5 +1,4 @@
 ﻿using EFlow.Booking.Caching.Interfaces;
-using EFlow.Booking.Caching.Settings;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -11,8 +10,6 @@ public static class DependencyInjection
     {
         public IServiceCollection AddCaching(IConfiguration configuration)
         {
-            services.Configure<CacheSettings>(configuration.GetSection(CacheSettings.SectionName));
-            
             services.AddSingleton<ICacheService, InMemoryCacheService>();
             
             return services;
