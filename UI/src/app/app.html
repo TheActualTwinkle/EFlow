@@ -77,6 +77,16 @@
       </nav>
 
       <div class="sidebar-footer">
+        @if (auth.hasRole('Student', 'Teacher')) {
+          <button class="ghost-button" type="button" (click)="openAccountEmail()">
+            <lucide-icon name="mail" />
+            Сменить почту
+          </button>
+          <button class="ghost-button" type="button" (click)="openAccountPassword()">
+            <lucide-icon name="key-round" />
+            Сменить пароль
+          </button>
+        }
         <button class="ghost-button" type="button" (click)="theme.toggle()">
           <lucide-icon [name]="theme.mode() === 'dark' ? 'sun' : 'moon'" />
           {{ theme.mode() === 'dark' ? 'Светлая тема' : 'Тёмная тема' }}
@@ -871,6 +881,12 @@
                   <article class="entity-grid">
                     <strong>{{ fullName(teacher) }}</strong>
                     <div class="action-row">
+                      <button class="icon-button" type="button" (click)="openAccountEmail(teacher.id)" aria-label="Сменить почту преподавателя" title="Сменить почту">
+                        <lucide-icon name="mail" />
+                      </button>
+                      <button class="icon-button" type="button" (click)="openAccountPassword(teacher.id)" aria-label="Сменить пароль преподавателя" title="Сменить пароль">
+                        <lucide-icon name="key-round" />
+                      </button>
                       <button class="secondary-action" type="button" (click)="editTeacher(teacher)">Редактировать</button>
                       <button class="icon-button danger" type="button" (click)="deleteTeacher(teacher)" aria-label="Удалить преподавателя">
                         <lucide-icon name="trash-2" />
@@ -899,6 +915,12 @@
                       <span>Группа: {{ student.group?.name || 'не указана' }}</span>
                     </span>
                     <div class="action-row">
+                      <button class="icon-button" type="button" (click)="openAccountEmail(student.id)" aria-label="Сменить почту студента" title="Сменить почту">
+                        <lucide-icon name="mail" />
+                      </button>
+                      <button class="icon-button" type="button" (click)="openAccountPassword(student.id)" aria-label="Сменить пароль студента" title="Сменить пароль">
+                        <lucide-icon name="key-round" />
+                      </button>
                       <button class="secondary-action" type="button" (click)="editStudent(student)">Редактировать</button>
                       <button class="icon-button danger" type="button" (click)="deleteStudent(student)" aria-label="Удалить студента">
                         <lucide-icon name="trash-2" />
@@ -1117,6 +1139,79 @@
     <form class="panel form-panel modal-panel" (ngSubmit)="updateGroup(group)" (click)="$event.stopPropagation()">
       <div class="panel-heading"><div><p class="eyebrow">Редактирование</p><h2>Группа</h2></div></div>
       <label><span>Название <b>*</b></span><input [(ngModel)]="group.name" name="editGroupName" required /></label>
+      <div class="action-row">
+        <button class="primary-action" type="submit">Сохранить</button>
+      </div>
+    </form>
+  </div>
+}
+
+@if (activeModal() === 'accountEmail') {
+  <div class="modal-backdrop" (click)="closeModal()">
+    <form class="panel form-panel modal-panel" (ngSubmit)="updateAccountEmail()" autocomplete="off" (click)="$event.stopPropagation()">
+      <div class="panel-heading">
+        <div>
+          <p class="eyebrow">Учётная запись</p>
+          <h2>Смена почты</h2>
+        </div>
+        <lucide-icon name="mail" />
+      </div>
+      <label>
+        <span>Email <b>*</b></span>
+        <input name="accountEmail" [(ngModel)]="accountEmailForm.email" type="email" autocomplete="off" required />
+        @if (fieldError('accountEmail')) { <small class="field-error">{{ fieldError('accountEmail') }}</small> }
+      </label>
+      <div class="action-row">
+        <button class="primary-action" type="submit">Сохранить</button>
+      </div>
+    </form>
+  </div>
+}
+
+@if (activeModal() === 'accountPassword') {
+  <div class="modal-backdrop" (click)="closeModal()">
+    <form class="panel form-panel modal-panel" (ngSubmit)="updateAccountPassword()" autocomplete="off" (click)="$event.stopPropagation()">
+      <div class="panel-heading">
+        <div>
+          <p class="eyebrow">Учётная запись</p>
+          <h2>Смена пароля</h2>
+        </div>
+        <lucide-icon name="key-round" />
+      </div>
+      <label>
+        <span>{{ accountPasswordForm.adminReset ? 'Пароль администратора' : 'Текущий пароль' }} <b>*</b></span>
+        <span class="password-field">
+          <input name="accountCurrentPassword" [(ngModel)]="accountPasswordForm.currentPassword" [type]="accountCurrentPasswordVisible() ? 'text' : 'password'" autocomplete="current-password" required />
+          <button type="button" (click)="accountCurrentPasswordVisible.set(!accountCurrentPasswordVisible())" [attr.aria-label]="accountCurrentPasswordVisible() ? 'Скрыть пароль' : 'Показать пароль'">
+            <lucide-icon [name]="accountCurrentPasswordVisible() ? 'eye-off' : 'eye'" />
+          </button>
+        </span>
+        @if (fieldError('accountCurrentPassword')) { <small class="field-error">{{ fieldError('accountCurrentPassword') }}</small> }
+      </label>
+      <label>
+        <span>Новый пароль <b>*</b></span>
+        <span class="password-field">
+          <input name="accountNewPassword" [(ngModel)]="accountPasswordForm.newPassword" [type]="accountNewPasswordVisible() ? 'text' : 'password'" autocomplete="new-password" required />
+          <button type="button" (click)="accountNewPasswordVisible.set(!accountNewPasswordVisible())" [attr.aria-label]="accountNewPasswordVisible() ? 'Скрыть пароль' : 'Показать пароль'">
+            <lucide-icon [name]="accountNewPasswordVisible() ? 'eye-off' : 'eye'" />
+          </button>
+        </span>
+        @if (fieldError('accountNewPassword')) { <small class="field-error">{{ fieldError('accountNewPassword') }}</small> }
+      </label>
+      <label>
+        <span>Повторите пароль <b>*</b></span>
+        <span class="password-field">
+          <input name="accountConfirmPassword" [(ngModel)]="accountPasswordForm.confirmPassword" [type]="accountConfirmPasswordVisible() ? 'text' : 'password'" autocomplete="new-password" required />
+          <button type="button" (click)="accountConfirmPasswordVisible.set(!accountConfirmPasswordVisible())" [attr.aria-label]="accountConfirmPasswordVisible() ? 'Скрыть пароль' : 'Показать пароль'">
+            <lucide-icon [name]="accountConfirmPasswordVisible() ? 'eye-off' : 'eye'" />
+          </button>
+        </span>
+        @if (accountPasswordMismatch()) {
+          <small class="field-error">Пароли не совпадают.</small>
+        } @else if (fieldError('accountConfirmPassword')) {
+          <small class="field-error">{{ fieldError('accountConfirmPassword') }}</small>
+        }
+      </label>
       <div class="action-row">
         <button class="primary-action" type="submit">Сохранить</button>
       </div>

@@ -2,7 +2,7 @@ import { provideHttpClient } from '@angular/common/http';
 import { importProvidersFrom } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
-import { LucideAngularModule, Moon, ShieldCheck } from 'lucide-angular';
+import { Eye, EyeOff, KeyRound, Lock, LucideAngularModule, Mail, Moon, ShieldCheck } from 'lucide-angular';
 
 import { App } from './app';
 import { routes } from './app.routes';
@@ -18,6 +18,11 @@ describe('App', () => {
         provideRouter(routes),
         importProvidersFrom(
           LucideAngularModule.pick({
+            Eye,
+            EyeOff,
+            KeyRound,
+            Lock,
+            Mail,
             Moon,
             ShieldCheck,
           }),

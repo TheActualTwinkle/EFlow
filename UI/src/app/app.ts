@@ -1,4 +1,5 @@
 import { CommonModule } from '@angular/common';
+import { HttpErrorResponse } from '@angular/common/http';
 import { Component, computed, effect, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { NavigationEnd, Router } from '@angular/router';
@@ -12,6 +13,8 @@ import { ThemeService } from './core/theme.service';
 import {
   AdminView,
   createPersonForm,
+  createAccountEmailForm,
+  createAccountPasswordForm,
   createSlotForm,
   emptyWorkspaceData,
   ModalView,
@@ -103,6 +106,8 @@ export class App {
   readonly loginForm = { username: '', password: '' };
   readonly groupForm = { name: '' };
   readonly personForm = createPersonForm();
+  readonly accountEmailForm = createAccountEmailForm();
+  readonly accountPasswordForm = createAccountPasswordForm();
   readonly subjectForm = { name: '', teacherId: '', groupIds: [] as string[] };
   readonly slotForm = createSlotForm();
   readonly notificationForm = {
@@ -113,6 +118,9 @@ export class App {
   readonly slotGroupSearch = signal('');
   readonly loginReadonly = signal(true);
   readonly passwordReadonly = signal(true);
+  readonly accountCurrentPasswordVisible = signal(false);
+  readonly accountNewPasswordVisible = signal(false);
+  readonly accountConfirmPasswordVisible = signal(false);
   readonly dateTimePickerOpen = signal<string | null>(null);
   readonly customSelectOpen = signal<string | null>(null);
   readonly pickerMonth = signal(new Date());
@@ -513,6 +521,49 @@ export class App {
         this.showToast('Студент обновлён', 'success');
         this.closeModal();
         this.refresh();
+      });
+  }
+
+  updateAccountEmail(): void {
+    if (!this.validateAccountEmailForm()) {
+      return;
+    }
+
+    const userId = this.accountEmailForm.userId;
+    const ownAccount = this.auth.user()?.id === userId;
+
+    this.api.updateUserEmail(userId, this.accountEmailForm.email.trim()).subscribe(() => {
+      this.showToast('Email обновлён', 'success');
+      this.closeModal();
+      if (ownAccount) {
+        this.auth.loadCurrentUser().subscribe();
+      }
+    });
+  }
+
+  updateAccountPassword(): void {
+    if (!this.validateAccountPasswordForm()) {
+      return;
+    }
+
+    const form = this.accountPasswordForm;
+    this.api
+      .updateUserPassword(form.userId, form.currentPassword, form.newPassword)
+      .subscribe({
+        next: () => {
+          this.showToast('Пароль обновлён', 'success');
+          this.closeModal();
+        },
+        error: (error: unknown) => {
+          const passwordError = this.accountPasswordApiError(error);
+
+          if (passwordError) {
+            this.fieldErrors.update((errors) => ({
+              ...errors,
+              accountCurrentPassword: passwordError,
+            }));
+          }
+        },
       });
   }
 
@@ -963,6 +1014,40 @@ export class App {
     this.openModal('editStudent');
   }
 
+  openAccountEmail(userId?: string, email?: string | null): void {
+    const user = this.auth.user();
+    const targetUserId = userId ?? user?.id ?? '';
+
+    if (!targetUserId) {
+      this.showToast('Пользователь не найден', 'warning');
+      return;
+    }
+
+    this.accountEmailForm.userId = targetUserId;
+    this.accountEmailForm.email = email ?? (targetUserId === user?.id ? user?.email ?? '' : '');
+    this.openModal('accountEmail');
+  }
+
+  openAccountPassword(userId?: string): void {
+    const user = this.auth.user();
+    const targetUserId = userId ?? user?.id ?? '';
+
+    if (!targetUserId) {
+      this.showToast('Пользователь не найден', 'warning');
+      return;
+    }
+
+    this.accountPasswordForm.userId = targetUserId;
+    this.accountPasswordForm.currentPassword = '';
+    this.accountPasswordForm.newPassword = '';
+    this.accountPasswordForm.confirmPassword = '';
+    this.accountPasswordForm.adminReset = this.auth.hasRole('Admin') && targetUserId !== user?.id;
+    this.accountCurrentPasswordVisible.set(false);
+    this.accountNewPasswordVisible.set(false);
+    this.accountConfirmPasswordVisible.set(false);
+    this.openModal('accountPassword');
+  }
+
   editSubject(subject: SubjectView): void {
     this.selectedSubject.set(subject);
     this.editSubjectDraft.set(this.cloneSubject(subject));
@@ -979,6 +1064,16 @@ export class App {
     this.editStudentDraft.set(null);
     this.editSubjectDraft.set(null);
     this.editSlotDraft.set(null);
+    this.accountEmailForm.userId = '';
+    this.accountEmailForm.email = '';
+    this.accountPasswordForm.userId = '';
+    this.accountPasswordForm.currentPassword = '';
+    this.accountPasswordForm.newPassword = '';
+    this.accountPasswordForm.confirmPassword = '';
+    this.accountPasswordForm.adminReset = false;
+    this.accountCurrentPasswordVisible.set(false);
+    this.accountNewPasswordVisible.set(false);
+    this.accountConfirmPasswordVisible.set(false);
   }
 
   closeConfirmDialog(): void {
@@ -1662,6 +1757,64 @@ export class App {
     }
 
     return this.setFieldErrors(errors);
+  }
+
+  private validateAccountEmailForm(): boolean {
+    const errors: Record<string, string> = {};
+
+    if (!this.accountEmailForm.email.trim()) {
+      errors['accountEmail'] = 'Введите email.';
+    }
+
+    return this.setFieldErrors(errors);
+  }
+
+  private validateAccountPasswordForm(): boolean {
+    const errors: Record<string, string> = {};
+
+    if (!this.accountPasswordForm.currentPassword.trim()) {
+      errors['accountCurrentPassword'] = 'Введите текущий пароль.';
+    }
+
+    if (!this.accountPasswordForm.newPassword.trim()) {
+      errors['accountNewPassword'] = 'Введите новый пароль.';
+    }
+
+    if (this.accountPasswordMismatch()) {
+      errors['accountConfirmPassword'] = 'Пароли не совпадают.';
+    }
+
+    return this.setFieldErrors(errors);
+  }
+
+  accountPasswordMismatch(): boolean {
+    return !!this.accountPasswordForm.newPassword &&
+      !!this.accountPasswordForm.confirmPassword &&
+      this.accountPasswordForm.newPassword !== this.accountPasswordForm.confirmPassword;
+  }
+
+  private accountPasswordApiError(error: unknown): string | null {
+    if (!(error instanceof HttpErrorResponse) || typeof error.error === 'string') {
+      return null;
+    }
+
+    const errors = error.error?.errors as Record<string, string[]> | undefined;
+
+    if (!errors) {
+      return null;
+    }
+
+    const passwordErrors = errors['PasswordMismatch'] ?? errors['CurrentPassword'];
+
+    if (!passwordErrors?.length) {
+      return null;
+    }
+
+    if (passwordErrors.some((message) => message === 'Incorrect password.')) {
+      return 'Неверный текущий пароль.';
+    }
+
+    return passwordErrors.join('\n');
   }
 
   private validateSubjectForm(): boolean {

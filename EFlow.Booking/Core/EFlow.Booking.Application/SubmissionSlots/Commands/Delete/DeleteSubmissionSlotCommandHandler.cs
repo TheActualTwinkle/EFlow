@@ -5,7 +5,9 @@ using MediatR;
 
 namespace EFlow.Booking.Application.SubmissionSlots.Commands;
 
-public class DeleteSubmissionSlotCommandHandler(IUnitOfWork unitOfWork)
+public class DeleteSubmissionSlotCommandHandler(
+    IUnitOfWork unitOfWork,
+    ISystemClock systemClock)
     : IRequestHandler<DeleteSubmissionSlotCommand, Result>
 {
     public async Task<Result> Handle(DeleteSubmissionSlotCommand request, CancellationToken cancellationToken)
@@ -17,7 +19,7 @@ public class DeleteSubmissionSlotCommandHandler(IUnitOfWork unitOfWork)
         if (slot is null)
             return Result.Ok();
 
-        slot.Delete();
+        slot.Delete(systemClock.UtcNow);
 
         await repository.DeleteAsync(slot);
 

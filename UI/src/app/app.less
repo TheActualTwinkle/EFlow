@@ -213,6 +213,38 @@ input[type='checkbox'] {
   }
 }
 
+.password-field {
+  position: relative;
+  display: block;
+  min-width: 0;
+
+  input {
+    padding-right: 46px;
+  }
+
+  button {
+    position: absolute;
+    top: 50%;
+    right: 6px;
+    display: inline-grid;
+    width: 34px;
+    height: 34px;
+    min-height: 34px;
+    place-items: center;
+    border: 0;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--muted);
+    padding: 0;
+    transform: translateY(-50%);
+
+    &:hover {
+      background: var(--surface);
+      color: var(--text);
+    }
+  }
+}
+
 input[type='datetime-local'] {
   color-scheme: light;
 }
@@ -416,6 +448,7 @@ textarea {
   padding: 10px 14px;
   font-weight: 720;
   line-height: 1;
+  min-width: 0;
   transition:
     transform 160ms ease,
     background-color 160ms ease,
@@ -424,6 +457,20 @@ textarea {
   &:hover:not(:disabled) {
     transform: translateY(-1px);
   }
+}
+
+.primary-action,
+.secondary-action,
+.ghost-button {
+  overflow-wrap: anywhere;
+  text-align: left;
+}
+
+.primary-action lucide-icon,
+.secondary-action lucide-icon,
+.ghost-button lucide-icon,
+.icon-button lucide-icon {
+  flex: 0 0 auto;
 }
 
 .primary-action {
@@ -1074,7 +1121,14 @@ nav {
   }
 
   .entity-grid {
-    grid-template-columns: minmax(180px, 1fr) auto;
+    grid-template-columns: minmax(0, 1fr) auto;
+
+    > strong {
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
   }
 
   .entity-main {

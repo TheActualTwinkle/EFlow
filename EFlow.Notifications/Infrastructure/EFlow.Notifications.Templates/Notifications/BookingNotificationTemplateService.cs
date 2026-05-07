@@ -94,6 +94,26 @@ public sealed class BookingNotificationTemplateService(ITemplateRenderer templat
         return ($"Изменения в окне защиты по предмету «{newSubmissionSlot.SubjectName}»", body);
     }
 
+    public async Task<(string Subject, string Body)> CreateSubmissionSlotDeletedAsync(
+        SubmissionSlotModel submissionSlot,
+        CancellationToken cancellationToken = new())
+    {
+        var model = new SubmissionSlotDeletedEmailTemplateModel
+        {
+            Title = "Окно защиты отменено",
+            Lead = "Окно защиты было удалено из расписания. Запись на это время больше не действует.",
+            SubjectName = submissionSlot.SubjectName,
+            TeacherFullName = submissionSlot.TeacherFullName,
+            TimeRange = TemplateFormatter.FormatTimeRange(submissionSlot.StartTime, submissionSlot.EndTime),
+            Location = TemplateFormatter.FormatOptionalText(submissionSlot.Location, "Место не было указано"),
+            Comment = TemplateFormatter.FormatOptionalText(submissionSlot.Comment, "Комментарий отсутствует")
+        };
+
+        var body = await templateRenderer.RenderAsync("/EmailTemplates/SubmissionSlotDeleted.cshtml", model, cancellationToken);
+
+        return ($"Окно защиты по предмету «{submissionSlot.SubjectName}» отменено", body);
+    }
+
     public async Task<(string Subject, string Body)> CreateReminderAsync(
         SubmissionSlotModel submissionSlot,
         SubmissionRemindTimeModel submissionRemindTime,

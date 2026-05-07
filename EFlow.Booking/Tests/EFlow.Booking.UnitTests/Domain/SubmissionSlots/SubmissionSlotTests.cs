@@ -38,7 +38,7 @@ public class SubmissionSlotTests
             now,
             now);
 
-        slot.AddAdmission(studentId, now);
+        slot.AddAdmission(studentId);
         slot.UpdateNotificationSettings(studentId.Value, [], [SubmissionRemindTime.OneWeek], BookingNotificationMode.All);
         slot.UpdateNotificationSettings(otherUserId, [], [SubmissionRemindTime.TwoDays], BookingNotificationMode.OnlyCancellation);
         var booking = slot.BookToSlot(student, Array.Empty<BookingRecord>(), now);

@@ -35,7 +35,7 @@ public class AddAdmissionCommandHandler(
                     .WithMessage("Student not found")
                     .WithId(request.StudentId));
 
-        var admission = slot.AddAdmission(student.Id, systemClock.UtcNow);
+        var admission = slot.AddAdmission(student.Id);
         
         return Result.Ok(admission.Id.Value);
     }

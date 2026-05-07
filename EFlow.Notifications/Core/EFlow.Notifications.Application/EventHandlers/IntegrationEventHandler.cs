@@ -24,6 +24,7 @@ public sealed class IntegrationEventHandler(
         
         await SubscribeAsync<SubmissionSlotCreatedIntegrationEvent>(KafkaTopics.SubmissionSlotCreatedTopic, _cts.Token);
         await SubscribeAsync<SubmissionSlotUpdatedIntegrationEvent>(KafkaTopics.SubmissionSlotUpdatedTopic, _cts.Token);
+        await SubscribeAsync<SubmissionSlotDeletedIntegrationEvent>(KafkaTopics.SubmissionSlotDeletedTopic, _cts.Token);
         await SubscribeAsync<BookingCreatedIntegrationEvent>(KafkaTopics.BookingCreatedTopic, _cts.Token);
         await SubscribeAsync<BookingCancelledIntegrationEvent>(KafkaTopics.BookingCancelledTopic, _cts.Token);
     }

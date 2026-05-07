@@ -209,7 +209,7 @@ public class BookingNotificationHandlersIntegrationTests
         slot.UpdateNotificationSettings(
             notifyCancelledOnlyId, [], [SubmissionRemindTime.FourHours], BookingNotificationMode.OnlyCancellation);
 
-        slot.AddAdmission(bookedStudent.Id, Utc(2026, 04, 28, 12));
+        slot.AddAdmission(bookedStudent.Id);
         var bookingRecord = slot.BookToSlot(bookedStudent, [], Utc(2026, 04, 28, 12));
         var domainEvent = bookingRecord.DequeueDomainEvents().OfType<BookingRecordCreatedDomainEvent>().Single();
         var outboxRepository = new FakeOutboxMessageRepository();
@@ -277,7 +277,7 @@ public class BookingNotificationHandlersIntegrationTests
         slot.UpdateNotificationSettings(
             notifyCancelledOnlyId, [], [SubmissionRemindTime.FourHours], BookingNotificationMode.OnlyCancellation);
 
-        slot.AddAdmission(bookedStudent.Id, Utc(2026, 04, 28, 12));
+        slot.AddAdmission(bookedStudent.Id);
         var bookingRecord = slot.BookToSlot(bookedStudent, [], Utc(2026, 04, 28, 12));
         bookingRecord.DequeueDomainEvents();
         slot.CancelBooking(bookingRecord, Utc(2026, 04, 28, 13));
