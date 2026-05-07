@@ -56,6 +56,6 @@ internal static class ApiAssertions
                 .EnumerateArray()
                 .Select(x => x.GetString())
                 .Should()
-                .Contain(x => x is not null && x.Contains(errorContains, StringComparison.OrdinalIgnoreCase));
+                .Contain(x => x != null && x.Contains(errorContains, StringComparison.OrdinalIgnoreCase));
     }
 }

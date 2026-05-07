@@ -161,14 +161,16 @@ export class App {
       );
     });
   });
+  readonly sortedVisibleSlots = computed(() =>
+    [...this.visibleSlots()].sort((left, right) => this.compareSlotsByStartTime(left, right)),
+  );
   readonly freeSeats = computed(() =>
     this.visibleSlots().reduce((total, slot) => total + Math.max(0, this.slotCapacity(slot) - this.slotBookingCount(slot)), 0),
   );
   readonly filteredVisibleSlots = computed(() => {
     const query = this.slotSearch().trim().toLowerCase();
-    return this.visibleSlots()
+    return this.sortedVisibleSlots()
       .filter((slot) => this.slotMatchesFilters(slot, query, this.slotCompletionFilter(), this.slotOnlyAdmitted()))
-      .sort((left, right) => this.compareSlotsByStartTime(left, right));
   });
   readonly filteredBookings = computed(() => {
     const query = this.bookingSearch().trim().toLowerCase();
@@ -203,7 +205,7 @@ export class App {
   });
   readonly filteredBookingSlots = computed(() => {
     const query = this.bookingSearch().trim().toLowerCase();
-    let slots = this.visibleSlots().filter(
+    let slots = this.sortedVisibleSlots().filter(
       (slot) =>
         this.slotMatchesStateFilters(slot, this.bookingCompletionFilter(), this.bookingOnlyAdmitted()) &&
         this.slotMatchesBookingQuery(slot, query),
@@ -219,9 +221,9 @@ export class App {
 
       slots = slots.filter((slot) => bookedSlotIds.has(slot.id));
     }
-    return slots.sort((left, right) => this.compareSlotsByStartTime(left, right));
+    return slots;
   });
-  readonly selectedSlot = computed(() => this.data().slots.find((slot) => slot.id === this.selectedSlotId()) ?? this.visibleSlots()[0] ?? null);
+  readonly selectedSlot = computed(() => this.data().slots.find((slot) => slot.id === this.selectedSlotId()) ?? this.sortedVisibleSlots()[0] ?? null);
 
   constructor(
     readonly auth: AuthService,
@@ -373,7 +375,7 @@ export class App {
 
   private syncDefaultSelections(data: WorkspaceData): void {
     const user = this.auth.user();
-    const firstVisibleSlot = this.visibleSlots()[0];
+    const firstVisibleSlot = this.sortedVisibleSlots()[0];
 
     const visibleSlotIds = new Set(this.visibleSlots().map((slot) => slot.id));
 

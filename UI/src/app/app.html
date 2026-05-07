@@ -185,7 +185,7 @@
               <lucide-icon name="calendar-days" />
             </div>
             <div class="timeline">
-              @for (slot of visibleSlots(); track slot.id) {
+              @for (slot of sortedVisibleSlots(); track slot.id) {
                 <button
                   class="timeline-item"
                   type="button"
