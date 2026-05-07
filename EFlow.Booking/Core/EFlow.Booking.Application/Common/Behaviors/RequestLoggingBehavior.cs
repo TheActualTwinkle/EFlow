@@ -4,7 +4,7 @@ using Microsoft.Extensions.Logging;
 
 namespace EFlow.Booking.Application.Common.Behaviors;
 
-public class RequestLoggingBehavior<TRequest, TResponse>(ILogger<TRequest> logger)
+public sealed class RequestLoggingBehavior<TRequest, TResponse>(ILogger<TRequest> logger)
     : IPipelineBehavior<TRequest, TResponse>
     where TRequest : notnull
     where TResponse : ResultBase

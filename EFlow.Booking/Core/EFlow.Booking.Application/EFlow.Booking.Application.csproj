@@ -12,6 +12,7 @@
     <ItemGroup>
         <ProjectReference Include="..\..\..\EFlow.Shared\EFlow.Common.Infrastructure\EFlow.Common.Infrastructure.csproj" />
         <ProjectReference Include="..\..\..\EFlow.Shared\EFlow.Common.IntegrationEvents\EFlow.Common.IntegrationEvents.csproj" />
+        <ProjectReference Include="..\..\Infrastructure\EFlow.Booking.Caching\EFlow.Booking.Caching.csproj" />
         <ProjectReference Include="..\EFlow.Booking.Contracts\EFlow.Booking.Contracts.csproj" />
         <ProjectReference Include="..\EFlow.Booking.Domain\EFlow.Booking.Domain.csproj"/>
     </ItemGroup>

@@ -6,6 +6,7 @@
         <Project Path="EFlow.Booking\Core\EFlow.Booking.Contracts\EFlow.Booking.Contracts.csproj" />
     </Folder>
     <Folder Name="/EFlow.Booking/Infrastructure/">
+        <Project Path="EFlow.Booking/Infrastructure/EFlow.Booking.Caching/EFlow.Booking.Caching.csproj" />
         <Project Path="EFlow.Booking/Infrastructure/EFlow.Booking.Messaging/EFlow.Booking.Messaging.csproj" />
         <Project Path="EFlow.Booking/Infrastructure/EFlow.Booking.Persistence/EFlow.Booking.Persistence.csproj" />
     </Folder>
