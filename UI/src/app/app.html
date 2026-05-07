@@ -652,12 +652,6 @@
               <button type="button" [class.active]="bookingCompletionFilter() === 'active'" (click)="bookingCompletionFilter.set('active')">Активные</button>
               <button type="button" [class.active]="bookingCompletionFilter() === 'finished'" (click)="bookingCompletionFilter.set('finished')">Завершенные</button>
             </div>
-            @if (auth.hasRole('Student')) {
-              <label class="filter-check">
-                <input type="checkbox" [checked]="bookingOnlyAdmitted()" (change)="bookingOnlyAdmitted.set(!bookingOnlyAdmitted())" />
-                <span>Только с допуском</span>
-              </label>
-            }
           </div>
           <div class="panel wide">
             @if (auth.hasRole('Teacher', 'Admin', 'Student')) {

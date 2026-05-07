@@ -93,8 +93,8 @@ export class App {
   readonly adminSearch = signal('');
   readonly slotSearch = signal('');
   readonly bookingSearch = signal('');
-  readonly slotCompletionFilter = signal<SlotCompletionFilter>('all');
-  readonly bookingCompletionFilter = signal<SlotCompletionFilter>('all');
+  readonly slotCompletionFilter = signal<SlotCompletionFilter>('active');
+  readonly bookingCompletionFilter = signal<SlotCompletionFilter>('active');
   readonly slotOnlyAdmitted = signal(false);
   readonly bookingOnlyAdmitted = signal(false);
   readonly admissionSearch = signal('');
@@ -166,24 +166,29 @@ export class App {
   );
   readonly filteredVisibleSlots = computed(() => {
     const query = this.slotSearch().trim().toLowerCase();
-    return this.visibleSlots().filter((slot) => this.slotMatchesFilters(slot, query, this.slotCompletionFilter(), this.slotOnlyAdmitted()));
+    return this.visibleSlots()
+      .filter((slot) => this.slotMatchesFilters(slot, query, this.slotCompletionFilter(), this.slotOnlyAdmitted()))
+      .sort((left, right) => this.compareSlotsByStartTime(left, right));
   });
   readonly filteredBookings = computed(() => {
     const query = this.bookingSearch().trim().toLowerCase();
-    return this.data().bookings.filter((booking) => {
-      const slot = booking.slot;
-      if (slot && !this.slotMatchesStateFilters(slot, this.bookingCompletionFilter(), this.bookingOnlyAdmitted())) {
-        return false;
-      }
+    return this.data()
+      .bookings
+      .filter((booking) => {
+        const slot = booking.slot;
+        if (slot && !this.slotMatchesStateFilters(slot, this.bookingCompletionFilter(), this.bookingOnlyAdmitted())) {
+          return false;
+        }
 
-      if (!query) {
-        return true;
-      }
+        if (!query) {
+          return true;
+        }
 
-      return [this.fullName(booking.student), slot ? this.slotTitle(slot) : '', slot?.location]
-        .filter(Boolean)
-        .some((value) => value!.toLowerCase().includes(query));
-    });
+        return [this.fullName(booking.student), slot ? this.slotTitle(slot) : '', slot?.location]
+          .filter(Boolean)
+          .some((value) => value!.toLowerCase().includes(query));
+      })
+      .sort((left, right) => this.compareBookingsBySlotStartTime(left, right));
   });
   readonly bookingSlots = computed(() => {
     const slots = new Map<string, SubmissionSlotView>();
@@ -194,7 +199,7 @@ export class App {
       }
     }
 
-    return [...slots.values()];
+    return [...slots.values()].sort((left, right) => this.compareSlotsByStartTime(left, right));
   });
   readonly filteredBookingSlots = computed(() => {
     const query = this.bookingSearch().trim().toLowerCase();
@@ -214,7 +219,7 @@ export class App {
 
       slots = slots.filter((slot) => bookedSlotIds.has(slot.id));
     }
-    return slots;
+    return slots.sort((left, right) => this.compareSlotsByStartTime(left, right));
   });
   readonly selectedSlot = computed(() => this.data().slots.find((slot) => slot.id === this.selectedSlotId()) ?? this.visibleSlots()[0] ?? null);
 
@@ -1113,6 +1118,10 @@ export class App {
       return;
     }
 
+    if (view === 'bookings' && this.auth.hasRole('Student')) {
+      this.bookingOnlyAdmitted.set(false);
+    }
+
     this.router.navigateByUrl(view === 'overview' ? '/overview' : `/${view}`);
   }
 
@@ -1288,6 +1297,18 @@ export class App {
     return [this.slotTitle(slot), this.fullName(slot.teacher), slot.location, slot.comment]
       .filter(Boolean)
       .some((value) => value!.toLowerCase().includes(query));
+  }
+
+  private compareSlotsByStartTime(left: SubmissionSlotView, right: SubmissionSlotView): number {
+    return this.slotStartTimeMs(left) - this.slotStartTimeMs(right);
+  }
+
+  private compareBookingsBySlotStartTime(left: BookingRecordView, right: BookingRecordView): number {
+    return this.slotStartTimeMs(left.slot) - this.slotStartTimeMs(right.slot);
+  }
+
+  private slotStartTimeMs(slot?: SubmissionSlotView | null): number {
+    return slot?.startTime ? new Date(slot.startTime).getTime() : Number.MAX_SAFE_INTEGER;
   }
 
   slotMatchesBookingQuery(slot: SubmissionSlotView, query: string): boolean {
@@ -1675,6 +1696,10 @@ export class App {
     }
 
     if (view === 'slots' || view === 'bookings' || view === 'overview') {
+      if (view === 'bookings' && this.auth.hasRole('Student')) {
+        this.bookingOnlyAdmitted.set(false);
+      }
+
       this.activeView.set(view);
       return;
     }
