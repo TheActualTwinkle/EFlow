@@ -1,4 +1,5 @@
 import { CommonModule } from '@angular/common';
+import { HttpErrorResponse } from '@angular/common/http';
 import { Component, computed, effect, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { NavigationEnd, Router } from '@angular/router';
@@ -12,6 +13,8 @@ import { ThemeService } from './core/theme.service';
 import {
   AdminView,
   createPersonForm,
+  createAccountEmailForm,
+  createAccountPasswordForm,
   createSlotForm,
   emptyWorkspaceData,
   ModalView,
@@ -90,8 +93,8 @@ export class App {
   readonly adminSearch = signal('');
   readonly slotSearch = signal('');
   readonly bookingSearch = signal('');
-  readonly slotCompletionFilter = signal<SlotCompletionFilter>('all');
-  readonly bookingCompletionFilter = signal<SlotCompletionFilter>('all');
+  readonly slotCompletionFilter = signal<SlotCompletionFilter>('active');
+  readonly bookingCompletionFilter = signal<SlotCompletionFilter>('active');
   readonly slotOnlyAdmitted = signal(false);
   readonly bookingOnlyAdmitted = signal(false);
   readonly admissionSearch = signal('');
@@ -103,6 +106,8 @@ export class App {
   readonly loginForm = { username: '', password: '' };
   readonly groupForm = { name: '' };
   readonly personForm = createPersonForm();
+  readonly accountEmailForm = createAccountEmailForm();
+  readonly accountPasswordForm = createAccountPasswordForm();
   readonly subjectForm = { name: '', teacherId: '', groupIds: [] as string[] };
   readonly slotForm = createSlotForm();
   readonly notificationForm = {
@@ -113,6 +118,9 @@ export class App {
   readonly slotGroupSearch = signal('');
   readonly loginReadonly = signal(true);
   readonly passwordReadonly = signal(true);
+  readonly accountCurrentPasswordVisible = signal(false);
+  readonly accountNewPasswordVisible = signal(false);
+  readonly accountConfirmPasswordVisible = signal(false);
   readonly dateTimePickerOpen = signal<string | null>(null);
   readonly customSelectOpen = signal<string | null>(null);
   readonly pickerMonth = signal(new Date());
@@ -153,29 +161,36 @@ export class App {
       );
     });
   });
+  readonly sortedVisibleSlots = computed(() =>
+    [...this.visibleSlots()].sort((left, right) => this.compareSlotsByStartTime(left, right)),
+  );
   readonly freeSeats = computed(() =>
     this.visibleSlots().reduce((total, slot) => total + Math.max(0, this.slotCapacity(slot) - this.slotBookingCount(slot)), 0),
   );
   readonly filteredVisibleSlots = computed(() => {
     const query = this.slotSearch().trim().toLowerCase();
-    return this.visibleSlots().filter((slot) => this.slotMatchesFilters(slot, query, this.slotCompletionFilter(), this.slotOnlyAdmitted()));
+    return this.sortedVisibleSlots()
+      .filter((slot) => this.slotMatchesFilters(slot, query, this.slotCompletionFilter(), this.slotOnlyAdmitted()))
   });
   readonly filteredBookings = computed(() => {
     const query = this.bookingSearch().trim().toLowerCase();
-    return this.data().bookings.filter((booking) => {
-      const slot = booking.slot;
-      if (slot && !this.slotMatchesStateFilters(slot, this.bookingCompletionFilter(), this.bookingOnlyAdmitted())) {
-        return false;
-      }
+    return this.data()
+      .bookings
+      .filter((booking) => {
+        const slot = booking.slot;
+        if (slot && !this.slotMatchesStateFilters(slot, this.bookingCompletionFilter(), this.bookingOnlyAdmitted())) {
+          return false;
+        }
 
-      if (!query) {
-        return true;
-      }
+        if (!query) {
+          return true;
+        }
 
-      return [this.fullName(booking.student), slot ? this.slotTitle(slot) : '', slot?.location]
-        .filter(Boolean)
-        .some((value) => value!.toLowerCase().includes(query));
-    });
+        return [this.fullName(booking.student), slot ? this.slotTitle(slot) : '', slot?.location]
+          .filter(Boolean)
+          .some((value) => value!.toLowerCase().includes(query));
+      })
+      .sort((left, right) => this.compareBookingsBySlotStartTime(left, right));
   });
   readonly bookingSlots = computed(() => {
     const slots = new Map<string, SubmissionSlotView>();
@@ -186,11 +201,11 @@ export class App {
       }
     }
 
-    return [...slots.values()];
+    return [...slots.values()].sort((left, right) => this.compareSlotsByStartTime(left, right));
   });
   readonly filteredBookingSlots = computed(() => {
     const query = this.bookingSearch().trim().toLowerCase();
-    let slots = this.visibleSlots().filter(
+    let slots = this.sortedVisibleSlots().filter(
       (slot) =>
         this.slotMatchesStateFilters(slot, this.bookingCompletionFilter(), this.bookingOnlyAdmitted()) &&
         this.slotMatchesBookingQuery(slot, query),
@@ -208,7 +223,7 @@ export class App {
     }
     return slots;
   });
-  readonly selectedSlot = computed(() => this.data().slots.find((slot) => slot.id === this.selectedSlotId()) ?? this.visibleSlots()[0] ?? null);
+  readonly selectedSlot = computed(() => this.data().slots.find((slot) => slot.id === this.selectedSlotId()) ?? this.sortedVisibleSlots()[0] ?? null);
 
   constructor(
     readonly auth: AuthService,
@@ -360,7 +375,7 @@ export class App {
 
   private syncDefaultSelections(data: WorkspaceData): void {
     const user = this.auth.user();
-    const firstVisibleSlot = this.visibleSlots()[0];
+    const firstVisibleSlot = this.sortedVisibleSlots()[0];
 
     const visibleSlotIds = new Set(this.visibleSlots().map((slot) => slot.id));
 
@@ -513,6 +528,49 @@ export class App {
         this.showToast('Студент обновлён', 'success');
         this.closeModal();
         this.refresh();
+      });
+  }
+
+  updateAccountEmail(): void {
+    if (!this.validateAccountEmailForm()) {
+      return;
+    }
+
+    const userId = this.accountEmailForm.userId;
+    const ownAccount = this.auth.user()?.id === userId;
+
+    this.api.updateUserEmail(userId, this.accountEmailForm.email.trim()).subscribe(() => {
+      this.showToast('Email обновлён', 'success');
+      this.closeModal();
+      if (ownAccount) {
+        this.auth.loadCurrentUser().subscribe();
+      }
+    });
+  }
+
+  updateAccountPassword(): void {
+    if (!this.validateAccountPasswordForm()) {
+      return;
+    }
+
+    const form = this.accountPasswordForm;
+    this.api
+      .updateUserPassword(form.userId, form.currentPassword, form.newPassword)
+      .subscribe({
+        next: () => {
+          this.showToast('Пароль обновлён', 'success');
+          this.closeModal();
+        },
+        error: (error: unknown) => {
+          const passwordError = this.accountPasswordApiError(error);
+
+          if (passwordError) {
+            this.fieldErrors.update((errors) => ({
+              ...errors,
+              accountCurrentPassword: passwordError,
+            }));
+          }
+        },
       });
   }
 
@@ -963,6 +1021,40 @@ export class App {
     this.openModal('editStudent');
   }
 
+  openAccountEmail(userId?: string, email?: string | null): void {
+    const user = this.auth.user();
+    const targetUserId = userId ?? user?.id ?? '';
+
+    if (!targetUserId) {
+      this.showToast('Пользователь не найден', 'warning');
+      return;
+    }
+
+    this.accountEmailForm.userId = targetUserId;
+    this.accountEmailForm.email = email ?? (targetUserId === user?.id ? user?.email ?? '' : '');
+    this.openModal('accountEmail');
+  }
+
+  openAccountPassword(userId?: string): void {
+    const user = this.auth.user();
+    const targetUserId = userId ?? user?.id ?? '';
+
+    if (!targetUserId) {
+      this.showToast('Пользователь не найден', 'warning');
+      return;
+    }
+
+    this.accountPasswordForm.userId = targetUserId;
+    this.accountPasswordForm.currentPassword = '';
+    this.accountPasswordForm.newPassword = '';
+    this.accountPasswordForm.confirmPassword = '';
+    this.accountPasswordForm.adminReset = this.auth.hasRole('Admin') && targetUserId !== user?.id;
+    this.accountCurrentPasswordVisible.set(false);
+    this.accountNewPasswordVisible.set(false);
+    this.accountConfirmPasswordVisible.set(false);
+    this.openModal('accountPassword');
+  }
+
   editSubject(subject: SubjectView): void {
     this.selectedSubject.set(subject);
     this.editSubjectDraft.set(this.cloneSubject(subject));
@@ -979,6 +1071,16 @@ export class App {
     this.editStudentDraft.set(null);
     this.editSubjectDraft.set(null);
     this.editSlotDraft.set(null);
+    this.accountEmailForm.userId = '';
+    this.accountEmailForm.email = '';
+    this.accountPasswordForm.userId = '';
+    this.accountPasswordForm.currentPassword = '';
+    this.accountPasswordForm.newPassword = '';
+    this.accountPasswordForm.confirmPassword = '';
+    this.accountPasswordForm.adminReset = false;
+    this.accountCurrentPasswordVisible.set(false);
+    this.accountNewPasswordVisible.set(false);
+    this.accountConfirmPasswordVisible.set(false);
   }
 
   closeConfirmDialog(): void {
@@ -1016,6 +1118,10 @@ export class App {
       this.showToast('Недостаточно прав для раздела администрирования', 'warning');
       this.router.navigateByUrl('/overview');
       return;
+    }
+
+    if (view === 'bookings' && this.auth.hasRole('Student')) {
+      this.bookingOnlyAdmitted.set(false);
     }
 
     this.router.navigateByUrl(view === 'overview' ? '/overview' : `/${view}`);
@@ -1193,6 +1299,18 @@ export class App {
     return [this.slotTitle(slot), this.fullName(slot.teacher), slot.location, slot.comment]
       .filter(Boolean)
       .some((value) => value!.toLowerCase().includes(query));
+  }
+
+  private compareSlotsByStartTime(left: SubmissionSlotView, right: SubmissionSlotView): number {
+    return this.slotStartTimeMs(left) - this.slotStartTimeMs(right);
+  }
+
+  private compareBookingsBySlotStartTime(left: BookingRecordView, right: BookingRecordView): number {
+    return this.slotStartTimeMs(left.slot) - this.slotStartTimeMs(right.slot);
+  }
+
+  private slotStartTimeMs(slot?: SubmissionSlotView | null): number {
+    return slot?.startTime ? new Date(slot.startTime).getTime() : Number.MAX_SAFE_INTEGER;
   }
 
   slotMatchesBookingQuery(slot: SubmissionSlotView, query: string): boolean {
@@ -1580,6 +1698,10 @@ export class App {
     }
 
     if (view === 'slots' || view === 'bookings' || view === 'overview') {
+      if (view === 'bookings' && this.auth.hasRole('Student')) {
+        this.bookingOnlyAdmitted.set(false);
+      }
+
       this.activeView.set(view);
       return;
     }
@@ -1662,6 +1784,68 @@ export class App {
     }
 
     return this.setFieldErrors(errors);
+  }
+
+  private validateAccountEmailForm(): boolean {
+    const errors: Record<string, string> = {};
+
+    if (!this.accountEmailForm.email.trim()) {
+      errors['accountEmail'] = 'Введите email.';
+    }
+
+    return this.setFieldErrors(errors);
+  }
+
+  private validateAccountPasswordForm(): boolean {
+    const errors: Record<string, string> = {};
+
+    if (!this.accountPasswordForm.currentPassword.trim()) {
+      errors['accountCurrentPassword'] = 'Введите текущий пароль.';
+    }
+
+    if (!this.accountPasswordForm.newPassword.trim()) {
+      errors['accountNewPassword'] = 'Введите новый пароль.';
+    }
+
+    if (this.accountPasswordMismatch()) {
+      errors['accountConfirmPassword'] = 'Пароли не совпадают.';
+    }
+
+    return this.setFieldErrors(errors);
+  }
+
+  accountPasswordMismatch(): boolean {
+    return !!this.accountPasswordForm.newPassword &&
+      !!this.accountPasswordForm.confirmPassword &&
+      this.accountPasswordForm.newPassword !== this.accountPasswordForm.confirmPassword;
+  }
+
+  private accountPasswordApiError(error: unknown): string | null {
+    if (!(error instanceof HttpErrorResponse) || typeof error.error === 'string') {
+      return null;
+    }
+
+    const errors = error.error?.errors as Record<string, string[]> | undefined;
+
+    if (!errors) {
+      return null;
+    }
+
+    const passwordErrors = errors['PasswordMismatch'] ?? errors['CurrentPassword'];
+
+    if (!passwordErrors?.length) {
+      return null;
+    }
+
+    if (passwordErrors.some((message) => message === 'Incorrect password.' || message.toLowerCase().includes('invalid'))) {
+      return 'Неверный текущий пароль.';
+    }
+
+    if (passwordErrors.some((message) => message.toLowerCase().includes('required'))) {
+      return 'Введите текущий пароль.';
+    }
+
+    return passwordErrors.join('\n');
   }
 
   private validateSubjectForm(): boolean {

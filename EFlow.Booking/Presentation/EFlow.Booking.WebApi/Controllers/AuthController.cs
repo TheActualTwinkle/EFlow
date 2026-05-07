@@ -73,5 +73,4 @@ public class AuthController(
                 Roles = roles.ToArray()
             });
     }
-
 }

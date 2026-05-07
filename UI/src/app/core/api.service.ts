@@ -152,6 +152,14 @@ export class ApiService {
     return this.http.patch<void>(`${apiBaseUrl}/students/${id}`, this.normalizePersonRequest(request)).pipe(catchError((error) => this.fail(error)));
   }
 
+  updateUserEmail(id: string, email: string) {
+    return this.http.patch<void>(`${apiBaseUrl}/users/${id}/email`, { email }).pipe(catchError((error) => this.fail(error)));
+  }
+
+  updateUserPassword(id: string, currentPassword: string | null, newPassword: string) {
+    return this.http.patch<void>(`${apiBaseUrl}/users/${id}/password`, { currentPassword, newPassword }).pipe(catchError((error) => this.fail(error)));
+  }
+
   updateSubject(id: string, request: UpdateSubjectFormRequest) {
     return this.http.patch<void>(`${apiBaseUrl}/subjects/${id}`, request).pipe(catchError((error) => this.fail(error)));
   }
@@ -256,9 +264,42 @@ export class ApiService {
     }
 
     if (body && typeof body !== 'string') {
+      const validationMessage = this.formatValidationErrors(body.errors);
+      if (validationMessage) {
+        return validationMessage;
+      }
+
       return body.detail ?? body.title ?? 'Неизвестная ошибка.';
     }
 
     return 'Не удалось выполнить запрос.';
+  }
+
+  private formatValidationErrors(errors: ApiProblem['errors']): string | null {
+    if (!errors) {
+      return null;
+    }
+
+    const messages = Object.entries(errors)
+      .flatMap(([key, values]) => values.map((value) => this.translateValidationError(key, value)))
+      .filter(Boolean);
+
+    return messages.length ? messages.join('\n') : null;
+  }
+
+  private translateValidationError(key: string, value: string): string {
+    if (key === 'PasswordMismatch' || value === 'Incorrect password.') {
+      return 'Неверный текущий пароль.';
+    }
+
+    if (key === 'CurrentPassword' && value.toLowerCase().includes('invalid')) {
+      return 'Неверный текущий пароль.';
+    }
+
+    if (key === 'CurrentPassword' && value.toLowerCase().includes('required')) {
+      return 'Введите текущий пароль.';
+    }
+
+    return value;
   }
 }

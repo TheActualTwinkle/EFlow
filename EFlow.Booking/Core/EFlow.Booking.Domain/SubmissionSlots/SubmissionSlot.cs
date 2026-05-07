@@ -144,12 +144,14 @@ public sealed class SubmissionSlot : Entity
         return slot;
     }
 
-    public SubmissionSlotId Delete()
+    public SubmissionSlotId Delete(DateTime utcNow)
     {
         AddDomainEvent(
             new SubmissionSlotDeletedDomainEvent
             {
                 SlotId = Id,
+                Slot = CreateSnapshot(),
+                DeletedAt = utcNow
             });
 
         return Id;
@@ -235,7 +237,7 @@ public sealed class SubmissionSlot : Entity
         NotificationSettings.Remove(existingSettings);
     }
 
-    public SubmissionSlotAdmission AddAdmission(StudentId studentId, DateTime nowUtc)
+    public SubmissionSlotAdmission AddAdmission(StudentId studentId)
     {
         var existingAdmission = Admissions.FirstOrDefault(admission => admission.StudentId == studentId);
 

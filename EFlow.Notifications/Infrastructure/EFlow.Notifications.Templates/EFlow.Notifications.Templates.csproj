@@ -16,6 +16,7 @@
       <None Include="EmailTemplates\BookingNotification.cshtml" />
       <None Include="EmailTemplates\Reminder.cshtml" />
       <None Include="EmailTemplates\SubmissionSlotCreated.cshtml" />
+      <None Include="EmailTemplates\SubmissionSlotDeleted.cshtml" />
       <None Include="EmailTemplates\SubmissionSlotUpdated.cshtml" />
     </ItemGroup>
     

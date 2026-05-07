@@ -32,6 +32,7 @@ public static class DependencyInjection
         
             services.AddScoped<IIntegrationEventProcessor<SubmissionSlotCreatedIntegrationEvent>, SubmissionSlotCreatedIntegrationEventProcessor>();
             services.AddScoped<IIntegrationEventProcessor<SubmissionSlotUpdatedIntegrationEvent>, SubmissionSlotUpdatedIntegrationEventProcessor>();
+            services.AddScoped<IIntegrationEventProcessor<SubmissionSlotDeletedIntegrationEvent>, SubmissionSlotDeletedIntegrationEventProcessor>();
             services.AddScoped<IIntegrationEventProcessor<BookingCreatedIntegrationEvent>, BookingCreatedIntegrationEventProcessor>();
             services.AddScoped<IIntegrationEventProcessor<BookingCancelledIntegrationEvent>, BookingCancelledIntegrationEventProcessor>();
             services.AddScoped<BookingReminderJob>();

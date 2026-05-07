@@ -166,9 +166,10 @@ public static class DependencyInjection
             var resolver = new TopicNameResolver();
 
             resolver.AddMapping(typeof(SubmissionSlotCreatedIntegrationEvent).AssemblyQualifiedName!, KafkaTopics.SubmissionSlotCreatedTopic);
+            resolver.AddMapping(typeof(SubmissionSlotUpdatedIntegrationEvent).AssemblyQualifiedName!, KafkaTopics.SubmissionSlotUpdatedTopic);
+            resolver.AddMapping(typeof(SubmissionSlotDeletedIntegrationEvent).AssemblyQualifiedName!, KafkaTopics.SubmissionSlotDeletedTopic);
             resolver.AddMapping(typeof(BookingCreatedIntegrationEvent).AssemblyQualifiedName!, KafkaTopics.BookingCreatedTopic);
             resolver.AddMapping(typeof(BookingCancelledIntegrationEvent).AssemblyQualifiedName!, KafkaTopics.BookingCancelledTopic);
-            resolver.AddMapping(typeof(SubmissionSlotUpdatedIntegrationEvent).AssemblyQualifiedName!, KafkaTopics.SubmissionSlotUpdatedTopic);
 
             return resolver;
         });

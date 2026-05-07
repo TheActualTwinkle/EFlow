@@ -25,6 +25,8 @@ export type ModalView =
   | 'editStudent'
   | 'editSubject'
   | 'admissions'
+  | 'accountEmail'
+  | 'accountPassword'
   | null;
 
 export interface ToastMessage {
@@ -73,4 +75,17 @@ export const createSlotForm = () => ({
   allowedGroupIds: [] as string[],
   location: '',
   comment: '',
+});
+
+export const createAccountEmailForm = () => ({
+  userId: '',
+  email: '',
+});
+
+export const createAccountPasswordForm = () => ({
+  userId: '',
+  currentPassword: '',
+  newPassword: '',
+  confirmPassword: '',
+  adminReset: false,
 });

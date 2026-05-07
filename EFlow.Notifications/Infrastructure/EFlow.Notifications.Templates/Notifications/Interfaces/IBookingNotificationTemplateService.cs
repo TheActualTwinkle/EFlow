@@ -15,6 +15,8 @@ public interface IBookingNotificationTemplateService
         SubmissionSlotModel newSubmissionSlot,
         CancellationToken cancellationToken = new());
 
+    Task<(string Subject, string Body)> CreateSubmissionSlotDeletedAsync(SubmissionSlotModel submissionSlot, CancellationToken cancellationToken = new());
+
     Task<(string Subject, string Body)> CreateReminderAsync(
         SubmissionSlotModel submissionSlot,
         SubmissionRemindTimeModel submissionRemindTime,
