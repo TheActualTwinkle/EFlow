@@ -6,7 +6,7 @@ using Microsoft.Extensions.Logging;
 
 namespace EFlow.Booking.Application.Common.Behaviors;
 
-public class TransactionBehavior<TRequest, TResponse>(
+public sealed class TransactionBehavior<TRequest, TResponse>(
     IUnitOfWork unitOfWork,
     ILogger<TransactionBehavior<TRequest, TResponse>> logger)
     : IPipelineBehavior<TRequest, TResponse>

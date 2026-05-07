@@ -23,6 +23,7 @@ public static class DependencyInjection
 
             cfg.AddOpenBehavior(typeof(ValidationBehavior<,>));
             cfg.AddOpenBehavior(typeof(RequestLoggingBehavior<,>));
+            cfg.AddOpenBehavior(typeof(CacheableBehavior<,>));
             cfg.AddOpenBehavior(typeof(TransactionBehavior<,>));
         });
 

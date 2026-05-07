@@ -1,4 +1,5 @@
 using EFlow.Booking.Application;
+using EFlow.Booking.Caching;
 using EFlow.Booking.Messaging;
 using EFlow.Booking.Persistence;
 using EFlow.Booking.WebApi;
@@ -80,6 +81,7 @@ builder.Services.AddPersistence(builder.Configuration);
 builder.Services.AddJobScheduler(builder.Configuration);
 builder.Services.AddOutbox(builder.Configuration);
 builder.Services.AddMessaging(builder.Configuration);
+builder.Services.AddCaching(builder.Configuration);
 
 var app = builder.Build();
 
