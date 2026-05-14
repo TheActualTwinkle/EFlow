@@ -21,7 +21,7 @@ public class GlobalExceptionHandlerTest
         var loggerMock = new Mock<ILogger<GlobalExceptionHandler>>();
         var handler = new GlobalExceptionHandler(loggerMock.Object);
         var context = new DefaultHttpContext();
-        var exception = new Exception("Test error");
+        var exception = new Exception("Sensitive data in error message");
         var responseStream = new MemoryStream();
         context.Response.Body = responseStream;
 
@@ -36,8 +36,8 @@ public class GlobalExceptionHandlerTest
         context.Response.StatusCode.Should().Be(500);
         problem.Should().NotBeNull();
         problem.Status.Should().Be(500);
-        problem.Title.Should().Contain("Server error");
-        problem.Title.Should().Contain("Test error");
+        problem.Title.Should().Contain("Internal server error");
+        problem.Title.Should().NotContain("Sensitive data in error message");
     }
 
     [Fact]
