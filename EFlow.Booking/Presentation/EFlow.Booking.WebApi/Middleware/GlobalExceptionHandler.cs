@@ -1,3 +1,4 @@
+using EFlow.Common.Domain.Exceptions;
 using FluentValidation;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
@@ -36,6 +37,12 @@ internal static class ProblemDetailsFactory
                 Status = StatusCodes.Status422UnprocessableEntity,
                 Title = "Validation Error",
                 Detail = $"{string.Join("; ", validationException.Errors.Select(e => e.ErrorMessage))}"
+            },
+            BusinessRuleValidationException businessRuleValidationException => new ProblemDetails
+            {
+                Status = StatusCodes.Status422UnprocessableEntity,
+                Title = "Business Rule Violation",
+                Detail = businessRuleValidationException.Message
             },
             _ => new ProblemDetails
             {
