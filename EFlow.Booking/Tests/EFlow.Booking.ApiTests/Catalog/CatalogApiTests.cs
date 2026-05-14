@@ -137,7 +137,11 @@ public sealed class CatalogApiTests(ApiTestStackFixture fixture)
             var response = await context.AdminSession.PostAsync("/api/groups", new { Name = string.Empty });
 
             // Assert
-            await context.AdminSession.AssertProblemAsync(response, HttpStatusCode.UnprocessableEntity, "Validation Error", "Group name is required");
+            await context.AdminSession.AssertProblemAsync(
+                response,
+                HttpStatusCode.UnprocessableEntity,
+                "Validation Error",
+                code: "Validation.Name.NotEmptyValidator");
         });
 
     /// <summary>
@@ -162,10 +166,11 @@ public sealed class CatalogApiTests(ApiTestStackFixture fixture)
                 });
 
             // Assert
-            await context.AdminSession.AssertProblemAsync(response, HttpStatusCode.UnprocessableEntity, "Validation Error");
-            var errorText = await context.AdminSession.ReadTextAsync(response);
-            errorText.Should().Contain("Email must be valid");
-            errorText.Should().Contain("Teacher must be at least 18 years old");
+            await context.AdminSession.AssertProblemAsync(
+                response,
+                HttpStatusCode.UnprocessableEntity,
+                "Validation Error",
+                code: "Validation.Password.MinimumLengthValidator");
         });
 
     private async Task WithCatalogFixtureAsync(Func<ApiScenario, CatalogFixture, Task> assertion)

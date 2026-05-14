@@ -5,6 +5,7 @@ import { catchError, map, of, throwError } from 'rxjs';
 import type { components } from '../api/contracts';
 import { apiBaseUrl } from './environment';
 import { HttpActivityService } from './http-activity.service';
+import { localizeApiErrorCode, localizeValidationErrorCode } from './api-error-localization';
 
 type Schemas = components['schemas'];
 type BookingRecordView = Schemas['BookingRecordView'];
@@ -21,6 +22,8 @@ interface ApiProblem {
   title?: string;
   detail?: string;
   status?: number;
+  code?: string;
+  fallbackCode?: string;
   errors?: Record<string, string[]>;
 }
 
@@ -260,19 +263,40 @@ export class ApiService {
     const body = error.error as ApiProblem | string | undefined;
 
     if (typeof body === 'string' && body.trim()) {
-      return body;
+      const problem = this.tryParseProblem(body);
+
+      return problem ? this.formatProblem(problem) : body;
     }
 
     if (body && typeof body !== 'string') {
-      const validationMessage = this.formatValidationErrors(body.errors);
-      if (validationMessage) {
-        return validationMessage;
-      }
-
-      return body.detail ?? body.title ?? 'Неизвестная ошибка.';
+      return this.formatProblem(body);
     }
 
     return 'Не удалось выполнить запрос.';
+  }
+
+  private tryParseProblem(body: string): ApiProblem | null {
+    try {
+      const parsed = JSON.parse(body) as unknown;
+
+      return parsed && typeof parsed === 'object' ? parsed as ApiProblem : null;
+    } catch {
+      return null;
+    }
+  }
+
+  private formatProblem(problem: ApiProblem): string {
+    const localizedMessage = localizeApiErrorCode(problem.code, problem.fallbackCode) ?? localizeValidationErrorCode(problem.code);
+    if (localizedMessage) {
+      return localizedMessage;
+    }
+
+    const validationMessage = this.formatValidationErrors(problem.errors);
+    if (validationMessage) {
+      return validationMessage;
+    }
+
+    return problem.detail ?? problem.title ?? 'Неизвестная ошибка.';
   }
 
   private formatValidationErrors(errors: ApiProblem['errors']): string | null {

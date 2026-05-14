@@ -18,7 +18,8 @@ internal static class ApiAssertions
         HttpResponseMessage response,
         HttpStatusCode statusCode,
         string? titleContains = null,
-        string? detailContains = null)
+        string? detailContains = null,
+        string? code = null)
     {
         response.StatusCode.Should().Be(statusCode);
 
@@ -30,6 +31,9 @@ internal static class ApiAssertions
 
         if (detailContains is not null)
             root.GetProperty("detail").GetString().Should().Contain(detailContains);
+
+        if (code is not null)
+            root.GetProperty("code").GetString().Should().Be(code);
     }
 
     /// <summary>

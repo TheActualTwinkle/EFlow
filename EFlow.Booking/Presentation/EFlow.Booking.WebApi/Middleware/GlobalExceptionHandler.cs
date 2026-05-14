@@ -1,3 +1,4 @@
+using EFlow.Common.Domain.Exceptions;
 using FluentValidation;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
@@ -31,16 +32,36 @@ internal static class ProblemDetailsFactory
     public static ProblemDetails Get(Exception exception) =>
         exception switch
         {
-            ValidationException validationException => new ProblemDetails
-            {
-                Status = StatusCodes.Status422UnprocessableEntity,
-                Title = "Validation Error",
-                Detail = $"{string.Join("; ", validationException.Errors.Select(e => e.ErrorMessage))}"
-            },
+            ValidationException validationException => CreateValidationProblemDetails(validationException),
+            BusinessRuleValidationException businessRuleValidationException => CreateBusinessRuleProblemDetails(businessRuleValidationException),
             _ => new ProblemDetails
             {
                 Status = StatusCodes.Status500InternalServerError,
-                Title = $"Server error. {exception.Message}"
+                Title = "Internal server error."
+            }
+        };
+
+    private static ProblemDetails CreateValidationProblemDetails(ValidationException exception) =>
+        new()
+        {
+            Status = StatusCodes.Status422UnprocessableEntity,
+            Title = "Validation Error",
+            Extensions =
+            {
+                ["code"] = exception.Errors
+                    .Select(error => $"Validation.{error.PropertyName}.{error.ErrorCode}")
+                    .FirstOrDefault("Validation.Error")
+            }
+        };
+
+    private static ProblemDetails CreateBusinessRuleProblemDetails(BusinessRuleValidationException exception) =>
+        new()
+        {
+            Status = StatusCodes.Status422UnprocessableEntity,
+            Title = "Business Rule Violation",
+            Extensions =
+            {
+                ["code"] = $"BusinessRule.{exception.BrokenRule.GetType().Name}"
             }
         };
 }

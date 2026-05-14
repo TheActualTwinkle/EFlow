@@ -236,8 +236,9 @@ public sealed class SubmissionSlotsApiTests(ApiTestStackFixture fixture)
             // Assert
             await context.AdminSession.AssertProblemAsync(
                 response,
-                HttpStatusCode.InternalServerError,
-                "User must not be in users without notifications.");
+                HttpStatusCode.UnprocessableEntity,
+                "Business Rule Violation",
+                code: "BusinessRule.UserMustNotBeInUsersWithoutNotificationsRule");
 
             var slot = await scenario.GetSlotAsync(context.AdminSession, context.SlotId);
             slot.NotificationSettings.Should().NotContain(settings => settings.UserId == admin.Id);
@@ -262,7 +263,10 @@ public sealed class SubmissionSlotsApiTests(ApiTestStackFixture fixture)
 
             // Assert
             await context.AdminSession.AssertProblemAsync(
-                response, HttpStatusCode.UnprocessableEntity, "Validation Error", "Reminder schedules must not contain duplicates");
+                response,
+                HttpStatusCode.UnprocessableEntity,
+                "Validation Error",
+                code: "Validation.SubmissionRemindTimes.PredicateValidator");
         });
 
     /// <summary>
