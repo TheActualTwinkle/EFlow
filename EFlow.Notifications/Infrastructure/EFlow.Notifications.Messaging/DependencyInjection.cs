@@ -1,8 +1,4 @@
-using Confluent.Kafka;
-using EFlow.Common.Messaging.Factories;
-using EFlow.Common.Messaging.Init;
-using EFlow.Common.Messaging.Serialization;
-using EFlow.Common.Messaging.Settings;
+using EFlow.Common.Messaging;
 using EFlow.Notifications.Messaging.Booking;
 using EFlow.Notifications.Messaging.Booking.Interfaces;
 using EFlow.Notifications.Messaging.Booking.Settings;
@@ -16,26 +12,8 @@ public static class DependencyInjection
 {
     extension(IServiceCollection services)
     {
-        public IServiceCollection AddMessaging(IConfiguration configuration)
-        {
-            services.AddScoped<TopicInitializer>();
-
-            services.Configure<KafkaSettings>(configuration.GetRequiredSection("KafkaSettings"));
-            services.Configure<KafkaTopicsSettings>(configuration.GetRequiredSection("KafkaSettings"));
-
-            services.AddScoped<ICommitLogConsumerFactory, CommitLogConsumerFactory>();
-
-            services.AddSingleton<IAdminClient>(serviceProvider =>
-            {
-                var settings = serviceProvider.GetRequiredService<IOptions<KafkaSettings>>().Value;
-
-                return new AdminClientBuilder(new AdminClientConfig { BootstrapServers = settings.BootstrapServers }).Build();
-            });
-
-            services.AddScoped(typeof(IDeserializer<>), typeof(DefaultSerializer<>));
-
-            return services;
-        }
+        public IServiceCollection AddMessaging(IConfiguration configuration) =>
+            services.AddKafka(configuration, useDeadLetterQueue: true);
 
         public IServiceCollection AddBookingClient(IConfiguration configuration)
         {

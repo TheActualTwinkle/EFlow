@@ -4,7 +4,7 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+        <NoWarn>$(NoWarn);NU1903;NU1608;</NoWarn>
         <!--        <GenerateDocumentationFile>true</GenerateDocumentationFile> TODO: Set True When Ready to do docs-->
     </PropertyGroup>
 </Project>
-

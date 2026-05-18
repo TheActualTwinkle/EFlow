@@ -2,6 +2,7 @@ using EFlow.Common.Extensions;
 using EFlow.Common.IntegrationEvents.Booking.BookingRecords;
 using EFlow.Common.IntegrationEvents.Booking.SubmissionSlots;
 using EFlow.Common.Infrastructure;
+using EFlow.Common.Messaging.DeadLetter;
 using EFlow.Notifications.Application.BookingReminders;
 using EFlow.Notifications.Application.Email;
 using EFlow.Notifications.Application.Email.Interfaces;
@@ -56,7 +57,7 @@ public static class DependencyInjection
 
             services.AddHangfireServer(o =>
             {
-                o.Queues = ["eflow-reminders"];
+                o.Queues = ["eflow-reminders", DeadLetterQueueRetryJob.QueueName];
                 o.SchedulePollingInterval = TimeSpan.FromSeconds(10);
             });
 

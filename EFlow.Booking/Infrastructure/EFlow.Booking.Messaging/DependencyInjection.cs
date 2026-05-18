@@ -1,4 +1,3 @@
-using Confluent.Kafka;
 using EFlow.Common.Extensions;
 using EFlow.Common.IntegrationEvents.Booking;
 using EFlow.Common.IntegrationEvents.Booking.BookingRecords;
@@ -10,16 +9,13 @@ using EFlow.Common.OutboxProcessing.Outbox.MessageProcessing.Factories;
 using EFlow.Common.OutboxProcessing.Outbox.MessageProcessing.Factories.Interfaces;
 using EFlow.Common.OutboxProcessing.Outbox.MessageProcessing.Interfaces;
 using EFlow.Common.Markers;
-using EFlow.Common.Messaging.Init;
-using EFlow.Common.Messaging.Producers;
-using EFlow.Common.Messaging.Serialization;
+using EFlow.Common.Messaging;
 using EFlow.Common.Messaging.Settings;
 using EFlow.Common.OutboxProcessing.TopicResolving;
 using Hangfire;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
 
 namespace EFlow.Booking.Messaging;
 
@@ -27,43 +23,8 @@ public static class DependencyInjection
 {
     extension(IServiceCollection services)
     {
-        public IServiceCollection AddMessaging(IConfiguration configuration)
-        {
-            services.AddScoped<TopicInitializer>();
-
-            services.Configure<KafkaSettings>(configuration.GetRequiredSection("KafkaSettings"));
-            services.Configure<KafkaTopicsSettings>(configuration.GetRequiredSection("KafkaSettings"));
-
-            services.AddScoped(typeof(ICommitLogProducer<,>), typeof(CommitLogProducer<,>));
-
-            services.AddSingleton<ProducerConfig>(serviceProvider =>
-            {
-                var settings = serviceProvider.GetRequiredService<IOptions<KafkaSettings>>().Value;
-
-                return new ProducerConfig
-                {
-                    BootstrapServers = settings.BootstrapServers,
-                    AllowAutoCreateTopics = false,
-                    ReconnectBackoffMs = 1000,
-                    MessageSendMaxRetries = settings.Retries,
-                    MessageTimeoutMs = settings.MessageTimeoutMs
-                };
-            });
-
-            services.AddScoped(typeof(ISerializer<>), typeof(DefaultSerializer<>));
-
-            services.AddSingleton<IAdminClient>(serviceProvider =>
-            {
-                var settings = serviceProvider.GetRequiredService<IOptions<KafkaSettings>>().Value;
-
-                return new AdminClientBuilder(new AdminClientConfig { BootstrapServers = settings.BootstrapServers })
-                    .Build();
-            });
-
-            AddTopicResolving(services);
-
-            return services;
-        }
+        public IServiceCollection AddMessaging(IConfiguration configuration) =>
+            services.AddKafka(configuration);
 
         public IServiceCollection AddOutbox(IConfiguration configuration)
         {
@@ -73,6 +34,8 @@ public static class DependencyInjection
 
             services.AddScoped<IOutboxMessageProcessorFactory, OutboxMessageProcessorFactory>();
 
+            AddTopicResolving(services);
+            
             return services;
         }
     }

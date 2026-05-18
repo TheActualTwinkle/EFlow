@@ -41,6 +41,7 @@
     <PackageVersion Include="Microsoft.IdentityModel.Tokens" Version="6.31.0" />
     <PackageVersion Include="System.IdentityModel.Tokens.Jwt" Version="6.31.0" />
     <PackageVersion Include="Moq" Version="4.20.72" />
+    <PackageVersion Include="Testcontainers.Kafka" Version="4.11.0" />
     <PackageVersion Include="AspNetCore.HealthChecks.Hangfire" Version="6.0.0" />
     <PackageVersion Include="AspNetCore.HealthChecks.UI.Client" Version="9.0.0" />
     <PackageVersion Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.0" />

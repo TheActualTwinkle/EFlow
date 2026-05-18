@@ -1,5 +1,8 @@
 using Confluent.Kafka;
+using EFlow.Common.Infrastructure;
 using EFlow.Common.Messaging.Consumers;
+using EFlow.Common.Messaging.DeadLetter;
+using EFlow.Common.Messaging.Producers;
 using EFlow.Common.Messaging.Settings;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -28,10 +31,41 @@ public class CommitLogConsumerFactory(IServiceProvider serviceProvider) : ICommi
             EnableAutoCommit = false
         };
 
-        return new CommitLogConsumer<TKey, TValue>(
+        var deadLetterQueueHandler = consumerSettings.UseDeadLetterQueue
+            ? CreateDeadLetterQueueProducer<TKey, TValue>(consumerSettings.GroupId, kafkaSettings)
+            : null;
+
+        var consumer = new CommitLogConsumer<TKey, TValue>(
             consumerConfig,
             keyDeserializer,
             valueDeserializer,
+            deadLetterQueueHandler,
+            logger);
+
+        return consumer;
+    }
+
+    private DeadLetterQueueProducer<TKey, TValue> CreateDeadLetterQueueProducer<TKey, TValue>(
+        string consumerGroup,
+        KafkaSettings kafkaSettings)
+    {
+        var keySerializer = serviceProvider.GetRequiredService<ISerializer<TKey>>();
+        var valueSerializer = serviceProvider.GetRequiredService<ISerializer<TValue>>();
+        var deadLetterQueueProducer = serviceProvider.GetRequiredService<ICommitLogProducer<byte[], DeadLetterMessage>>();
+        var systemClock = serviceProvider.GetRequiredService<ISystemClock>();
+        var logger = serviceProvider.GetRequiredService<ILogger<DeadLetterQueueProducer<TKey, TValue>>>();
+
+        return new DeadLetterQueueProducer<TKey, TValue>(
+            keySerializer,
+            valueSerializer,
+            deadLetterQueueProducer,
+            new DeadLetterQueueProducerSettings
+            {
+                ConsumerGroup = consumerGroup,
+                MaxAttempts = kafkaSettings.DlqMaxAttempts,
+                DeadLetterTopic = KafkaTopics.DeadLetterTopic
+            },
+            systemClock,
             logger);
     }
 }

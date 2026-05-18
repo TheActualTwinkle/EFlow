@@ -18,6 +18,9 @@ public class DefaultSerializer<T> : ISerializer<T>, IDeserializer<T>
         if (isNull)
             return default!;
 
+        if (typeof(T) == typeof(byte[]))
+            return (T)(object)data.ToArray();
+
         try
         {
             return MemoryPackSerializer.Deserialize<T>(data) ??

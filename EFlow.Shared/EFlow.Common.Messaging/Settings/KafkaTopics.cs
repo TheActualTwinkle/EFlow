@@ -2,6 +2,8 @@ namespace EFlow.Common.Messaging.Settings;
 
 public static class KafkaTopics
 {
+    public const string DeadLetterTopic = "eflow-dead-letter";
+
     public const string SubmissionSlotCreatedTopic = "eflow-submission-slot-created";
     
     public const string SubmissionSlotUpdatedTopic = "eflow-submission-slot-updated";

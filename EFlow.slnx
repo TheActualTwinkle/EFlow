@@ -18,6 +18,7 @@
         <Project Path="EFlow.Booking/Tests/EFlow.Booking.ArchitectureTests/EFlow.Booking.ArchitectureTests.csproj" />
         <Project Path="EFlow.Booking/Tests/EFlow.Booking.IntegrationTests/EFlow.Booking.IntegrationTests.csproj" />
         <Project Path="EFlow.Booking/Tests/EFlow.Booking.UnitTests/EFlow.Booking.UnitTests.csproj" />
+        <Project Path="EFlow.Shared/EFlow.Common.IntegrationTests/EFlow.Common.IntegrationTests.csproj" />
         <Project Path="EFlow.Shared/EFlow.Common.UnitTests/EFlow.Common.UnitTests.csproj" />
     </Folder>
     <Folder Name="/EFlow.Notifications/" />

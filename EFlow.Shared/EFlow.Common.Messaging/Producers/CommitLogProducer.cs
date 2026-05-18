@@ -22,14 +22,23 @@ public class CommitLogProducer<TKey, TValue> : ICommitLogProducer<TKey, TValue>
         string topic,
         TKey key,
         TValue value,
+        Headers? headers,
         CancellationToken cancellationToken = new())
     {
         var message = new Message<TKey, TValue>
         {
             Key = key,
-            Value = value
+            Value = value,
+            Headers = headers
         };
 
         await _producer.ProduceAsync(topic, message, cancellationToken);
     }
+
+    public async Task ProduceAsync(
+        string topic,
+        TKey key,
+        TValue value,
+        CancellationToken cancellationToken = new()) =>
+        await ProduceAsync(topic, key, value, headers: null, cancellationToken);
 }

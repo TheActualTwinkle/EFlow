@@ -1,4 +1,5 @@
 using Confluent.Kafka;
+using EFlow.Common.Messaging.DeadLetter;
 using Microsoft.Extensions.Logging;
 
 namespace EFlow.Common.Messaging.Consumers;
@@ -7,19 +8,23 @@ public class CommitLogConsumer<TKey, TValue> : ICommitLogConsumer<TKey, TValue>
 {
     private readonly IConsumer<TKey, TValue> _consumer;
 
+    private readonly DeadLetterQueueProducer<TKey, TValue>? _deadLetterQueueHandler;
+
     private readonly ILogger<CommitLogConsumer<TKey, TValue>> _logger;
 
     private Task? _consumingTask;
-    
+
     private CancellationTokenSource? _stoppingCts;
 
     public CommitLogConsumer(
         ConsumerConfig consumerConfig,
         IDeserializer<TKey> keyDeserializer,
         IDeserializer<TValue> valueDeserializer,
+        DeadLetterQueueProducer<TKey, TValue>? deadLetterQueueHandler,
         ILogger<CommitLogConsumer<TKey, TValue>> logger)
     {
         _logger = logger;
+        _deadLetterQueueHandler = deadLetterQueueHandler;
 
         _consumer = new ConsumerBuilder<TKey, TValue>(consumerConfig)
             .SetKeyDeserializer(keyDeserializer)
@@ -37,9 +42,9 @@ public class CommitLogConsumer<TKey, TValue> : ICommitLogConsumer<TKey, TValue>
             throw new InvalidOperationException("Commit log consumer is already running.");
 
         _stoppingCts?.Dispose();
-        
+
         var stoppingCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-        
+
         _stoppingCts = stoppingCts;
         _consumingTask = Task.Run(() => Consume(topic, handler, stoppingCts.Token), CancellationToken.None);
 
@@ -55,7 +60,7 @@ public class CommitLogConsumer<TKey, TValue> : ICommitLogConsumer<TKey, TValue>
         {
             if (_stoppingCts is not null)
                 await _stoppingCts.CancelAsync();
-            
+
             await _consumingTask.WaitAsync(cancellationToken);
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
@@ -88,8 +93,15 @@ public class CommitLogConsumer<TKey, TValue> : ICommitLogConsumer<TKey, TValue>
 
                     if (result?.Message is null)
                     {
-                        // TODO: Send to DQL as non-retryable
-                        
+                        _logger.LogError("Kafka returned an empty consume result for topic {Topic}.", topic);
+
+                        continue;
+                    }
+
+                    if (_deadLetterQueueHandler?.ShouldSkipRetryMessage(result.Message.Headers) is true)
+                    {
+                        _consumer.Commit(result);
+
                         continue;
                     }
 
@@ -106,7 +118,19 @@ public class CommitLogConsumer<TKey, TValue> : ICommitLogConsumer<TKey, TValue>
                         else
                         {
                             _logger.LogWarning("Message \"{Type}\" was not handled successfully.", result.Message.Value?.GetType().Name);
-                            // TODO: Send to DQL as retryable
+
+                            if (_deadLetterQueueHandler is null)
+                                continue;
+
+                            var wasProduced = await _deadLetterQueueHandler.TryProduceAsync(
+                                topic,
+                                result,
+                                exception: "Message handler returned unsuccessful result, see inner logs for details.",
+                                retryable: true,
+                                cancellationToken);
+
+                            if (wasProduced)
+                                _consumer.Commit(result);
                         }
                     }
                     catch (OperationCanceledException)
@@ -116,7 +140,19 @@ public class CommitLogConsumer<TKey, TValue> : ICommitLogConsumer<TKey, TValue>
                     catch (Exception ex)
                     {
                         _logger.LogError(ex, "Handler failed for topic: \"{Topic}\". Exception: {Exception}", topic, ex.Message);
-                        // TODO: Send to DQL as retryable
+
+                        if (_deadLetterQueueHandler is not null)
+                        {
+                            var wasProduced = await _deadLetterQueueHandler.TryProduceAsync(
+                                topic,
+                                result,
+                                exception: ex.ToString(),
+                                retryable: true,
+                                cancellationToken);
+
+                            if (wasProduced)
+                                _consumer.Commit(result);
+                        }
                     }
                 }
                 catch (OperationCanceledException)

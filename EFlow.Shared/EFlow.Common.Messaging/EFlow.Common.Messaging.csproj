@@ -2,10 +2,20 @@
 
     <ItemGroup>
         <PackageReference Include="Confluent.Kafka"/>
+        <PackageReference Include="Hangfire.Core"/>
+        <PackageReference Include="MemoryPack"/>
         <PackageReference Include="MemoryPack.Core"/>
+        <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions"/>
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions"/>
+        <PackageReference Include="Microsoft.Extensions.Hosting"/>
         <PackageReference Include="Microsoft.Extensions.Logging.Abstractions"/>
         <PackageReference Include="Microsoft.Extensions.Options"/>
+        <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions"/>
         <PackageReference Include="System.Reactive"/>
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\EFlow.Common.Infrastructure\EFlow.Common.Infrastructure.csproj" SetTargetFramework="TargetFramework=net10.0" />
     </ItemGroup>
 
 </Project>
