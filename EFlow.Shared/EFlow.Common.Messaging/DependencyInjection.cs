@@ -34,7 +34,7 @@ public static class DependencyInjection
             services
                 .AddOptions<KafkaSettings>()
                 .Bind(configuration.GetRequiredSection(KafkaSettings.SectionName))
-                .Validate(KafkaSettingsValidator.IsValid, "KafkaSettings:DlqRetryDelays count must match KafkaSettings:DlqMaxAttempts.")
+                .Validate(KafkaSettingsValidator.IsValid)
                 .ValidateOnStart();
 
             services.Configure<KafkaTopicsSettings>(configuration.GetRequiredSection(KafkaSettings.SectionName));

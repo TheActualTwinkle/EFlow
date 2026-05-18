@@ -97,7 +97,7 @@ public sealed class DeadLetterQueueRetryProcessor(
             return;
         }
         
-        if (message.Attempt >= message.MaxAttempts)
+        if (message.Attempt > message.MaxAttempts)
         {
             logger.LogWarning(
                 "DLQ message for topic {SourceTopic} and consumer group {ConsumerGroup} reached max retry attempt {Attempt}/{MaxAttempts}. Message will be committed and skipped.",
@@ -128,7 +128,9 @@ public sealed class DeadLetterQueueRetryProcessor(
         }
 
         var retryDelay = retryDelays[retryDelayIndex];
+        
         var retryAfter = message.FailedAt + retryDelay;
+        
         var now = systemClock.UtcNow;
 
         if (retryAfter < now)
