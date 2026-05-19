@@ -15,7 +15,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\EFlow.Common.Infrastructure\EFlow.Common.Infrastructure.csproj" SetTargetFramework="TargetFramework=net10.0" />
+      <ProjectReference Include="..\EFlow.Common.Infrastructure\EFlow.Common.Infrastructure.csproj"/>
     </ItemGroup>
 
 </Project>
