@@ -112,10 +112,9 @@ public sealed class DeadLetterQueueRetryProcessor(
         if (cancellationToken.IsCancellationRequested)
             return;
 
-        var retryDelayIndex = message.Attempt - 1;
         var retryDelays = kafkaSettings.Value.DlqRetryDelays;
 
-        if (retryDelayIndex >= retryDelays.Count)
+        if (message.Attempt > retryDelays.Count)
         {
             logger.LogError(
                 "DLQ message for topic {SourceTopic} and consumer group {ConsumerGroup} has retry attempt {Attempt}, but only {RetryDelayCount} retry delays are configured. Message will be committed and skipped.",
@@ -127,8 +126,8 @@ public sealed class DeadLetterQueueRetryProcessor(
             return;
         }
 
-        var retryDelay = retryDelays[retryDelayIndex];
-        
+        var retryDelay = retryDelays[message.Attempt - 1];
+
         var retryAfter = message.FailedAt + retryDelay;
         
         var now = systemClock.UtcNow;

@@ -1,8 +1,8 @@
 using System.Diagnostics;
 using Confluent.Kafka;
+using EFlow.Common.Infrastructure;
 using EFlow.Common.IntegrationTests.Infrastructure.Collections;
 using EFlow.Common.IntegrationTests.Infrastructure.Fixtures;
-using EFlow.Common.Infrastructure;
 using EFlow.Common.Messaging.DeadLetter;
 using EFlow.Common.Messaging.Serialization;
 using EFlow.Common.Messaging.Settings;
@@ -18,8 +18,10 @@ public sealed class DeadLetterQueueRetryProcessorIntegrationTests(KafkaTestStack
 {
     private static readonly TimeSpan AsyncWaitTimeout = TimeSpan.FromSeconds(20);
     private static readonly TimeSpan EmptyConsumeTimeout = TimeSpan.FromSeconds(2);
+
     private static readonly IReadOnlyList<TimeSpan> RetryDelays =
     [
+        TimeSpan.Zero,
         TimeSpan.Zero,
         TimeSpan.Zero
     ];
@@ -38,6 +40,7 @@ public sealed class DeadLetterQueueRetryProcessorIntegrationTests(KafkaTestStack
         await fixture.CreateTopicsAsync(sourceTopic, KafkaTopics.DeadLetterTopic);
         var deadLetterProducer = fixture.CreateProducer<byte[], DeadLetterMessage>();
         var retryProcessor = fixture.CreateRetryProcessor(maxAttempts, RetryDelays, backgroundJobClient);
+
         await deadLetterProducer.ProduceAsync(
             KafkaTopics.DeadLetterTopic,
             Serialize(key),
@@ -67,27 +70,32 @@ public sealed class DeadLetterQueueRetryProcessorIntegrationTests(KafkaTestStack
         var sourceTopic = KafkaTestStackFixture.CreateTopicName("dlq-non-blocking-source");
         var retryConsumerGroup = $"retry-consumer-{Guid.NewGuid():N}";
         var now = DateTime.UtcNow;
+
         var retryDelays = new[]
         {
             TimeSpan.FromMinutes(30),
             TimeSpan.Zero
         };
+
         var backgroundJobClient = new RecordingBackgroundJobClient();
         await fixture.CreateTopicsAsync(sourceTopic, KafkaTopics.DeadLetterTopic);
         var deadLetterProducer = fixture.CreateProducer<byte[], DeadLetterMessage>();
+
         var retryProcessor = fixture.CreateRetryProcessor(
-            maxAttempts: 3,
+            3,
             retryDelays,
             backgroundJobClient,
             new FakeSystemClock(now));
+
         await deadLetterProducer.ProduceAsync(
             KafkaTopics.DeadLetterTopic,
             Serialize("slow-key"),
-            CreateDeadLetterMessage(sourceTopic, "slow-key", "slow-payload", retryConsumerGroup, attempt: 1, maxAttempts: 3, failedAt: now));
+            CreateDeadLetterMessage(sourceTopic, "slow-key", "slow-payload", retryConsumerGroup, 1, 3, failedAt: now));
+
         await deadLetterProducer.ProduceAsync(
             KafkaTopics.DeadLetterTopic,
             Serialize("fast-key"),
-            CreateDeadLetterMessage(sourceTopic, "fast-key", "fast-payload", retryConsumerGroup, attempt: 2, maxAttempts: 3, failedAt: now));
+            CreateDeadLetterMessage(sourceTopic, "fast-key", "fast-payload", retryConsumerGroup, 2, 3, failedAt: now));
 
         // Act
         await retryProcessor.StartAsync(CancellationToken.None);
@@ -105,8 +113,8 @@ public sealed class DeadLetterQueueRetryProcessorIntegrationTests(KafkaTestStack
     [Theory]
     [InlineData(false, 1, 3)]
     [InlineData(true, 0, 3)]
-    [InlineData(true, 3, 3)]
-    [InlineData(true, 4, 5)]
+    [InlineData(true, -1, 3)]
+    [InlineData(true, 4, 3)]
     public async Task Retry_WhenMessageShouldNotBeRetried_ShouldNotScheduleHangfireJob(
         bool retryable,
         int attempt,
@@ -119,6 +127,7 @@ public sealed class DeadLetterQueueRetryProcessorIntegrationTests(KafkaTestStack
         await fixture.CreateTopicsAsync(sourceTopic, KafkaTopics.DeadLetterTopic);
         var deadLetterProducer = fixture.CreateProducer<byte[], DeadLetterMessage>();
         var retryProcessor = fixture.CreateRetryProcessor(maxAttempts, RetryDelays, backgroundJobClient);
+
         await deadLetterProducer.ProduceAsync(
             KafkaTopics.DeadLetterTopic,
             Serialize("key"),
@@ -141,6 +150,33 @@ public sealed class DeadLetterQueueRetryProcessorIntegrationTests(KafkaTestStack
     }
 
     [Fact]
+    public async Task Retry_WhenAttemptEqualsMaxAttempts_ShouldScheduleHangfireJob()
+    {
+        // Arrange
+        var sourceTopic = KafkaTestStackFixture.CreateTopicName("dlq-last-attempt-source");
+        var retryConsumerGroup = $"retry-consumer-{Guid.NewGuid():N}";
+        const int attempt = 3;
+        const int maxAttempts = 3;
+        var backgroundJobClient = new RecordingBackgroundJobClient();
+        await fixture.CreateTopicsAsync(sourceTopic, KafkaTopics.DeadLetterTopic);
+        var deadLetterProducer = fixture.CreateProducer<byte[], DeadLetterMessage>();
+        var retryProcessor = fixture.CreateRetryProcessor(maxAttempts, RetryDelays, backgroundJobClient);
+
+        await deadLetterProducer.ProduceAsync(
+            KafkaTopics.DeadLetterTopic,
+            Serialize("key"),
+            CreateDeadLetterMessage(sourceTopic, "key", "payload", retryConsumerGroup, attempt, maxAttempts));
+
+        // Act
+        await retryProcessor.StartAsync(CancellationToken.None);
+        await WaitUntilAsync(() => JobsForSourceTopic(backgroundJobClient, sourceTopic).Count == 1, AsyncWaitTimeout);
+        await retryProcessor.StopAsync(CancellationToken.None);
+
+        // Assert
+        JobsForSourceTopic(backgroundJobClient, sourceTopic).Single().Message.Attempt.Should().Be(attempt);
+    }
+
+    [Fact]
     public async Task RetryJob_WhenExecutedByHangfire_ShouldRepublishPayloadToSourceTopicWithRetryHeaders()
     {
         // Arrange
@@ -159,6 +195,7 @@ public sealed class DeadLetterQueueRetryProcessorIntegrationTests(KafkaTestStack
         await fixture.CreateRetryJob().RetryAsync(
             CreateDeadLetterMessage(sourceTopic, key, payload, retryConsumerGroup, attempt, maxAttempts),
             CancellationToken.None);
+
         var retryResult = ConsumeRequired(sourceConsumer, AsyncWaitTimeout);
 
         // Assert
@@ -184,6 +221,7 @@ public sealed class DeadLetterQueueRetryProcessorIntegrationTests(KafkaTestStack
         using var sourceConsumer = fixture.CreateRawConsumer<string, string>(sourceConsumerGroup);
         var retryProcessor = fixture.CreateRetryProcessor(maxAttempts, RetryDelays);
         sourceConsumer.Subscribe(sourceTopic);
+
         await deadLetterProducer.ProduceAsync(
             KafkaTopics.DeadLetterTopic,
             Serialize(key),
@@ -269,7 +307,8 @@ public sealed class DeadLetterQueueRetryProcessorIntegrationTests(KafkaTestStack
     {
         private readonly List<RecordedJob> _jobs = [];
 
-        public IReadOnlyList<RecordedJob> Jobs => _jobs;
+        public IReadOnlyList<RecordedJob> Jobs =>
+            _jobs;
 
         public string Create(Job job, IState state)
         {
