@@ -29,7 +29,7 @@
         <Project Path="EFlow.Notifications/Infrastructure/EFlow.Notifications.Templates/EFlow.Notifications.Templates.csproj" />
     </Folder>
     <Folder Name="/EFlow.Notifications/Presentation/">
-        <Project Path="EFlow.Notifications/Web/EFlow.Notifications.WebApi/EFlow.Notifications.WebApi.csproj" />
+        <Project Path="EFlow.Notifications/Presentation/EFlow.Notifications.WebApi/EFlow.Notifications.WebApi.csproj" />
     </Folder>
     <Folder Name="/EFlow.Notifications/Tests/">
         <Project Path="EFlow.Notifications/Tests/EFlow.Notifications.UnitTests/EFlow.Notifications.UnitTests.csproj" />

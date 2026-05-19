@@ -30,8 +30,8 @@ To stop the infrastructure:
 ### 2. Run Backend in development mode.
 
 ```bash
-dotnet run --project BookingAPI/BookingAPI.csproj
-dotnet run --project NotificationsAPI/NotificationsAPI.csproj
+dotnet run --project EFlow.Booking/Presentation/EFlow.Booking.WebApi/EFlow.Booking.WebApi.csproj
+dotnet run --project EFlow.Notifications/Presentation/EFlow.Notifications.WebApi/EFlow.Notifications.WebApi.csproj
 ```
 
 ### 3. Run Angular UI in development mode.
