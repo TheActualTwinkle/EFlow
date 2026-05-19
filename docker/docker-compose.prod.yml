@@ -74,7 +74,7 @@ services:
   notifications-api:
     build:
       context: ..
-      dockerfile: EFlow.Notifications/Web/EFlow.Notifications.WebApi/Dockerfile
+      dockerfile: EFlow.Notifications/Presentation/EFlow.Notifications.WebApi/Dockerfile
     restart: unless-stopped
     depends_on:
       postgres:
