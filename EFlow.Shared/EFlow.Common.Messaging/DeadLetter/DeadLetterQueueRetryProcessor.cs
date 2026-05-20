@@ -145,6 +145,6 @@ public sealed class DeadLetterQueueRetryProcessor(
             message.ConsumerGroup,
             message.Attempt,
             message.MaxAttempts,
-            retryAfter);
+            retryAfter.ToString("u"));
     }
 }

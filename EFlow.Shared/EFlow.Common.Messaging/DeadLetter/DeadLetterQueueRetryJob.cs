@@ -28,12 +28,5 @@ public sealed class DeadLetterQueueRetryJob(
                 Headers = DeadLetterRetryHeaders.CreateRetryHeaders(message.ConsumerGroup, message.Attempt)
             },
             cancellationToken);
-
-        logger.LogInformation(
-            "DLQ message for topic {SourceTopic} and consumer group {ConsumerGroup} was republished for retry attempt {Attempt}/{MaxAttempts}.",
-            message.SourceTopic,
-            message.ConsumerGroup,
-            message.Attempt,
-            message.MaxAttempts);
     }
 }
