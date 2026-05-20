@@ -164,8 +164,13 @@ export class App {
   readonly sortedVisibleSlots = computed(() =>
     [...this.visibleSlots()].sort((left, right) => this.compareSlotsByStartTime(left, right)),
   );
+  readonly overviewSlots = computed(() => this.sortedVisibleSlots().filter((slot) => !this.isSlotFinished(slot)));
+  readonly overviewBookingCount = computed(() => {
+    const activeSlotIds = new Set(this.overviewSlots().map((slot) => slot.id));
+    return this.data().bookings.filter((booking) => booking.slot?.id && activeSlotIds.has(booking.slot.id)).length;
+  });
   readonly freeSeats = computed(() =>
-    this.visibleSlots().reduce((total, slot) => total + Math.max(0, this.slotCapacity(slot) - this.slotBookingCount(slot)), 0),
+    this.overviewSlots().reduce((total, slot) => total + Math.max(0, this.slotCapacity(slot) - this.slotBookingCount(slot)), 0),
   );
   readonly filteredVisibleSlots = computed(() => {
     const query = this.slotSearch().trim().toLowerCase();
@@ -223,7 +228,10 @@ export class App {
     }
     return slots;
   });
-  readonly selectedSlot = computed(() => this.data().slots.find((slot) => slot.id === this.selectedSlotId()) ?? this.sortedVisibleSlots()[0] ?? null);
+  readonly selectedSlot = computed(() => {
+    const slots = this.activeView() === 'overview' ? this.overviewSlots() : this.sortedVisibleSlots();
+    return slots.find((slot) => slot.id === this.selectedSlotId()) ?? slots[0] ?? null;
+  });
 
   constructor(
     readonly auth: AuthService,
@@ -375,9 +383,9 @@ export class App {
 
   private syncDefaultSelections(data: WorkspaceData): void {
     const user = this.auth.user();
-    const firstVisibleSlot = this.sortedVisibleSlots()[0];
-
-    const visibleSlotIds = new Set(this.visibleSlots().map((slot) => slot.id));
+    const selectableSlots = this.activeView() === 'overview' ? this.overviewSlots() : this.sortedVisibleSlots();
+    const firstVisibleSlot = selectableSlots[0];
+    const visibleSlotIds = new Set(selectableSlots.map((slot) => slot.id));
 
     if (!this.selectedSlotId() || !visibleSlotIds.has(this.selectedSlotId()!)) {
       this.selectedSlotId.set(firstVisibleSlot?.id ?? null);

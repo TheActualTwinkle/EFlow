@@ -162,7 +162,7 @@
           </article>
           <article>
             <span>Активные окна защиты</span>
-            <strong>{{ visibleSlots().length }}</strong>
+            <strong>{{ overviewSlots().length }}</strong>
           </article>
           <article>
             <span>Свободные места</span>
@@ -170,7 +170,7 @@
           </article>
           <article>
             <span>Записи</span>
-            <strong>{{ data().bookings.length }}</strong>
+            <strong>{{ overviewBookingCount() }}</strong>
           </article>
         </section>
 
@@ -185,7 +185,7 @@
               <lucide-icon name="calendar-days" />
             </div>
             <div class="timeline">
-              @for (slot of sortedVisibleSlots(); track slot.id) {
+              @for (slot of overviewSlots(); track slot.id) {
                 <button
                   class="timeline-item"
                   type="button"
