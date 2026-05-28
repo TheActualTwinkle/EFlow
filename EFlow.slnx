@@ -18,8 +18,6 @@
         <Project Path="EFlow.Booking/Tests/EFlow.Booking.ArchitectureTests/EFlow.Booking.ArchitectureTests.csproj" />
         <Project Path="EFlow.Booking/Tests/EFlow.Booking.IntegrationTests/EFlow.Booking.IntegrationTests.csproj" />
         <Project Path="EFlow.Booking/Tests/EFlow.Booking.UnitTests/EFlow.Booking.UnitTests.csproj" />
-        <Project Path="EFlow.Shared/EFlow.Common.IntegrationTests/EFlow.Common.IntegrationTests.csproj" />
-        <Project Path="EFlow.Shared/EFlow.Common.UnitTests/EFlow.Common.UnitTests.csproj" />
     </Folder>
     <Folder Name="/EFlow.Notifications/" />
     <Folder Name="/EFlow.Notifications/Core/">
@@ -42,6 +40,8 @@
         <Project Path="EFlow.Shared/EFlow.Common.Messaging/EFlow.Common.Messaging.csproj" />
         <Project Path="EFlow.Shared/EFlow.Common.OutboxProcessing/EFlow.Common.OutboxProcessing.csproj" />
         <Project Path="EFlow.Shared/EFlow.Common/EFlow.Common.csproj" />
+        <Project Path="EFlow.Shared/EFlow.Common.IntegrationTests/EFlow.Common.IntegrationTests.csproj" />
+        <Project Path="EFlow.Shared/EFlow.Common.UnitTests/EFlow.Common.UnitTests.csproj" />
     </Folder>
     <Folder Name="/_Solution Items/">
         <File Path="Directory.Build.props" />
