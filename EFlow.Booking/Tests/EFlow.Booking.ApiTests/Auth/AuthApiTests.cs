@@ -13,6 +13,9 @@ namespace EFlow.Booking.ApiTests.Auth;
 [Collection(ApiTestCollection.Name)]
 public sealed class AuthApiTests(ApiTestStackFixture fixture)
 {
+    private const string InvalidPassword = "WrongPassword!";
+    private const string InvalidCredentialsMessage = "Invalid credentials";
+
     /// <summary>
     /// Verifies that <c>GetCurrentUser</c> returns <c>Unauthorized</c> when the caller is anonymous.
     /// </summary>
@@ -23,7 +26,7 @@ public sealed class AuthApiTests(ApiTestStackFixture fixture)
         using var session = fixture.CreateSession();
 
         // Act
-        var response = await session.GetAsync("/api/auth/me");
+        var response = await session.GetAsync(ApiScenario.CurrentUserPath);
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
@@ -63,7 +66,7 @@ public sealed class AuthApiTests(ApiTestStackFixture fixture)
         {
             // Act
             var logoutResponse = await adminSession.PostAsync<object?>("/api/auth/logout", null);
-            var meAfterLogout = await adminSession.GetAsync("/api/auth/me");
+            var meAfterLogout = await adminSession.GetAsync(ApiScenario.CurrentUserPath);
 
             // Assert
             logoutResponse.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -83,16 +86,16 @@ public sealed class AuthApiTests(ApiTestStackFixture fixture)
 
         // Act
         var response = await session.PostAsync(
-            "/api/auth/login",
+            ApiScenario.LoginPath,
             new LoginRequestModel
             {
                 Username = "missing-user",
-                Password = "WrongPassword!"
+                Password = InvalidPassword
             });
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
-        (await session.ReadTextAsync(response)).Should().Contain("Invalid credentials");
+        (await session.ReadTextAsync(response)).Should().Contain(InvalidCredentialsMessage);
     }
 
     /// <summary>
@@ -111,16 +114,16 @@ public sealed class AuthApiTests(ApiTestStackFixture fixture)
 
             // Act
             var response = await invalidLoginSession.PostAsync(
-                "/api/auth/login",
+                ApiScenario.LoginPath,
                 new LoginRequestModel
                 {
                     Username = fixture.AdminUsername,
-                    Password = "WrongPassword!"
+                    Password = InvalidPassword
                 });
 
             // Assert
             response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
-            (await invalidLoginSession.ReadTextAsync(response)).Should().Contain("Invalid credentials");
+            (await invalidLoginSession.ReadTextAsync(response)).Should().Contain(InvalidCredentialsMessage);
         }
     }
 }

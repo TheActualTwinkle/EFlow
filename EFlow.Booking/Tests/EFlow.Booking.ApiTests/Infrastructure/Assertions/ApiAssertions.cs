@@ -10,6 +10,9 @@ namespace EFlow.Booking.ApiTests.Infrastructure.Assertions;
 /// </summary>
 internal static class ApiAssertions
 {
+    public const string ForbiddenTitle = "Forbidden";
+    public const string ValidationErrorTitle = "Validation Error";
+
     extension(ApiSession session)
     {
         /// <summary>

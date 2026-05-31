@@ -19,6 +19,11 @@ namespace EFlow.Booking.ApiTests.Catalog;
 [Collection(ApiTestCollection.Name)]
 public sealed class CatalogApiTests(ApiTestStackFixture fixture)
 {
+    private const string TeacherFirstName = "Ivan";
+    private const string TeacherLastName = "Petrov";
+    private const string StudentFirstName = "Petr";
+    private const string StudentLastName = "Sidorov";
+
     /// <summary>
     /// Verifies that <c>GetGroups</c> returns the created group when a group exists.
     /// </summary>
@@ -30,7 +35,7 @@ public sealed class CatalogApiTests(ApiTestStackFixture fixture)
             var group = await scenario.GetGroupAsync(context.AdminSession, context.GroupId);
 
             // Act
-            var response = await context.AdminSession.GetAsync("/api/groups");
+            var response = await context.AdminSession.GetAsync(ApiScenario.GroupsPath);
 
             // Assert
             group.Id.Should().Be(context.GroupId);
@@ -51,18 +56,18 @@ public sealed class CatalogApiTests(ApiTestStackFixture fixture)
             var teacher = await scenario.GetTeacherAsync(context.AdminSession, context.TeacherId);
 
             // Act
-            var response = await context.AdminSession.GetAsync("/api/teachers");
+            var response = await context.AdminSession.GetAsync(ApiScenario.TeachersPath);
 
             // Assert
             teacher.Id.Should().Be(context.TeacherId);
-            teacher.FirstName.Should().Be("Ivan");
-            teacher.LastName.Should().Be("Petrov");
-            teacher.MiddleName.Should().Be("M");
-            teacher.BirthDate.Should().Be(new DateOnly(1990, 01, 01));
+            teacher.FirstName.Should().Be(TeacherFirstName);
+            teacher.LastName.Should().Be(TeacherLastName);
+            teacher.MiddleName.Should().Be(ApiScenario.DefaultMiddleName);
+            teacher.BirthDate.Should().Be(ApiScenario.TeacherBirthDate);
             teacher.CreatedAt.Should().NotBeNull();
             response.StatusCode.Should().Be(HttpStatusCode.OK);
             var teachers = (await context.AdminSession.ReadAsync<TeacherView[]>(response))!;
-            teachers.Should().Contain(x => x.Id == context.TeacherId && x.FirstName == "Ivan" && x.LastName == "Petrov");
+            teachers.Should().Contain(x => x.Id == context.TeacherId && x.FirstName == TeacherFirstName && x.LastName == TeacherLastName);
         });
 
     /// <summary>
@@ -76,16 +81,16 @@ public sealed class CatalogApiTests(ApiTestStackFixture fixture)
             var student = await scenario.GetStudentAsync(context.AdminSession, context.StudentId);
 
             // Act
-            var response = await context.AdminSession.GetAsync("/api/students");
+            var response = await context.AdminSession.GetAsync(ApiScenario.StudentsPath);
 
             // Assert
             student.Id.Should().Be(context.StudentId);
             student.Group.Should().NotBeNull();
             student.Group!.Id.Should().Be(context.GroupId);
-            student.FirstName.Should().Be("Petr");
-            student.LastName.Should().Be("Sidorov");
-            student.MiddleName.Should().Be("M");
-            student.BirthDate.Should().Be(new DateOnly(2004, 01, 01));
+            student.FirstName.Should().Be(StudentFirstName);
+            student.LastName.Should().Be(StudentLastName);
+            student.MiddleName.Should().Be(ApiScenario.DefaultMiddleName);
+            student.BirthDate.Should().Be(ApiScenario.StudentBirthDate);
             student.CreatedAt.Should().BeAfter(DateTime.UtcNow.AddMinutes(-10));
             response.StatusCode.Should().Be(HttpStatusCode.OK);
             var students = (await context.AdminSession.ReadAsync<StudentView[]>(response))!;
@@ -103,7 +108,7 @@ public sealed class CatalogApiTests(ApiTestStackFixture fixture)
             var subject = await scenario.GetSubjectAsync(context.AdminSession, context.SubjectId);
 
             // Act
-            var allResponse = await context.AdminSession.GetAsync("/api/subjects");
+            var allResponse = await context.AdminSession.GetAsync(ApiScenario.SubjectsPath);
             var response = await context.AdminSession.GetAsync($"/api/subjects/by-teacher/{context.TeacherId}");
 
             // Assert
@@ -134,13 +139,13 @@ public sealed class CatalogApiTests(ApiTestStackFixture fixture)
         WithCatalogFixtureAsync(async (_, context) =>
         {
             // Act
-            var response = await context.AdminSession.PostAsync("/api/groups", new { Name = string.Empty });
+            var response = await context.AdminSession.PostAsync(ApiScenario.GroupsPath, new { Name = string.Empty });
 
             // Assert
             await context.AdminSession.AssertProblemAsync(
                 response,
                 HttpStatusCode.UnprocessableEntity,
-                "Validation Error",
+                ApiAssertions.ValidationErrorTitle,
                 code: "Validation.Name.NotEmptyValidator");
         });
 
@@ -153,7 +158,7 @@ public sealed class CatalogApiTests(ApiTestStackFixture fixture)
         {
             // Act
             var response = await context.AdminSession.PostAsync(
-                "/api/teachers",
+                ApiScenario.TeachersPath,
                 new
                 {
                     userName = $"bad_teacher_{context.Suffix}",
@@ -169,7 +174,7 @@ public sealed class CatalogApiTests(ApiTestStackFixture fixture)
             await context.AdminSession.AssertProblemAsync(
                 response,
                 HttpStatusCode.UnprocessableEntity,
-                "Validation Error",
+                ApiAssertions.ValidationErrorTitle,
                 code: "Validation.Password.MinimumLengthValidator");
         });
 
@@ -204,16 +209,16 @@ public sealed class CatalogApiTests(ApiTestStackFixture fixture)
             adminSession,
             $"teacher_{scenario.Suffix}",
             $"teacher_{scenario.Suffix}@example.com",
-            "Ivan",
-            "Petrov");
+            TeacherFirstName,
+            TeacherLastName);
 
         var studentId = await scenario.CreateStudentAsync(
             adminSession,
             groupId,
             $"student_{scenario.Suffix}",
             $"student_{scenario.Suffix}@example.com",
-            "Petr",
-            "Sidorov");
+            StudentFirstName,
+            StudentLastName);
 
         var subjectId = await scenario.CreateSubjectAsync(adminSession, teacherId, groupId, subjectName);
 

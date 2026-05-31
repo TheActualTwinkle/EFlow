@@ -48,7 +48,7 @@ public sealed class BookingsApiTests(ApiTestStackFixture fixture)
         WithTwoBookingsAsync(async (_, context) =>
         {
             // Act
-            var response = await context.AdminSession.GetAsync("/api/bookings");
+            var response = await context.AdminSession.GetAsync(ApiScenario.BookingsPath);
 
             // Assert
             response.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -84,7 +84,7 @@ public sealed class BookingsApiTests(ApiTestStackFixture fixture)
             var response = await context.Student1Session.GetAsync($"/api/bookings/by-student/{context.Student2Id}");
 
             // Assert
-            await context.Student1Session.AssertProblemAsync(response, HttpStatusCode.Forbidden, "Forbidden", "view your own bookings");
+            await context.Student1Session.AssertProblemAsync(response, HttpStatusCode.Forbidden, ApiAssertions.ForbiddenTitle, "view your own bookings");
         });
 
     /// <summary>
@@ -96,7 +96,7 @@ public sealed class BookingsApiTests(ApiTestStackFixture fixture)
         {
             // Act
             var response = await context.Student1Session.PostAsync(
-                "/api/bookings",
+                ApiScenario.BookingsPath,
                 new CreateBookingRequest
                 {
                     StudentId = context.Student2Id,
@@ -104,7 +104,7 @@ public sealed class BookingsApiTests(ApiTestStackFixture fixture)
                 });
 
             // Assert
-            await context.Student1Session.AssertProblemAsync(response, HttpStatusCode.Forbidden, "Forbidden", "create bookings for yourself");
+            await context.Student1Session.AssertProblemAsync(response, HttpStatusCode.Forbidden, ApiAssertions.ForbiddenTitle, "create bookings for yourself");
         });
 
     /// <summary>
@@ -118,7 +118,7 @@ public sealed class BookingsApiTests(ApiTestStackFixture fixture)
             var response = await context.Student1Session.DeleteAsync($"/api/bookings/{context.Booking2Id}");
 
             // Assert
-            await context.Student1Session.AssertProblemAsync(response, HttpStatusCode.Forbidden, "Forbidden", "delete your own bookings");
+            await context.Student1Session.AssertProblemAsync(response, HttpStatusCode.Forbidden, ApiAssertions.ForbiddenTitle, "delete your own bookings");
         });
 
     /// <summary>
@@ -210,7 +210,7 @@ public sealed class BookingsApiTests(ApiTestStackFixture fixture)
         var slotId = await scenario.CreateSlotAsync(adminSession, subjectId, teacherId, true);
         await scenario.AddAdmissionAsync(adminSession, slotId, student1Id);
         await scenario.AddAdmissionAsync(adminSession, slotId, student2Id);
-        var student1Session = await scenario.LoginAsync(student1Username, "Student123!");
+        var student1Session = await scenario.LoginAsync(student1Username, ApiScenario.StudentPassword);
         
         return new BookingsFixture(adminSession, student1Session, groupId, teacherId, subjectId, slotId, student1Id, student2Id);
     }

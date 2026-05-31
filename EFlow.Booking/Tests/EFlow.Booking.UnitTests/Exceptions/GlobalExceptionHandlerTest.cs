@@ -14,30 +14,33 @@ namespace EFlow.Booking.UnitTests.Exceptions;
 
 public class GlobalExceptionHandlerTest
 {
+    private const int UnprocessableEntityStatusCode = 422;
+
     [Fact]
     public async Task TryHandleAsync_WhenGeneralException_ShouldReturn500()
     {
         // Arrange
+        const int internalServerErrorStatusCode = 500;
+        const string sensitiveData = "Sensitive data in error message";
         var loggerMock = new Mock<ILogger<GlobalExceptionHandler>>();
         var handler = new GlobalExceptionHandler(loggerMock.Object);
         var context = new DefaultHttpContext();
-        var exception = new Exception("Sensitive data in error message");
         var responseStream = new MemoryStream();
         context.Response.Body = responseStream;
 
         // Act
-        var result = await handler.TryHandleAsync(context, exception, CancellationToken.None);
+        var result = await handler.TryHandleAsync(context, new Exception(sensitiveData), CancellationToken.None);
         responseStream.Seek(0, SeekOrigin.Begin);
 
         var problem = await JsonSerializer.DeserializeAsync<ProblemDetails>(responseStream);
 
         // Assert
         result.Should().BeTrue();
-        context.Response.StatusCode.Should().Be(500);
+        context.Response.StatusCode.Should().Be(internalServerErrorStatusCode);
         problem.Should().NotBeNull();
-        problem.Status.Should().Be(500);
+        problem.Status.Should().Be(internalServerErrorStatusCode);
         problem.Title.Should().Contain("Internal server error");
-        problem.Title.Should().NotContain("Sensitive data in error message");
+        problem.Title.Should().NotContain(sensitiveData);
     }
 
     [Fact]
@@ -50,23 +53,24 @@ public class GlobalExceptionHandlerTest
         var responseStream = new MemoryStream();
         context.Response.Body = responseStream;
 
-        var exception = new ValidationException(
-            new List<ValidationFailure>
-            {
-                new("Field1", "Field1 is required") { ErrorCode = "NotEmptyValidator" },
-                new("Field2", "Field2 must be a number") { ErrorCode = "PredicateValidator" }
-            });
-
         // Act
-        var result = await handler.TryHandleAsync(context, exception, CancellationToken.None);
+        var result = await handler.TryHandleAsync(
+            context,
+            new ValidationException(
+                new List<ValidationFailure>
+                {
+                    new("Field1", "Field1 is required") { ErrorCode = "NotEmptyValidator" },
+                    new("Field2", "Field2 must be a number") { ErrorCode = "PredicateValidator" }
+                }),
+            CancellationToken.None);
         responseStream.Seek(0, SeekOrigin.Begin);
         var problem = await JsonSerializer.DeserializeAsync<ProblemDetails>(responseStream);
 
         // Assert
         result.Should().BeTrue();
-        context.Response.StatusCode.Should().Be(422);
+        context.Response.StatusCode.Should().Be(UnprocessableEntityStatusCode);
         problem.Should().NotBeNull();
-        problem.Status.Should().Be(422);
+        problem.Status.Should().Be(UnprocessableEntityStatusCode);
         problem.Title.Should().Be("Validation Error");
         problem.Detail.Should().BeNull();
 
@@ -85,18 +89,19 @@ public class GlobalExceptionHandlerTest
         var responseStream = new MemoryStream();
         context.Response.Body = responseStream;
 
-        var exception = new BusinessRuleValidationException(new TestBusinessRule());
-
         // Act
-        var result = await handler.TryHandleAsync(context, exception, CancellationToken.None);
+        var result = await handler.TryHandleAsync(
+            context,
+            new BusinessRuleValidationException(new TestBusinessRule()),
+            CancellationToken.None);
         responseStream.Seek(0, SeekOrigin.Begin);
         var problem = await JsonSerializer.DeserializeAsync<ProblemDetails>(responseStream);
 
         // Assert
         result.Should().BeTrue();
-        context.Response.StatusCode.Should().Be(422);
+        context.Response.StatusCode.Should().Be(UnprocessableEntityStatusCode);
         problem.Should().NotBeNull();
-        problem.Status.Should().Be(422);
+        problem.Status.Should().Be(UnprocessableEntityStatusCode);
         problem.Title.Should().Be("Business Rule Violation");
         problem.Detail.Should().BeNull();
 
