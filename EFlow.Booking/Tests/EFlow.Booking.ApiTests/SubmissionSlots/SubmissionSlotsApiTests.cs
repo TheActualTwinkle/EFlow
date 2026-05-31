@@ -40,10 +40,10 @@ public sealed class SubmissionSlotsApiTests(ApiTestStackFixture fixture)
             slot.Teacher.Should().NotBeNull();
             slot.Teacher!.Id.Should().Be(context.TeacherId);
             slot.StartTime.Should().Be(context.SlotStart);
-            slot.EndTime.Should().Be(context.SlotStart.AddHours(1));
-            slot.MaxStudents.Should().Be(5);
-            slot.Location.Should().Be("A-101");
-            slot.Comment.Should().Be("API test slot");
+            slot.EndTime.Should().Be(context.SlotStart + ApiScenario.SlotDuration);
+            slot.MaxStudents.Should().Be(ApiScenario.SlotMaxStudents);
+            slot.Location.Should().Be(ApiScenario.SlotLocation);
+            slot.Comment.Should().Be(ApiScenario.SlotComment);
             bySubjectResponse.StatusCode.Should().Be(HttpStatusCode.OK);
             availableResponse.StatusCode.Should().Be(HttpStatusCode.OK);
             var slotsBySubject = (await context.AdminSession.ReadAsync<SubmissionSlotView[]>(bySubjectResponse))!;
@@ -103,16 +103,17 @@ public sealed class SubmissionSlotsApiTests(ApiTestStackFixture fixture)
         WithSubmissionSlotFixtureAsync(async (scenario, context) =>
         {
             // Arrange
+            var foreignTeacherUsername = $"teacher_foreign_{context.Suffix}";
             var foreignTeacherId = await scenario.CreateTeacherAsync(
                 context.AdminSession,
-                $"teacher_foreign_{context.Suffix}",
-                $"teacher_foreign_{context.Suffix}@example.com",
+                foreignTeacherUsername,
+                $"{foreignTeacherUsername}@example.com",
                 "Pavel",
                 "Sidorov");
 
             context.AddCleanup(ApiScenario.DeleteTeacher(foreignTeacherId));
 
-            var foreignTeacherSession = await scenario.LoginAsync($"teacher_foreign_{context.Suffix}", "Teacher123!");
+            var foreignTeacherSession = await scenario.LoginAsync(foreignTeacherUsername, ApiScenario.TeacherPassword);
 
             using (foreignTeacherSession)
             {
@@ -121,7 +122,7 @@ public sealed class SubmissionSlotsApiTests(ApiTestStackFixture fixture)
                     $"/api/submission-slots/{context.SlotId}/admissions/{context.StudentId}", null);
 
                 // Assert
-                await foreignTeacherSession.AssertProblemAsync(response, HttpStatusCode.Forbidden, "Forbidden", "own slots");
+                await foreignTeacherSession.AssertProblemAsync(response, HttpStatusCode.Forbidden, ApiAssertions.ForbiddenTitle, "own slots");
             }
         });
 
@@ -177,7 +178,7 @@ public sealed class SubmissionSlotsApiTests(ApiTestStackFixture fixture)
 
             // Act
             var slot = await scenario.GetSlotAsync(context.StudentSession, context.SlotId);
-            var allSlotsResponse = await context.StudentSession.GetAsync("/api/submission-slots");
+            var allSlotsResponse = await context.StudentSession.GetAsync(ApiScenario.SubmissionSlotsPath);
 
             // Assert
             slot.NotificationSettings.Should().NotBeNull();
@@ -208,7 +209,7 @@ public sealed class SubmissionSlotsApiTests(ApiTestStackFixture fixture)
                 });
 
             // Assert
-            await context.StudentSession.AssertProblemAsync(response, HttpStatusCode.Forbidden, "Forbidden", "own notification settings");
+            await context.StudentSession.AssertProblemAsync(response, HttpStatusCode.Forbidden, ApiAssertions.ForbiddenTitle, "own notification settings");
         });
 
     /// <summary>
@@ -219,7 +220,7 @@ public sealed class SubmissionSlotsApiTests(ApiTestStackFixture fixture)
         WithSubmissionSlotFixtureAsync(async (scenario, context) =>
         {
             // Arrange
-            var meResponse = await context.AdminSession.GetAsync("/api/auth/me");
+            var meResponse = await context.AdminSession.GetAsync(ApiScenario.CurrentUserPath);
             meResponse.StatusCode.Should().Be(HttpStatusCode.OK);
             var admin = (await context.AdminSession.ReadAsync<CurrentUserResponse>(meResponse))!;
 
@@ -265,7 +266,7 @@ public sealed class SubmissionSlotsApiTests(ApiTestStackFixture fixture)
             await context.AdminSession.AssertProblemAsync(
                 response,
                 HttpStatusCode.UnprocessableEntity,
-                "Validation Error",
+                ApiAssertions.ValidationErrorTitle,
                 code: "Validation.SubmissionRemindTimes.PredicateValidator");
         });
 
@@ -342,8 +343,8 @@ public sealed class SubmissionSlotsApiTests(ApiTestStackFixture fixture)
         var subjectId = await scenario.CreateSubjectAsync(adminSession, teacherId, groupId, subjectName);
         var slotStart = DateTime.UtcNow.AddDays(8).Date.AddHours(14);
         var slotId = await scenario.CreateSlotAsync(adminSession, subjectId, teacherId, false, [groupId], slotStart);
-        var teacherSession = await scenario.LoginAsync(teacherUsername, "Teacher123!");
-        var studentSession = await scenario.LoginAsync(studentUsername, "Student123!");
+        var teacherSession = await scenario.LoginAsync(teacherUsername, ApiScenario.TeacherPassword);
+        var studentSession = await scenario.LoginAsync(studentUsername, ApiScenario.StudentPassword);
 
         return new SubmissionSlotFixture(
             adminSession,

@@ -15,9 +15,6 @@ namespace EFlow.Booking.ApiTests.Users;
 [Collection(ApiTestCollection.Name)]
 public sealed class UsersApiTests(ApiTestStackFixture fixture)
 {
-    private const string TeacherPassword = "Teacher123!";
-    private const string StudentPassword = "Student123!";
-
     /// <summary>
     /// Verifies that a teacher can update their own email address.
     /// </summary>
@@ -35,7 +32,7 @@ public sealed class UsersApiTests(ApiTestStackFixture fixture)
                 {
                     Email = newEmail
                 });
-            var meResponse = await context.TeacherSession.GetAsync("/api/auth/me");
+            var meResponse = await context.TeacherSession.GetAsync(ApiScenario.CurrentUserPath);
 
             // Assert
             response.StatusCode.Should().Be(HttpStatusCode.NoContent);
@@ -60,7 +57,7 @@ public sealed class UsersApiTests(ApiTestStackFixture fixture)
                 });
 
             // Assert
-            await context.StudentSession.AssertProblemAsync(response, HttpStatusCode.Forbidden, "Forbidden", "own account");
+            await context.StudentSession.AssertProblemAsync(response, HttpStatusCode.Forbidden, ApiAssertions.ForbiddenTitle, "own account");
         });
 
     /// <summary>
@@ -81,8 +78,8 @@ public sealed class UsersApiTests(ApiTestStackFixture fixture)
                     Email = newEmail
                 });
 
-            using var studentSession = await scenario.LoginAsync(context.StudentUsername, StudentPassword);
-            var meResponse = await studentSession.GetAsync("/api/auth/me");
+            using var studentSession = await scenario.LoginAsync(context.StudentUsername, ApiScenario.StudentPassword);
+            var meResponse = await studentSession.GetAsync(ApiScenario.CurrentUserPath);
 
             // Assert
             response.StatusCode.Should().Be(HttpStatusCode.NoContent);
@@ -106,17 +103,17 @@ public sealed class UsersApiTests(ApiTestStackFixture fixture)
                 $"/api/users/{context.StudentId}/password",
                 new UpdateUserPasswordRequestModel
                 {
-                    CurrentPassword = StudentPassword,
+                    CurrentPassword = ApiScenario.StudentPassword,
                     NewPassword = newPassword
                 });
 
             using var oldPasswordSession = fixture.CreateSession();
             var oldLoginResponse = await oldPasswordSession.PostAsync(
-                "/api/auth/login",
+                ApiScenario.LoginPath,
                 new LoginRequestModel
                 {
                     Username = context.StudentUsername,
-                    Password = StudentPassword
+                    Password = ApiScenario.StudentPassword
                 });
             using var newPasswordSession = await scenario.LoginAsync(context.StudentUsername, newPassword);
 
@@ -187,11 +184,11 @@ public sealed class UsersApiTests(ApiTestStackFixture fixture)
 
             using var oldPasswordSession = fixture.CreateSession();
             var oldLoginResponse = await oldPasswordSession.PostAsync(
-                "/api/auth/login",
+                ApiScenario.LoginPath,
                 new LoginRequestModel
                 {
                     Username = context.TeacherUsername,
-                    Password = TeacherPassword
+                    Password = ApiScenario.TeacherPassword
                 });
             using var newPasswordSession = await scenario.LoginAsync(context.TeacherUsername, newPassword);
 
@@ -244,8 +241,8 @@ public sealed class UsersApiTests(ApiTestStackFixture fixture)
             "Petr",
             "Sidorov");
 
-        var teacherSession = await scenario.LoginAsync(teacherUsername, TeacherPassword);
-        var studentSession = await scenario.LoginAsync(studentUsername, StudentPassword);
+        var teacherSession = await scenario.LoginAsync(teacherUsername, ApiScenario.TeacherPassword);
+        var studentSession = await scenario.LoginAsync(studentUsername, ApiScenario.StudentPassword);
 
         return new UsersFixture(
             adminSession,
@@ -272,9 +269,9 @@ public sealed class UsersApiTests(ApiTestStackFixture fixture)
     {
         public IEnumerable<Func<ApiSession, Task>> CleanupActions =>
         [
-            session => session.DeleteAsync($"/api/students/{StudentId}"),
-            session => session.DeleteAsync($"/api/teachers/{TeacherId}"),
-            session => session.DeleteAsync($"/api/groups/{GroupId}")
+            ApiScenario.DeleteStudent(StudentId),
+            ApiScenario.DeleteTeacher(TeacherId),
+            ApiScenario.DeleteGroup(GroupId)
         ];
     }
 }

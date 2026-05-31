@@ -8,29 +8,26 @@ namespace EFlow.Booking.ArchitectureTests.Domain;
 
 public class DomainTests
 {
-    private readonly string[] _allowedProjects =
-    [
-        "EFlow.Common.Domain",
-    ];
+    private static readonly Assembly DomainAssembly = typeof(Identity).Assembly;
 
     [Fact]
     public void Domain_ShouldNotHaveForbiddenAssemblyReferences()
     {
         // Arrange
-        var domainAssembly = typeof(Identity).Assembly;
+        string[] allowedProjects = ["EFlow.Common.Domain"];
 
         // Act
-        var forbiddenProjects = domainAssembly
+        var forbiddenProjects = DomainAssembly
             .GetReferencedAssemblies()
             .Select(reference => reference.Name)
             .Where(name => name!.StartsWith("EFlow.", StringComparison.Ordinal))
-            .Where(name => !_allowedProjects.Contains(name))
+            .Where(name => !allowedProjects.Contains(name))
             .Distinct()
             .ToArray();
 
         // Assert
         forbiddenProjects.Should().BeEmpty(
-            $"Domain should not have dependencies on any other projects (except: {string.Join(", ", _allowedProjects)}) but found " +
+            $"Domain should not have dependencies on any other projects (except: {string.Join(", ", allowedProjects)}) but found " +
             $"\n{string.Join(",\n", forbiddenProjects)} dependencies.");
     }
 
@@ -39,7 +36,7 @@ public class DomainTests
     {
         // Act
         var result = Types
-            .InAssembly(typeof(Identity).Assembly)
+            .InAssembly(DomainAssembly)
             .That()
             .AreClasses()
             .And()
@@ -59,7 +56,7 @@ public class DomainTests
     {
         // Act
         var result = Types
-            .InAssembly(typeof(Identity).Assembly)
+            .InAssembly(DomainAssembly)
             .That()
             .AreClasses()
             .And()
@@ -79,7 +76,7 @@ public class DomainTests
     {
         // Act
         var result = Types
-            .InAssembly(typeof(Identity).Assembly)
+            .InAssembly(DomainAssembly)
             .That()
             .AreClasses()
             .And()
@@ -124,7 +121,7 @@ public class DomainTests
     {
         // Act
         var result = Types
-            .InAssembly(typeof(Identity).Assembly)
+            .InAssembly(DomainAssembly)
             .That()
             .AreClasses()
             .And()
@@ -160,8 +157,7 @@ public class DomainTests
     }
 
     private static IEnumerable<Type> GetTypesImplementing<TBaseType>() =>
-        typeof(Identity)
-            .Assembly
+        DomainAssembly
             .GetTypes()
             .Where(type =>
                 type is { IsClass: true, IsAbstract: false }

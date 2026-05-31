@@ -18,6 +18,10 @@ namespace EFlow.Notifications.UnitTests.BookingReminders;
 /// </summary>
 public sealed class BookingReminderJobTests
 {
+    private const string RecipientEmail = "student@example.com";
+    private static readonly DateTime Now = new(2026, 04, 28, 12, 0, 0, DateTimeKind.Utc);
+    private static readonly TimeSpan PollInterval = TimeSpan.FromMinutes(15);
+
     /// <summary>
     /// Provides reminder lead times that are expected to trigger inside the polling window.
     /// </summary>
@@ -39,25 +43,26 @@ public sealed class BookingReminderJobTests
         SubmissionRemindTimeModel remindTime,
         TimeSpan leadTime)
     {
-        var now = new DateTime(2026, 04, 28, 12, 0, 0, DateTimeKind.Utc);
-        var (job, bookingClientMock, templateServiceMock, emailServiceMock) = CreateSut(now);
+        const string reminderSubject = "Reminder";
+        const string reminderBody = "Body";
+        var (job, bookingClientMock, templateServiceMock, emailServiceMock) = CreateSut(Now);
 
         bookingClientMock
             .Setup(x => x.GetReminderSnapshotAsync(CancellationToken.None))
             .ReturnsAsync(
             [
-                CreateSnapshot("student@example.com", remindTime, now + leadTime - TimeSpan.FromMinutes(5))
+                CreateSnapshot(RecipientEmail, remindTime, Now + leadTime - TimeSpan.FromMinutes(5))
             ]);
 
         templateServiceMock
             .Setup(x => x.CreateReminderAsync(It.IsAny<SubmissionSlotModel>(), remindTime, CancellationToken.None))
-            .ReturnsAsync(("Reminder", "Body"));
+            .ReturnsAsync((reminderSubject, reminderBody));
 
         await job.ProcessAsync(CancellationToken.None);
 
         templateServiceMock.Verify(
             x => x.CreateReminderAsync(
-                It.Is<SubmissionSlotModel>(slot => slot.StartTime == now + leadTime - TimeSpan.FromMinutes(5)),
+                It.Is<SubmissionSlotModel>(slot => slot.StartTime == Now + leadTime - TimeSpan.FromMinutes(5)),
                 remindTime,
                 CancellationToken.None),
             Times.Once);
@@ -65,9 +70,9 @@ public sealed class BookingReminderJobTests
         emailServiceMock.Verify(
             x => x.SendAsync(
                 It.Is<NotificationMessage>(message =>
-                    message.RecipientEmail == "student@example.com" &&
-                    message.Subject == "Reminder" &&
-                    message.Body == "Body"),
+                    message.RecipientEmail == RecipientEmail &&
+                    message.Subject == reminderSubject &&
+                    message.Body == reminderBody),
                 CancellationToken.None),
             Times.Once);
     }
@@ -78,17 +83,16 @@ public sealed class BookingReminderJobTests
     [Fact]
     public async Task ProcessAsync_WhenReminderIsOlderThanPollWindow_ShouldNotSendEmail()
     {
-        var now = new DateTime(2026, 04, 28, 12, 0, 0, DateTimeKind.Utc);
-        var (job, bookingClientMock, templateServiceMock, emailServiceMock) = CreateSut(now);
+        var (job, bookingClientMock, templateServiceMock, emailServiceMock) = CreateSut(Now);
 
         bookingClientMock
             .Setup(x => x.GetReminderSnapshotAsync(CancellationToken.None))
             .ReturnsAsync(
             [
                 CreateSnapshot(
-                        "student@example.com",
+                        RecipientEmail,
                         SubmissionRemindTimeModel.TwoDays,
-                        now + TimeSpan.FromDays(2) - TimeSpan.FromMinutes(15))
+                        Now + TimeSpan.FromDays(2) - PollInterval)
             ]);
 
         await job.ProcessAsync(CancellationToken.None);
@@ -101,17 +105,16 @@ public sealed class BookingReminderJobTests
     [Fact]
     public async Task ProcessAsync_WhenReminderTimeIsStillInFuture_ShouldNotSendEmail()
     {
-        var now = new DateTime(2026, 04, 28, 12, 0, 0, DateTimeKind.Utc);
-        var (job, bookingClientMock, templateServiceMock, emailServiceMock) = CreateSut(now);
+        var (job, bookingClientMock, templateServiceMock, emailServiceMock) = CreateSut(Now);
 
         bookingClientMock
             .Setup(x => x.GetReminderSnapshotAsync(CancellationToken.None))
             .ReturnsAsync(
             [
                 CreateSnapshot(
-                        "student@example.com",
+                        RecipientEmail,
                         SubmissionRemindTimeModel.FourHours,
-                        now + TimeSpan.FromHours(4) + TimeSpan.FromMinutes(1))
+                        Now + TimeSpan.FromHours(4) + TimeSpan.FromMinutes(1))
             ]);
 
         await job.ProcessAsync(CancellationToken.None);
@@ -135,7 +138,7 @@ public sealed class BookingReminderJobTests
                 new BookingReminderSettings
                 {
                     BookingApiBaseUrl = "http://localhost",
-                    PollInterval = TimeSpan.FromMinutes(15)
+                    PollInterval = PollInterval
                 }),
             loggerMock.Object);
 

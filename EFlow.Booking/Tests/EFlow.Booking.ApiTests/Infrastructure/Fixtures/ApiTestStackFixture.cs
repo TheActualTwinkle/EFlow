@@ -10,6 +10,11 @@ namespace EFlow.Booking.ApiTests.Infrastructure.Fixtures;
 /// </summary>
 public sealed class ApiTestStackFixture : IAsyncLifetime
 {
+    private const string BookingApiPortKey = "BOOKING_API_PORT";
+    private const string AdminUsernameKey = "ADMIN_USERNAME";
+    private const string AdminPasswordKey = "ADMIN_PASSWORD";
+    private const string AdminEmailKey = "ADMIN_EMAIL";
+
     private readonly string _baseComposeFilePath;
     private readonly Dictionary<string, string> _composeOverrides;
     private readonly string _envFilePath;
@@ -38,22 +43,22 @@ public sealed class ApiTestStackFixture : IAsyncLifetime
         var baseUrl = Environment.GetEnvironmentVariable("EFLOW_API_TESTS_BASE_URL");
 
         if (string.IsNullOrWhiteSpace(baseUrl) &&
-            _composeOverrides.TryGetValue("BOOKING_API_PORT", out var dynamicBookingPort))
+            _composeOverrides.TryGetValue(BookingApiPortKey, out var dynamicBookingPort))
             baseUrl = $"http://localhost:{dynamicBookingPort}";
 
         if (string.IsNullOrWhiteSpace(baseUrl))
         {
-            var bookingApiPort = env.GetValueOrDefault("BOOKING_API_PORT", "8081");
+            var bookingApiPort = env.GetValueOrDefault(BookingApiPortKey, "8081");
             baseUrl = $"http://localhost:{bookingApiPort}";
         }
 
         BaseUri = new Uri(baseUrl, UriKind.Absolute);
-        AdminUsername = Environment.GetEnvironmentVariable("ADMIN_USERNAME")
-                        ?? env.GetValueOrDefault("ADMIN_USERNAME", "admin");
-        AdminPassword = Environment.GetEnvironmentVariable("ADMIN_PASSWORD")
-                        ?? env.GetValueOrDefault("ADMIN_PASSWORD", "admin123");
-        AdminEmail = Environment.GetEnvironmentVariable("ADMIN_EMAIL")
-                     ?? env.GetValueOrDefault("ADMIN_EMAIL", "admin@eflow.com");
+        AdminUsername = Environment.GetEnvironmentVariable(AdminUsernameKey)
+                        ?? env.GetValueOrDefault(AdminUsernameKey, "admin");
+        AdminPassword = Environment.GetEnvironmentVariable(AdminPasswordKey)
+                        ?? env.GetValueOrDefault(AdminPasswordKey, "admin123");
+        AdminEmail = Environment.GetEnvironmentVariable(AdminEmailKey)
+                     ?? env.GetValueOrDefault(AdminEmailKey, "admin@eflow.com");
     }
 
     /// <summary>
@@ -188,17 +193,17 @@ public sealed class ApiTestStackFixture : IAsyncLifetime
     private static Dictionary<string, string> CreateDynamicComposeOverrides()
     {
         var bookingPort = GetFreeTcpPort();
-        var notificationsPort = GetFreeTcpPort();
+        var bookingBaseUrl = $"http://localhost:{bookingPort}";
 
         return new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
             ["POSTGRES_PORT"] = GetFreeTcpPort().ToString(),
             ["KAFKA_PORT"] = GetFreeTcpPort().ToString(),
-            ["BOOKING_API_PORT"] = bookingPort.ToString(),
-            ["NOTIFICATIONS_API_PORT"] = notificationsPort.ToString(),
-            ["JWT_ISSUER"] = $"http://localhost:{bookingPort}",
-            ["JWT_AUDIENCE"] = $"http://localhost:{bookingPort}",
-            ["CORS_ALLOWED_ORIGIN_0"] = $"http://localhost:{bookingPort}"
+            [BookingApiPortKey] = bookingPort.ToString(),
+            ["NOTIFICATIONS_API_PORT"] = GetFreeTcpPort().ToString(),
+            ["JWT_ISSUER"] = bookingBaseUrl,
+            ["JWT_AUDIENCE"] = bookingBaseUrl,
+            ["CORS_ALLOWED_ORIGIN_0"] = bookingBaseUrl
         };
     }
 

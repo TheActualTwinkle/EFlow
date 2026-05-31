@@ -27,22 +27,47 @@ namespace EFlow.Booking.IntegrationTests.Application.Notifications;
 
 public class BookingNotificationHandlersIntegrationTests
 {
+    private const string DefaultGroupName = "M8O-411B-22";
+    private const string DefaultLocation = "A-101";
+    private const string DefaultComment = "Bring slides";
+    private const string TeacherFirstName = "Ivan";
+    private const string TeacherLastName = "Petrov";
+    private const string AllNotificationsEmail = "all@example.com";
+    private const string CreatedNotificationsEmail = "created@example.com";
+    private const string CancelledNotificationsEmail = "cancelled@example.com";
+    private const string SkippedNotificationsEmail = "skipped@example.com";
+    private const string FirstStudentFirstName = "Petr";
+    private const string FirstStudentLastName = "Ivanov";
+    private const string SecondStudentFirstName = "Sergey";
+    private const string SecondStudentLastName = "Petrov";
+    private const string NoEmailStudentFirstName = "No";
+    private const string NoEmailStudentLastName = "Email";
+    private const string CancelledBookingStudentFirstName = "Nikita";
+    private const string CancelledBookingStudentLastName = "Volkov";
+    private const int DefaultMaxStudents = 5;
+    private static readonly DateTime CreatedAt = Utc(2026, 04, 28, 11);
+    private static readonly DateTime Now = Utc(2026, 04, 28, 12);
+    private static readonly DateTime DefaultSlotStart = Utc(2026, 05, 12, 10);
+    private static readonly DateTime DefaultSlotEnd = Utc(2026, 05, 12, 12);
+
     [Fact]
     public async Task Publish_WhenSubmissionSlotCreated_ShouldCreateOutboxMessageWithRecipientsFromAllowedGroups()
     {
         // Arrange
-        var allowedGroup = Group.Create("M8O-411B-22", []);
+        const string subjectName = "Distributed Systems";
+        const string recipientEmail = "recipient@example.com";
+        var allowedGroup = Group.Create(DefaultGroupName, []);
         var skippedGroup = Group.Create("M8O-412B-22", []);
-        var teacher = CreateTeacher(Guid.NewGuid(), "Ivan", "Petrov");
-        var subject = Subject.Create("Distributed Systems", teacher.Id, [allowedGroup.Id, skippedGroup.Id]);
+        var teacher = CreateTeacher(Guid.NewGuid(), TeacherFirstName, TeacherLastName);
+        var subject = Subject.Create(subjectName, teacher.Id, [allowedGroup.Id, skippedGroup.Id]);
 
-        var recipientStudent = CreateStudent(Guid.NewGuid(), allowedGroup.Id, "Petr", "Ivanov");
-        var skippedStudent = CreateStudent(Guid.NewGuid(), skippedGroup.Id, "Sergey", "Petrov");
-        var noEmailStudent = CreateStudent(Guid.NewGuid(), allowedGroup.Id, "No", "Email");
+        var recipientStudent = CreateStudent(Guid.NewGuid(), allowedGroup.Id, FirstStudentFirstName, FirstStudentLastName);
+        var skippedStudent = CreateStudent(Guid.NewGuid(), skippedGroup.Id, SecondStudentFirstName, SecondStudentLastName);
+        var noEmailStudent = CreateStudent(Guid.NewGuid(), allowedGroup.Id, NoEmailStudentFirstName, NoEmailStudentLastName);
 
         var slot = SubmissionSlot.Create(
-            subject.Id, teacher.Id, Utc(2026, 05, 12, 10), Utc(2026, 05, 12, 12), 5, false, Utc(2026, 04, 28, 12), [allowedGroup.Id], "A-101",
-            "Bring slides");
+            subject.Id, teacher.Id, DefaultSlotStart, DefaultSlotEnd, DefaultMaxStudents, false, Now, [allowedGroup.Id], DefaultLocation,
+            DefaultComment);
 
         var domainEvent = slot.DequeueDomainEvents().OfType<SubmissionSlotCreatedDomainEvent>().Single();
         var outboxRepository = new FakeOutboxMessageRepository();
@@ -59,8 +84,8 @@ public class BookingNotificationHandlersIntegrationTests
                 outboxRepository: outboxRepository),
             new OutboxMessageFactory(),
             CreateUserManager(
-                CreateIdentity(recipientStudent.Id.Value, "recipient@example.com"),
-                CreateIdentity(skippedStudent.Id.Value, "skipped@example.com"),
+                CreateIdentity(recipientStudent.Id.Value, recipientEmail),
+                CreateIdentity(skippedStudent.Id.Value, SkippedNotificationsEmail),
                 CreateIdentity(noEmailStudent.Id.Value, null)),
             NullLogger<SubmissionSlotCreatedDomainEventNotificationHandler>.Instance);
 
@@ -77,32 +102,37 @@ public class BookingNotificationHandlersIntegrationTests
 
         // Assert
         integrationEvent.Should().NotBeNull();
-        integrationEvent.SubmissionSlot.SubjectName.Should().Be("Distributed Systems");
-        integrationEvent.SubmissionSlot.AllowedGroups.Select(group => group.Name).Should().BeEquivalentTo("M8O-411B-22");
+        integrationEvent.SubmissionSlot.SubjectName.Should().Be(subjectName);
+        integrationEvent.SubmissionSlot.AllowedGroups.Select(group => group.Name).Should().BeEquivalentTo(DefaultGroupName);
 
         integrationEvent.NotificationRecipients.Should().ContainSingle(x =>
             x.UserId == recipientStudent.Id.Value &&
-            x.Email == "recipient@example.com");
+            x.Email == recipientEmail);
     }
 
     [Fact]
     public async Task Publish_WhenSubmissionSlotUpdated_ShouldCreateOutboxMessageWithRecipientsFromOldAndNewAllowedGroups()
     {
         // Arrange
-        var oldGroup = Group.Create("M8O-411B-22", []);
-        var newGroup = Group.Create("M8O-413B-22", []);
+        const string newGroupName = "M8O-413B-22";
+        const string oldGroupEmail = "old-group@example.com";
+        const string newGroupEmail = "new-group@example.com";
+        var oldSlotStart = Utc(2026, 05, 10, 10);
+        var oldSlotEnd = Utc(2026, 05, 10, 12);
+        var oldGroup = Group.Create(DefaultGroupName, []);
+        var newGroup = Group.Create(newGroupName, []);
         var skippedGroup = Group.Create("M8O-414B-22", []);
-        var teacher = CreateTeacher(Guid.NewGuid(), "Ivan", "Petrov");
+        var teacher = CreateTeacher(Guid.NewGuid(), TeacherFirstName, TeacherLastName);
         var subject = Subject.Create("Algorithms", teacher.Id, [oldGroup.Id, newGroup.Id, skippedGroup.Id]);
 
-        var oldGroupStudent = CreateStudent(Guid.NewGuid(), oldGroup.Id, "Petr", "Ivanov");
-        var newGroupStudent = CreateStudent(Guid.NewGuid(), newGroup.Id, "Sergey", "Petrov");
-        var skippedStudent = CreateStudent(Guid.NewGuid(), skippedGroup.Id, "Nikita", "Volkov");
-        var noEmailStudent = CreateStudent(Guid.NewGuid(), oldGroup.Id, "No", "Email");
+        var oldGroupStudent = CreateStudent(Guid.NewGuid(), oldGroup.Id, FirstStudentFirstName, FirstStudentLastName);
+        var newGroupStudent = CreateStudent(Guid.NewGuid(), newGroup.Id, SecondStudentFirstName, SecondStudentLastName);
+        var skippedStudent = CreateStudent(Guid.NewGuid(), skippedGroup.Id, CancelledBookingStudentFirstName, CancelledBookingStudentLastName);
+        var noEmailStudent = CreateStudent(Guid.NewGuid(), oldGroup.Id, NoEmailStudentFirstName, NoEmailStudentLastName);
 
         var slot = SubmissionSlot.Create(
-            subject.Id, teacher.Id, Utc(2026, 05, 10, 10), Utc(2026, 05, 10, 12), 5, false, Utc(2026, 04, 28, 12), [oldGroup.Id], "A-101",
-            "Bring slides");
+            subject.Id, teacher.Id, oldSlotStart, oldSlotEnd, DefaultMaxStudents, false, Now, [oldGroup.Id], DefaultLocation,
+            DefaultComment);
 
         slot.DequeueDomainEvents();
 
@@ -115,11 +145,11 @@ public class BookingNotificationHandlersIntegrationTests
                 SlotId = slot.Id,
                 SubjectId = subject.Id,
                 TeacherId = teacher.Id,
-                StartTime = Utc(2026, 05, 10, 10),
-                EndTime = Utc(2026, 05, 10, 12),
-                MaxStudents = 5,
-                Location = "A-101",
-                Comment = "Bring slides",
+                StartTime = oldSlotStart,
+                EndTime = oldSlotEnd,
+                MaxStudents = DefaultMaxStudents,
+                Location = DefaultLocation,
+                Comment = DefaultComment,
                 AllowAllGroups = false,
                 AllowedGroupIds = [oldGroup.Id]
             },
@@ -154,9 +184,9 @@ public class BookingNotificationHandlersIntegrationTests
                 outboxRepository: outboxRepository),
             new OutboxMessageFactory(),
             CreateUserManager(
-                CreateIdentity(oldGroupStudent.Id.Value, "old-group@example.com"),
-                CreateIdentity(newGroupStudent.Id.Value, "new-group@example.com"),
-                CreateIdentity(skippedStudent.Id.Value, "skipped@example.com"),
+                CreateIdentity(oldGroupStudent.Id.Value, oldGroupEmail),
+                CreateIdentity(newGroupStudent.Id.Value, newGroupEmail),
+                CreateIdentity(skippedStudent.Id.Value, SkippedNotificationsEmail),
                 CreateIdentity(noEmailStudent.Id.Value, null)),
             NullLogger<SubmissionSlotUpdatedDomainEventNotificationHandler>.Instance);
 
@@ -173,16 +203,16 @@ public class BookingNotificationHandlersIntegrationTests
 
         // Assert
         integrationEvent.Should().NotBeNull();
-        integrationEvent.OldSubmissionSlot.AllowedGroups.Select(group => group.Name).Should().BeEquivalentTo("M8O-411B-22");
-        integrationEvent.NewSubmissionSlot.AllowedGroups.Select(group => group.Name).Should().BeEquivalentTo("M8O-413B-22");
+        integrationEvent.OldSubmissionSlot.AllowedGroups.Select(group => group.Name).Should().BeEquivalentTo(DefaultGroupName);
+        integrationEvent.NewSubmissionSlot.AllowedGroups.Select(group => group.Name).Should().BeEquivalentTo(newGroupName);
 
         integrationEvent.NotificationRecipients
             .Select(x => new { x.Email, x.UserId })
             .Should()
             .BeEquivalentTo(
             [
-                new { Email = "old-group@example.com", UserId = oldGroupStudent.Id.Value },
-                new { Email = "new-group@example.com", UserId = newGroupStudent.Id.Value }
+                new { Email = oldGroupEmail, UserId = oldGroupStudent.Id.Value },
+                new { Email = newGroupEmail, UserId = newGroupStudent.Id.Value }
             ]);
     }
 
@@ -190,12 +220,12 @@ public class BookingNotificationHandlersIntegrationTests
     public async Task Publish_WhenBookingCreated_ShouldUseOnlyAllAndOnlyNewBookingModes()
     {
         // Arrange
-        var group = Group.Create("M8O-411B-22", []);
-        var teacher = CreateTeacher(Guid.NewGuid(), "Ivan", "Petrov");
+        var group = Group.Create(DefaultGroupName, []);
+        var teacher = CreateTeacher(Guid.NewGuid(), TeacherFirstName, TeacherLastName);
         var subject = Subject.Create("Databases", teacher.Id, [group.Id]);
         var bookedStudent = CreateStudent(Guid.NewGuid(), group.Id, "Artem", "Fedorov");
 
-        var slot = SubmissionSlot.Create(subject.Id, teacher.Id, Utc(2026, 05, 12, 10), Utc(2026, 05, 12, 12), 5, true, Utc(2026, 04, 28, 12));
+        var slot = SubmissionSlot.Create(subject.Id, teacher.Id, DefaultSlotStart, DefaultSlotEnd, DefaultMaxStudents, true, Now);
         slot.DequeueDomainEvents();
 
         var notifyAllId = Guid.NewGuid();
@@ -210,7 +240,7 @@ public class BookingNotificationHandlersIntegrationTests
             notifyCancelledOnlyId, [], [SubmissionRemindTime.FourHours], BookingNotificationMode.OnlyCancellation);
 
         slot.AddAdmission(bookedStudent.Id);
-        var bookingRecord = slot.BookToSlot(bookedStudent, [], Utc(2026, 04, 28, 12));
+        var bookingRecord = slot.BookToSlot(bookedStudent, [], Now);
         var domainEvent = bookingRecord.DequeueDomainEvents().OfType<BookingRecordCreatedDomainEvent>().Single();
         var outboxRepository = new FakeOutboxMessageRepository();
 
@@ -224,9 +254,9 @@ public class BookingNotificationHandlersIntegrationTests
                 outboxRepository: outboxRepository),
             new OutboxMessageFactory(),
             CreateUserManager(
-                CreateIdentity(notifyAllId, "all@example.com"),
-                CreateIdentity(notifyCreatedOnlyId, "created@example.com"),
-                CreateIdentity(notifyCancelledOnlyId, "cancelled@example.com")),
+                CreateIdentity(notifyAllId, AllNotificationsEmail),
+                CreateIdentity(notifyCreatedOnlyId, CreatedNotificationsEmail),
+                CreateIdentity(notifyCancelledOnlyId, CancelledNotificationsEmail)),
             NullLogger<BookingRecordCreatedDomainEventNotificationHandler>.Instance);
 
         // Act
@@ -249,8 +279,8 @@ public class BookingNotificationHandlersIntegrationTests
             .Should()
             .BeEquivalentTo(
             [
-                new { Email = "all@example.com", UserId = notifyAllId },
-                    new { Email = "created@example.com", UserId = notifyCreatedOnlyId }
+                new { Email = AllNotificationsEmail, UserId = notifyAllId },
+                    new { Email = CreatedNotificationsEmail, UserId = notifyCreatedOnlyId }
             ]);
     }
 
@@ -258,12 +288,12 @@ public class BookingNotificationHandlersIntegrationTests
     public async Task Publish_WhenBookingCancelled_ShouldUseOnlyAllAndOnlyCancellationModes()
     {
         // Arrange
-        var group = Group.Create("M8O-411B-22", []);
-        var teacher = CreateTeacher(Guid.NewGuid(), "Ivan", "Petrov");
+        var group = Group.Create(DefaultGroupName, []);
+        var teacher = CreateTeacher(Guid.NewGuid(), TeacherFirstName, TeacherLastName);
         var subject = Subject.Create("Operating Systems", teacher.Id, [group.Id]);
-        var bookedStudent = CreateStudent(Guid.NewGuid(), group.Id, "Nikita", "Volkov");
+        var bookedStudent = CreateStudent(Guid.NewGuid(), group.Id, CancelledBookingStudentFirstName, CancelledBookingStudentLastName);
 
-        var slot = SubmissionSlot.Create(subject.Id, teacher.Id, Utc(2026, 05, 12, 10), Utc(2026, 05, 12, 12), 5, true, Utc(2026, 04, 28, 12));
+        var slot = SubmissionSlot.Create(subject.Id, teacher.Id, DefaultSlotStart, DefaultSlotEnd, DefaultMaxStudents, true, Now);
         slot.DequeueDomainEvents();
 
         var notifyAllId = Guid.NewGuid();
@@ -278,7 +308,7 @@ public class BookingNotificationHandlersIntegrationTests
             notifyCancelledOnlyId, [], [SubmissionRemindTime.FourHours], BookingNotificationMode.OnlyCancellation);
 
         slot.AddAdmission(bookedStudent.Id);
-        var bookingRecord = slot.BookToSlot(bookedStudent, [], Utc(2026, 04, 28, 12));
+        var bookingRecord = slot.BookToSlot(bookedStudent, [], Now);
         bookingRecord.DequeueDomainEvents();
         slot.CancelBooking(bookingRecord, Utc(2026, 04, 28, 13));
         var domainEvent = bookingRecord.DequeueDomainEvents().OfType<BookingRecordDeletedDomainEvent>().Single();
@@ -294,9 +324,9 @@ public class BookingNotificationHandlersIntegrationTests
                 outboxRepository: outboxRepository),
             new OutboxMessageFactory(),
             CreateUserManager(
-                CreateIdentity(notifyAllId, "all@example.com"),
-                CreateIdentity(notifyCreatedOnlyId, "created@example.com"),
-                CreateIdentity(notifyCancelledOnlyId, "cancelled@example.com")),
+                CreateIdentity(notifyAllId, AllNotificationsEmail),
+                CreateIdentity(notifyCreatedOnlyId, CreatedNotificationsEmail),
+                CreateIdentity(notifyCancelledOnlyId, CancelledNotificationsEmail)),
             NullLogger<BookingRecordDeletedDomainEventNotificationHandler>.Instance);
 
         // Act
@@ -319,8 +349,8 @@ public class BookingNotificationHandlersIntegrationTests
             .Should()
             .BeEquivalentTo(
             [
-                new { Email = "all@example.com", UserId = notifyAllId },
-                    new { Email = "cancelled@example.com", UserId = notifyCancelledOnlyId }
+                new { Email = AllNotificationsEmail, UserId = notifyAllId },
+                    new { Email = CancelledNotificationsEmail, UserId = notifyCancelledOnlyId }
             ]);
     }
 
@@ -337,8 +367,8 @@ public class BookingNotificationHandlersIntegrationTests
             lastName,
             null,
             new DateOnly(1990, 01, 01),
-            Utc(2026, 04, 28, 11),
-            Utc(2026, 04, 28, 12));
+            CreatedAt,
+            Now);
 
     private static Student CreateStudent(Guid id, GroupId groupId, string firstName, string lastName) =>
         Student.Create(
@@ -348,8 +378,8 @@ public class BookingNotificationHandlersIntegrationTests
             lastName,
             null,
             new DateOnly(2004, 01, 01),
-            Utc(2026, 04, 28, 11),
-            Utc(2026, 04, 28, 12));
+            CreatedAt,
+            Now);
 
     private static Identity CreateIdentity(Guid id, string? email) =>
         new()

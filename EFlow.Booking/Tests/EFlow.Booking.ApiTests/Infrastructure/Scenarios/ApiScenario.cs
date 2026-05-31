@@ -23,6 +23,24 @@ namespace EFlow.Booking.ApiTests.Infrastructure.Scenarios;
 /// </summary>
 internal sealed class ApiScenario(ApiTestStackFixture fixture)
 {
+    public const string TeacherPassword = "Teacher123!";
+    public const string StudentPassword = "Student123!";
+    public const string DefaultMiddleName = "M";
+    public const string SlotLocation = "A-101";
+    public const string SlotComment = "API test slot";
+    public const string LoginPath = "/api/auth/login";
+    public const string CurrentUserPath = "/api/auth/me";
+    public const string GroupsPath = "/api/groups";
+    public const string TeachersPath = "/api/teachers";
+    public const string StudentsPath = "/api/students";
+    public const string SubjectsPath = "/api/subjects";
+    public const string SubmissionSlotsPath = "/api/submission-slots";
+    public const string BookingsPath = "/api/bookings";
+    public const int SlotMaxStudents = 5;
+    public static readonly DateOnly TeacherBirthDate = new(1990, 01, 01);
+    public static readonly DateOnly StudentBirthDate = new(2004, 01, 01);
+    public static readonly TimeSpan SlotDuration = TimeSpan.FromHours(1);
+
     /// <summary>
     /// Gets a unique suffix that keeps resources created by the current scenario isolated.
     /// </summary>
@@ -38,7 +56,7 @@ internal sealed class ApiScenario(ApiTestStackFixture fixture)
 
         // Act
         var loginResponse = await session.PostAsync(
-            "/api/auth/login",
+            LoginPath,
             new LoginRequestModel
             {
                 Username = fixture.AdminUsername,
@@ -48,7 +66,7 @@ internal sealed class ApiScenario(ApiTestStackFixture fixture)
         // Assert
         loginResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var meResponse = await session.GetAsync("/api/auth/me");
+        var meResponse = await session.GetAsync(CurrentUserPath);
         meResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         var me = await session.ReadAsync<CurrentUserResponse>(meResponse);
         me.Should().NotBeNull();
@@ -66,7 +84,7 @@ internal sealed class ApiScenario(ApiTestStackFixture fixture)
 
         // Act
         var response = await session.PostAsync(
-            "/api/auth/login",
+            LoginPath,
             new LoginRequestModel
             {
                 Username = username,
@@ -85,7 +103,7 @@ internal sealed class ApiScenario(ApiTestStackFixture fixture)
     public async Task<Guid> CreateGroupAsync(ApiSession adminSession, string? name = null)
     {
         var response = await adminSession.PostAsync(
-            "/api/groups",
+            GroupsPath,
             new CreateGroupRequest
             {
                 Name = name ?? $"Group {Suffix}"
@@ -107,16 +125,16 @@ internal sealed class ApiScenario(ApiTestStackFixture fixture)
         string lastName)
     {
         var response = await adminSession.PostAsync(
-            "/api/teachers",
+            TeachersPath,
             new CreateTeacherRequest
             {
                 UserName = username,
-                Password = "Teacher123!",
+                Password = TeacherPassword,
                 Email = email,
                 FirstName = firstName,
-                MiddleName = "M",
+                MiddleName = DefaultMiddleName,
                 LastName = lastName,
-                BirthDate = new DateOnly(1990, 01, 01)
+                BirthDate = TeacherBirthDate
             });
 
         response.StatusCode.Should().Be(HttpStatusCode.Created);
@@ -136,17 +154,17 @@ internal sealed class ApiScenario(ApiTestStackFixture fixture)
         string lastName)
     {
         var response = await adminSession.PostAsync(
-            "/api/students",
+            StudentsPath,
             new CreateStudentRequest
             {
                 UserName = username,
-                Password = "Student123!",
+                Password = StudentPassword,
                 Email = email,
                 GroupId = groupId,
                 FirstName = firstName,
-                MiddleName = "M",
+                MiddleName = DefaultMiddleName,
                 LastName = lastName,
-                BirthDate = new DateOnly(2004, 01, 01)
+                BirthDate = StudentBirthDate
             });
 
         response.StatusCode.Should().Be(HttpStatusCode.Created);
@@ -160,7 +178,7 @@ internal sealed class ApiScenario(ApiTestStackFixture fixture)
     public async Task<Guid> CreateSubjectAsync(ApiSession adminSession, Guid teacherId, Guid groupId, string? name = null)
     {
         var response = await adminSession.PostAsync(
-            "/api/subjects",
+            SubjectsPath,
             new CreateSubjectRequest
             {
                 Name = name ?? $"Subject {Suffix}",
@@ -187,18 +205,18 @@ internal sealed class ApiScenario(ApiTestStackFixture fixture)
         var actualStart = startTime ?? DateTime.UtcNow.AddDays(7).Date.AddHours(10);
 
         var response = await adminSession.PostAsync(
-            "/api/submission-slots",
+            SubmissionSlotsPath,
             new CreateSubmissionSlotRequest
             {
                 SubjectId = subjectId,
                 TeacherId = teacherId,
                 StartTime = actualStart,
-                EndTime = actualStart.AddHours(1),
-                MaxStudents = 5,
+                EndTime = actualStart + SlotDuration,
+                MaxStudents = SlotMaxStudents,
                 AllowAllGroups = allowAllGroups,
                 AllowedGroupIds = allowedGroupIds?.ToArray(),
-                Location = "A-101",
-                Comment = "API test slot"
+                Location = SlotLocation,
+                Comment = SlotComment
             });
 
         response.StatusCode.Should().Be(HttpStatusCode.Created);
@@ -225,7 +243,7 @@ internal sealed class ApiScenario(ApiTestStackFixture fixture)
     public async Task<Guid> CreateBookingAsync(ApiSession session, Guid studentId, Guid slotId)
     {
         var response = await session.PostAsync(
-            "/api/bookings",
+            BookingsPath,
             new CreateBookingRequest
             {
                 StudentId = studentId,

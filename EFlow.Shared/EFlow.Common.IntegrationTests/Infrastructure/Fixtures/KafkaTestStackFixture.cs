@@ -17,8 +17,6 @@ namespace EFlow.Common.IntegrationTests.Infrastructure.Fixtures;
 
 public sealed class KafkaTestStackFixture : IAsyncLifetime
 {
-    private static readonly TimeSpan AdminClientRequestTimeout = TimeSpan.FromSeconds(10);
-
     private readonly KafkaContainer _kafkaContainer = new KafkaBuilder("apache/kafka:4.1.0")
         .Build();
 
@@ -38,7 +36,7 @@ public sealed class KafkaTestStackFixture : IAsyncLifetime
         }).Build();
 
         var existingTopics = adminClient
-            .GetMetadata(AdminClientRequestTimeout)
+            .GetMetadata(TimeSpan.FromSeconds(10))
             .Topics
             .Select(topic => topic.Topic)
             .ToHashSet();
