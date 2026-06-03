@@ -337,6 +337,8 @@ export class App {
 
     if (keyChanged) {
       this.resetBookingExpansion();
+    } else if (force && view === 'bookings') {
+      this.loadedBookingSlotIds.set([]);
     }
 
     const roles = {
@@ -379,6 +381,7 @@ export class App {
     }
     this.loaded.set(true);
     this.syncDefaultSelections(next);
+    this.refreshExpandedBookingSlots();
   }
 
   private syncDefaultSelections(data: WorkspaceData): void {
@@ -1167,17 +1170,7 @@ export class App {
     this.expandedBookingSlotIds.update((ids) => (expanded ? ids.filter((id) => id !== slot.id) : [...ids, slot.id]));
 
     if (!expanded && !this.loadedBookingSlotIds().includes(slot.id)) {
-      this.loadingBookingSlotIds.update((ids) => (ids.includes(slot.id) ? ids : [...ids, slot.id]));
-      this.api
-        .getBookingsBySlot(slot.id, true)
-        .pipe(finalize(() => this.loadingBookingSlotIds.update((ids) => ids.filter((id) => id !== slot.id))))
-        .subscribe((bookings) => {
-          this.data.update((current) => ({
-            ...current,
-            bookings: [...current.bookings.filter((booking) => booking.slot?.id !== slot.id), ...bookings],
-          }));
-          this.loadedBookingSlotIds.update((ids) => (ids.includes(slot.id) ? ids : [...ids, slot.id]));
-        });
+      this.loadBookingsForSlot(slot.id);
     }
   }
 
@@ -1998,6 +1991,32 @@ export class App {
   private resetBookingExpansion(): void {
     this.expandedBookingSlotIds.set([]);
     this.loadedBookingSlotIds.set([]);
+  }
+
+  private refreshExpandedBookingSlots(): void {
+    if (this.activeView() !== 'bookings') {
+      return;
+    }
+
+    for (const slotId of this.expandedBookingSlotIds()) {
+      if (!this.loadedBookingSlotIds().includes(slotId) && !this.loadingBookingSlotIds().includes(slotId)) {
+        this.loadBookingsForSlot(slotId);
+      }
+    }
+  }
+
+  private loadBookingsForSlot(slotId: string): void {
+    this.loadingBookingSlotIds.update((ids) => (ids.includes(slotId) ? ids : [...ids, slotId]));
+    this.api
+      .getBookingsBySlot(slotId, true)
+      .pipe(finalize(() => this.loadingBookingSlotIds.update((ids) => ids.filter((id) => id !== slotId))))
+      .subscribe((bookings) => {
+        this.data.update((current) => ({
+          ...current,
+          bookings: [...current.bookings.filter((booking) => booking.slot?.id !== slotId), ...bookings],
+        }));
+        this.loadedBookingSlotIds.update((ids) => (ids.includes(slotId) ? ids : [...ids, slotId]));
+      });
   }
 
   private refreshSlot(slotId: string): void {

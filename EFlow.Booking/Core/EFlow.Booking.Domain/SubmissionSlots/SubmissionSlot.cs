@@ -26,8 +26,15 @@ public sealed class SubmissionSlot : Entity
 
     internal int MaxStudents { get; private set; }
 
+    /// <summary>
+    /// Indicates whether the submission slot is open for all groups of the subject. If true, the AllowedGroupIds property should be ignored.
+    /// </summary>
     internal bool AllowAllGroups { get; private set; }
 
+    /// <summary>
+    /// List of group ids that are allowed to book the submission slot. This property is ignored if AllowAllGroups is true.
+    /// </summary>
+    /// <remarks>This property is empty, if AllowAllGroups set to <c>true</c>.</remarks>
     internal ICollection<GroupId> AllowedGroupIds { get; private set; }
 
     internal string? Location { get; private set; }
