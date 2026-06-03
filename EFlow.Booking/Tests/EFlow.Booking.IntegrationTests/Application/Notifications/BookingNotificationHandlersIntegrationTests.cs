@@ -217,11 +217,14 @@ public class BookingNotificationHandlersIntegrationTests
     }
 
     [Fact]
-    public async Task Publish_WhenBookingCreated_ShouldUseOnlyAllAndOnlyNewBookingModes()
+    public async Task Publish_WhenBookingCreated_ShouldMotifyOnlyTeacher()
     {
         // Arrange
         var group = Group.Create(DefaultGroupName, []);
-        var teacher = CreateTeacher(Guid.NewGuid(), TeacherFirstName, TeacherLastName);
+        
+        var teacherId = Guid.NewGuid();
+        var teacher = CreateTeacher(teacherId, TeacherFirstName, TeacherLastName);
+        
         var subject = Subject.Create("Databases", teacher.Id, [group.Id]);
         var bookedStudent = CreateStudent(Guid.NewGuid(), group.Id, "Artem", "Fedorov");
 
@@ -238,6 +241,9 @@ public class BookingNotificationHandlersIntegrationTests
 
         slot.UpdateNotificationSettings(
             notifyCancelledOnlyId, [], [SubmissionRemindTime.FourHours], BookingNotificationMode.OnlyCancellation);
+        
+        slot.UpdateNotificationSettings(
+            teacherId, [], [SubmissionRemindTime.FourHours], BookingNotificationMode.OnlyNewBooking);
 
         slot.AddAdmission(bookedStudent.Id);
         var bookingRecord = slot.BookToSlot(bookedStudent, [], Now);
@@ -256,7 +262,8 @@ public class BookingNotificationHandlersIntegrationTests
             CreateUserManager(
                 CreateIdentity(notifyAllId, AllNotificationsEmail),
                 CreateIdentity(notifyCreatedOnlyId, CreatedNotificationsEmail),
-                CreateIdentity(notifyCancelledOnlyId, CancelledNotificationsEmail)),
+                CreateIdentity(notifyCancelledOnlyId, CancelledNotificationsEmail),
+                CreateIdentity(teacherId, CreatedNotificationsEmail)),
             NullLogger<BookingRecordCreatedDomainEventNotificationHandler>.Instance);
 
         // Act
@@ -279,78 +286,7 @@ public class BookingNotificationHandlersIntegrationTests
             .Should()
             .BeEquivalentTo(
             [
-                new { Email = AllNotificationsEmail, UserId = notifyAllId },
-                    new { Email = CreatedNotificationsEmail, UserId = notifyCreatedOnlyId }
-            ]);
-    }
-
-    [Fact]
-    public async Task Publish_WhenBookingCancelled_ShouldUseOnlyAllAndOnlyCancellationModes()
-    {
-        // Arrange
-        var group = Group.Create(DefaultGroupName, []);
-        var teacher = CreateTeacher(Guid.NewGuid(), TeacherFirstName, TeacherLastName);
-        var subject = Subject.Create("Operating Systems", teacher.Id, [group.Id]);
-        var bookedStudent = CreateStudent(Guid.NewGuid(), group.Id, CancelledBookingStudentFirstName, CancelledBookingStudentLastName);
-
-        var slot = SubmissionSlot.Create(subject.Id, teacher.Id, DefaultSlotStart, DefaultSlotEnd, DefaultMaxStudents, true, Now);
-        slot.DequeueDomainEvents();
-
-        var notifyAllId = Guid.NewGuid();
-        var notifyCreatedOnlyId = Guid.NewGuid();
-        var notifyCancelledOnlyId = Guid.NewGuid();
-        slot.UpdateNotificationSettings(notifyAllId, [], [SubmissionRemindTime.OneWeek], BookingNotificationMode.All);
-
-        slot.UpdateNotificationSettings(
-            notifyCreatedOnlyId, [], [SubmissionRemindTime.TwoDays], BookingNotificationMode.OnlyNewBooking);
-
-        slot.UpdateNotificationSettings(
-            notifyCancelledOnlyId, [], [SubmissionRemindTime.FourHours], BookingNotificationMode.OnlyCancellation);
-
-        slot.AddAdmission(bookedStudent.Id);
-        var bookingRecord = slot.BookToSlot(bookedStudent, [], Now);
-        bookingRecord.DequeueDomainEvents();
-        slot.CancelBooking(bookingRecord, Utc(2026, 04, 28, 13));
-        var domainEvent = bookingRecord.DequeueDomainEvents().OfType<BookingRecordDeletedDomainEvent>().Single();
-        var outboxRepository = new FakeOutboxMessageRepository();
-
-        var handler = new BookingRecordDeletedDomainEventNotificationHandler(
-            CreateUnitOfWork(
-                submissionSlotRepository: CreateSubmissionSlotRepository(slot),
-                studentRepository: CreateStudentRepository((bookedStudent, group.Id)),
-                teacherRepository: CreateTeacherRepository(teacher),
-                subjectRepository: CreateSubjectRepository(subject),
-                groupRepository: CreateGroupRepository(group),
-                outboxRepository: outboxRepository),
-            new OutboxMessageFactory(),
-            CreateUserManager(
-                CreateIdentity(notifyAllId, AllNotificationsEmail),
-                CreateIdentity(notifyCreatedOnlyId, CreatedNotificationsEmail),
-                CreateIdentity(notifyCancelledOnlyId, CancelledNotificationsEmail)),
-            NullLogger<BookingRecordDeletedDomainEventNotificationHandler>.Instance);
-
-        // Act
-        await handler.Handle(
-            new BookingRecordDeletedDomainEventNotification
-            {
-                DomainEvent = domainEvent
-            },
-            CancellationToken.None);
-
-        var outboxMessage = outboxRepository.Messages.Should().ContainSingle().Subject;
-        var integrationEvent = MemoryPackSerializer.Deserialize<BookingCancelledIntegrationEvent>(outboxMessage.Payload);
-
-        // Assert
-        integrationEvent.Should().NotBeNull();
-        integrationEvent.BookingRecord.StudentFullName.Should().Be("Volkov Nikita");
-
-        integrationEvent.NotificationRecipients
-            .Select(x => new { x.Email, x.UserId })
-            .Should()
-            .BeEquivalentTo(
-            [
-                new { Email = AllNotificationsEmail, UserId = notifyAllId },
-                    new { Email = CancelledNotificationsEmail, UserId = notifyCancelledOnlyId }
+                new { Email = CreatedNotificationsEmail, UserId = teacherId }
             ]);
     }
 

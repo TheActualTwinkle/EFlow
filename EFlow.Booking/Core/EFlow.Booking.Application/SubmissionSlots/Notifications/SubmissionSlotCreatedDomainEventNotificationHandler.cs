@@ -116,12 +116,18 @@ public sealed class SubmissionSlotCreatedDomainEventNotificationHandler(
         if (subject is null || subject.GetTeacherId() != teacherId)
             return [];
 
-        var targetGroupIds = allowAllGroups
-            ? subject.GetGroupIds()
-            : subject
-                .GetGroupIds()
-                .Where(new HashSet<GroupId>(allowedGroupIds).Contains)
-                .ToArray();
+        if (allowAllGroups)
+            return (await unitOfWork
+                    .GetRepository<IStudentRepository>()
+                    .GetByGroupIdsAsync(subject.GetGroupIds(), cancellationToken))
+                .Select(student => student.Id.Value)
+                .Distinct()
+                .ToList();
+
+        var targetGroupIds = subject
+            .GetGroupIds()
+            .Where(new HashSet<GroupId>(allowedGroupIds).Contains)
+            .ToList();
 
         if (targetGroupIds.Count == 0)
             return [];
@@ -133,6 +139,6 @@ public sealed class SubmissionSlotCreatedDomainEventNotificationHandler(
         return students
             .Select(student => student.Id.Value)
             .Distinct()
-            .ToArray();
+            .ToList();
     }
 }

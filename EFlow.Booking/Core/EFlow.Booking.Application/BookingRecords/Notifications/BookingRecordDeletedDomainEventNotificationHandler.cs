@@ -69,15 +69,37 @@ public sealed class BookingRecordDeletedDomainEventNotificationHandler(
                 StudentFullName = student.GetFullName(),
                 SubmissionSlotModel = submissionSlot
             },
-            NotificationRecipients = await SubmissionSlotNotificationIntegrationMapper.MapRecipientsByBookingModeAsync(
-                slot,
-                userManager,
-                BookingNotificationMode.All,
-                BookingNotificationMode.OnlyCancellation)
+            NotificationRecipients = await GetNotificationRecipientsAsync(slot)
         };
 
         await unitOfWork
             .GetRepository<IOutboxMessageRepository>()
             .CreateAsync(outboxMessageFactory.Create(integrationEvent, domainEvent.CancelledAt), cancellationToken);
+    }
+    
+    private async Task<IEnumerable<NotificationRecipient>> GetNotificationRecipientsAsync(SubmissionSlot slot)
+    {
+        var teacherId = slot.GetTeacherId();
+
+        var user = await userManager.FindByIdAsync(teacherId.Value.ToString());
+
+        if (user?.Email is null)
+            return [];
+
+        var teacherNotificationSettings = slot
+            .GetNotificationRecipients()
+            .SingleOrDefault(r => r.UserId == teacherId.Value);
+
+        if (teacherNotificationSettings?.BookingNotificationMode is BookingNotificationMode.All or BookingNotificationMode.OnlyCancellation)
+            return
+            [
+                new NotificationRecipient
+                {
+                    Email = user.Email,
+                    UserId = user.Id
+                }
+            ];
+
+        return [];
     }
 }

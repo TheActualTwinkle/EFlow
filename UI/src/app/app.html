@@ -155,25 +155,6 @@
 
         <div class="workspace-live">
       @if (activeView() === 'overview') {
-        <section class="metrics-grid">
-          <article>
-            <span>Учебные группы</span>
-            <strong>{{ data().groups.length }}</strong>
-          </article>
-          <article>
-            <span>Активные окна защиты</span>
-            <strong>{{ overviewSlots().length }}</strong>
-          </article>
-          <article>
-            <span>Свободные места</span>
-            <strong>{{ freeSeats() }}</strong>
-          </article>
-          <article>
-            <span>Записи</span>
-            <strong>{{ overviewBookingCount() }}</strong>
-          </article>
-        </section>
-
 
         <section class="content-grid">
           <div class="panel wide">

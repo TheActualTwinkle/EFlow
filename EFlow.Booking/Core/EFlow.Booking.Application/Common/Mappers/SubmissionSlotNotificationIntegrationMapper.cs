@@ -79,61 +79,6 @@ internal static class SubmissionSlotNotificationIntegrationMapper
         };
     }
 
-    internal static async Task<IEnumerable<NotificationRecipient>> MapRecipientsAsync(
-        SubmissionSlot slot,
-        UserManager<Identity> userManager)
-    {
-        var recipients = slot.GetNotificationRecipients();
-        var result = new List<NotificationRecipient>(recipients.Count);
-
-        foreach (var recipient in recipients)
-        {
-            var user = await userManager.FindByIdAsync(recipient.UserId.ToString());
-
-            if (user?.Email is null)
-                continue;
-            
-            result.Add(
-                new NotificationRecipient
-                {
-                    UserId = recipient.UserId,
-                    Email = user.Email
-                });
-        }
-
-        return result.ToArray();
-    }
-
-    internal static async Task<IEnumerable<NotificationRecipient>> MapRecipientsByBookingModeAsync(
-        SubmissionSlot slot,
-        UserManager<Identity> userManager,
-        params BookingNotificationMode[] modes)
-    {
-        var allowedModes = new HashSet<BookingNotificationMode>(modes);
-        var recipients = slot.GetNotificationRecipients();
-        var result = new List<NotificationRecipient>(recipients.Count);
-
-        foreach (var recipient in recipients)
-        {
-            if (recipient.BookingNotificationMode is not { } mode || !allowedModes.Contains(mode))
-                continue;
-
-            var user = await userManager.FindByIdAsync(recipient.UserId.ToString());
-
-            if (user?.Email is null)
-                continue;
-
-            result.Add(
-                new NotificationRecipient
-                {
-                    UserId = recipient.UserId,
-                    Email = user.Email
-                });
-        }
-
-        return result.ToArray();
-    }
-
     private static async Task<IEnumerable<GroupModel>> GetAllowedGroupsAsync(
         IUnitOfWork unitOfWork,
         IEnumerable<GroupId> allowedGroupIds,
