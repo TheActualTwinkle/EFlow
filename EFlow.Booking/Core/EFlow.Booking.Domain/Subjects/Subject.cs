@@ -73,7 +73,10 @@ public sealed class Subject : Entity, IAggreagateRoot
     
     public void Update(SubjectUpdatePatch patch, DateTime utcNow)
     {
-        patch.ApplyInto(this);
+        var context = patch.ApplyInto(this);
+        
+        if (!context.HasChanges())
+            return;
 
         _ = new Subject(
             Name,

@@ -53,7 +53,10 @@ public sealed class Group : Entity, IAggreagateRoot
         DateTime utcNow,
         IEnumerable<string> existingGroupNames)
     {
-        patch.ApplyInto(this);
+        var context = patch.ApplyInto(this);
+        
+        if (!context.HasChanges())
+            return;
 
         _ = new Group(Name, existingGroupNames);
 

@@ -100,7 +100,10 @@ public sealed class Teacher : Entity, IAggreagateRoot
         TeacherUpdatePatch patch,
         DateTime utcNow)
     {
-        patch.ApplyInto(this);
+        var context = patch.ApplyInto(this);
+        
+        if (!context.HasChanges())
+            return;
 
         _ = new Teacher(
             Id,

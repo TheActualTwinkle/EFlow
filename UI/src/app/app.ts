@@ -1253,15 +1253,17 @@ export class App {
       return false;
     }
 
-    if (this.currentUserNotificationSettings(slot)) {
-      return false;
-    }
+    const settings = this.currentUserNotificationSettings(slot);
 
     if (this.auth.hasRole('Student')) {
-      return this.isBookedByCurrentUser(slot.id);
+      return this.isBookedByCurrentUser(slot.id) && !(settings?.submissionRemindTimes?.length ?? 0);
     }
 
-    return this.auth.hasRole('Teacher') && slot.teacher?.id === this.auth.user()?.id;
+    return (
+      this.auth.hasRole('Teacher') &&
+      slot.teacher?.id === this.auth.user()?.id &&
+      (!(settings?.submissionRemindTimes?.length ?? 0) || typeof settings?.bookingNotificationMode !== 'number')
+    );
   }
 
   slotAdmissionWarningHint(slot: SubmissionSlotView): string {
@@ -1532,14 +1534,16 @@ export class App {
   private prefillNotificationForm(slot: SubmissionSlotView | null): void {
     const settings = slot ? this.currentUserNotificationSettings(slot) : undefined;
 
-    this.notificationForm.remindTimes = settings?.submissionRemindTimes?.length
-      ? settings.submissionRemindTimes.map((value) => this.reminderKeysByValue[value] ?? 'OneWeek')
-      : ['OneWeek', 'TwoDays'];
+    this.notificationForm.remindTimes = settings
+      ? settings.submissionRemindTimes
+        .map((value) => this.reminderKeysByValue[value])
+        .filter((value): value is string => !!value)
+      : [];
 
     this.notificationForm.bookingMode =
       typeof settings?.bookingNotificationMode === 'number'
-        ? (this.bookingModeKeysByValue[settings.bookingNotificationMode] ?? 'All')
-        : 'All';
+        ? (this.bookingModeKeysByValue[settings.bookingNotificationMode] ?? '')
+        : '';
   }
 
   roleLabel(value: string): string {

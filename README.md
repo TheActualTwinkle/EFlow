@@ -17,7 +17,7 @@ EFlow is a booking and notification system for education processes.
 This uses `docker/debug.env` and starts:
 
 - PostgreSQL on `localhost:5433`
-- Kafka on `localhost:9092`
+- Kafka on `localhost:19092`
 - MailDev SMTP on `localhost:1025`
 - MailDev Web UI on `localhost:1080`
 
@@ -72,7 +72,7 @@ POSTGRES_USER=postgres
 POSTGRES_PASSWORD=change_me
 POSTGRES_PORT=5433
 
-KAFKA_PORT=9092
+KAFKA_PORT=19092
 
 BOOKING_API_PORT=8081
 NOTIFICATIONS_API_PORT=8082

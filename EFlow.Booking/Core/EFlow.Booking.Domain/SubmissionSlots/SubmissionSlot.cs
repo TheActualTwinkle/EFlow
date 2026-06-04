@@ -176,7 +176,10 @@ public sealed class SubmissionSlot : Entity
     {
         var oldSlot = CreateSnapshot();
         
-        patch.ApplyInto(this);
+        var context = patch.ApplyInto(this);
+
+        if (!context.HasChanges())
+            return;
 
         _ = new SubmissionSlot(
             SubjectId,

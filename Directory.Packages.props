@@ -1,6 +1,6 @@
 <Project>
   <ItemGroup>
-    <PackageVersion Include="FluentPatcher" Version="0.2.0" />
+    <PackageVersion Include="FluentPatcher" Version="0.2.1" />
     <PackageVersion Include="MemoryPack.Core" Version="1.21.4" />
     <PackageVersion Include="Microsoft.Extensions.Primitives" Version="10.0.7" />
     <PackageVersion Include="Microsoft.Extensions.Caching.Memory" Version="10.0.7" />

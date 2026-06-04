@@ -105,7 +105,10 @@ public sealed class Student : Entity, IAggreagateRoot
     
     public void Update(StudentUpdatePatch patch, DateTime utcNow)
     {
-        patch.ApplyInto(this);
+        var context = patch.ApplyInto(this);
+        
+        if (!context.HasChanges())
+            return;
         
         _ = new Student(
             Id,
