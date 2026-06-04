@@ -36,7 +36,7 @@ services:
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: "false"
       CLUSTER_ID: 1
     ports:
-      - "${KAFKA_PORT:-9092}:9092"
+      - "${KAFKA_PORT:-19092}:9092"
     volumes:
       - ./data/kafka:/tmp/kafka-logs
     healthcheck:
