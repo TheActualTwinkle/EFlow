@@ -2,15 +2,15 @@ using EFlow.Common.Extensions;
 using EFlow.Common.IntegrationEvents.Booking;
 using EFlow.Common.IntegrationEvents.Booking.BookingRecords;
 using EFlow.Common.IntegrationEvents.Booking.SubmissionSlots;
+using EFlow.Common.Markers;
+using EFlow.Common.Messaging;
+using EFlow.Common.Messaging.Settings;
 using EFlow.Common.OutboxProcessing.Outbox;
 using EFlow.Common.OutboxProcessing.Outbox.Interfaces;
 using EFlow.Common.OutboxProcessing.Outbox.MessageProcessing;
 using EFlow.Common.OutboxProcessing.Outbox.MessageProcessing.Factories;
 using EFlow.Common.OutboxProcessing.Outbox.MessageProcessing.Factories.Interfaces;
 using EFlow.Common.OutboxProcessing.Outbox.MessageProcessing.Interfaces;
-using EFlow.Common.Markers;
-using EFlow.Common.Messaging;
-using EFlow.Common.Messaging.Settings;
 using EFlow.Common.OutboxProcessing.TopicResolving;
 using Hangfire;
 using Microsoft.AspNetCore.Builder;
@@ -34,39 +34,11 @@ public static class DependencyInjection
 
             services.AddScoped<IOutboxMessageProcessorFactory, OutboxMessageProcessorFactory>();
 
-            AddTopicResolving(services);
-            
+            services.AddTopicResolving();
+
             return services;
         }
-    }
-
-    public static IApplicationBuilder UseOutbox(this WebApplication app)
-    {
-        var settings = app.Services.GetRequiredService<OutboxProcessorSettings>();
-
-        var recurringJobManager = app.Services.GetRequiredService<IRecurringJobManager>();
-
-        recurringJobManager.AddOrUpdateDynamic<IOutboxProcessor>(
-            "ProcessOutboxMessages",
-            p => p.ProcessPendingAsync(settings.BatchSize, new CancellationTokenSource(TimeSpan.FromSeconds(30)).Token),
-            settings.ProcessInterval.ToCronExpression(),
-#pragma warning disable CS0618 // Type or member is obsolete
-            new DynamicRecurringJobOptions { QueueName = "eflow-outbox" });
-#pragma warning restore CS0618 // Type or member is obsolete
-
-        recurringJobManager.AddOrUpdateDynamic<IOutboxProcessor>(
-            "DeleteOutboxMessages",
-            p => p.DeleteProcessedAsync(settings.DeleteAfter, new CancellationTokenSource(TimeSpan.FromSeconds(30)).Token),
-            settings.DeleteInterval.ToCronExpression(),
-#pragma warning disable CS0618 // Type or member is obsolete
-            new DynamicRecurringJobOptions { QueueName = "eflow-outbox" });
-#pragma warning restore CS0618 // Type or member is obsolete
-
-        return app;
-    }
-
-    extension(IServiceCollection services)
-    {
+        
         private IServiceCollection AddOutboxProcessor(IConfiguration configuration)
         {
             var batchSize = configuration
@@ -121,19 +93,47 @@ public static class DependencyInjection
 
             return services;
         }
+        
+        private IServiceCollection AddTopicResolving() =>
+            services.AddScoped<ITopicNameResolver>(_ =>
+            {
+                var resolver = new TopicNameResolver();
+
+                resolver.AddMapping(typeof(SubmissionSlotCreatedIntegrationEvent).AssemblyQualifiedName!, KafkaTopics.SubmissionSlotCreatedTopic);
+                resolver.AddMapping(typeof(SubmissionSlotUpdatedIntegrationEvent).AssemblyQualifiedName!, KafkaTopics.SubmissionSlotUpdatedTopic);
+                resolver.AddMapping(typeof(SubmissionSlotDeletedIntegrationEvent).AssemblyQualifiedName!, KafkaTopics.SubmissionSlotDeletedTopic);
+                resolver.AddMapping(typeof(BookingCreatedIntegrationEvent).AssemblyQualifiedName!, KafkaTopics.BookingCreatedTopic);
+                resolver.AddMapping(typeof(BookingCancelledIntegrationEvent).AssemblyQualifiedName!, KafkaTopics.BookingCancelledTopic);
+
+                return resolver;
+            });
     }
 
-    private static void AddTopicResolving(IServiceCollection services) =>
-        services.AddScoped<ITopicNameResolver>(_ =>
+    extension(WebApplication app)
+    {
+        public IApplicationBuilder UseOutbox()
         {
-            var resolver = new TopicNameResolver();
+            var settings = app.Services.GetRequiredService<OutboxProcessorSettings>();
 
-            resolver.AddMapping(typeof(SubmissionSlotCreatedIntegrationEvent).AssemblyQualifiedName!, KafkaTopics.SubmissionSlotCreatedTopic);
-            resolver.AddMapping(typeof(SubmissionSlotUpdatedIntegrationEvent).AssemblyQualifiedName!, KafkaTopics.SubmissionSlotUpdatedTopic);
-            resolver.AddMapping(typeof(SubmissionSlotDeletedIntegrationEvent).AssemblyQualifiedName!, KafkaTopics.SubmissionSlotDeletedTopic);
-            resolver.AddMapping(typeof(BookingCreatedIntegrationEvent).AssemblyQualifiedName!, KafkaTopics.BookingCreatedTopic);
-            resolver.AddMapping(typeof(BookingCancelledIntegrationEvent).AssemblyQualifiedName!, KafkaTopics.BookingCancelledTopic);
+            var recurringJobManager = app.Services.GetRequiredService<IRecurringJobManager>();
 
-            return resolver;
-        });
+            recurringJobManager.AddOrUpdateDynamic<IOutboxProcessor>(
+                "ProcessOutboxMessages",
+                p => p.ProcessPendingAsync(settings.BatchSize, new CancellationTokenSource(TimeSpan.FromSeconds(30)).Token),
+                settings.ProcessInterval.ToCronExpression(),
+#pragma warning disable CS0618 // Type or member is obsolete
+                new DynamicRecurringJobOptions { QueueName = "eflow-outbox" });
+#pragma warning restore CS0618 // Type or member is obsolete
+
+            recurringJobManager.AddOrUpdateDynamic<IOutboxProcessor>(
+                "DeleteOutboxMessages",
+                p => p.DeleteProcessedAsync(settings.DeleteAfter, new CancellationTokenSource(TimeSpan.FromSeconds(30)).Token),
+                settings.DeleteInterval.ToCronExpression(),
+#pragma warning disable CS0618 // Type or member is obsolete
+                new DynamicRecurringJobOptions { QueueName = "eflow-outbox" });
+#pragma warning restore CS0618 // Type or member is obsolete
+
+            return app;
+        }
+    }
 }
