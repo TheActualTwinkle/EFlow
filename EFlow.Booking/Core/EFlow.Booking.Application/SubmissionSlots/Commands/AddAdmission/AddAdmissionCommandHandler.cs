@@ -34,7 +34,7 @@ public class AddAdmissionCommandHandler(
                     .WithMessage("Student not found")
                     .WithId(request.StudentId));
 
-        var admission = slot.AddAdmission(student.Id);
+        var admission = slot.AddAdmission(student.Id, student.GetGroupId());
         
         return Result.Ok(admission.Id.Value);
     }

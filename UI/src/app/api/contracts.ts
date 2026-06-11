@@ -311,6 +311,45 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/bookings/{slotId}/not-booked-students": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    slotId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["NotBookedStudentsView"];
+                        "application/json": components["schemas"]["NotBookedStudentsView"];
+                        "text/json": components["schemas"]["NotBookedStudentsView"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/groups": {
         parameters: {
             query?: never;
@@ -1000,7 +1039,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/submission-slots/available": {
+    "/api/submission-slots/{id}/allowed-students": {
         parameters: {
             query?: never;
             header?: never;
@@ -1009,11 +1048,11 @@ export interface paths {
         };
         get: {
             parameters: {
-                query?: {
-                    FromDate?: string;
-                };
+                query?: never;
                 header?: never;
-                path?: never;
+                path: {
+                    id: string;
+                };
                 cookie?: never;
             };
             requestBody?: never;
@@ -1024,9 +1063,9 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": components["schemas"]["SubmissionSlotView"][];
-                        "application/json": components["schemas"]["SubmissionSlotView"][];
-                        "text/json": components["schemas"]["SubmissionSlotView"][];
+                        "text/plain": components["schemas"]["StudentView"][];
+                        "application/json": components["schemas"]["StudentView"][];
+                        "text/json": components["schemas"]["StudentView"][];
                     };
                 };
             };
@@ -1279,6 +1318,88 @@ export interface paths {
         };
         trace?: never;
     };
+    "/api/users/{id}/email": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["UpdateUserEmailRequest"];
+                    "text/json": components["schemas"]["UpdateUserEmailRequest"];
+                    "application/*+json": components["schemas"]["UpdateUserEmailRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/api/users/{id}/password": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["UpdateUserPasswordRequest"];
+                    "text/json": components["schemas"]["UpdateUserPasswordRequest"];
+                    "application/*+json": components["schemas"]["UpdateUserPasswordRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1360,6 +1481,10 @@ export interface components {
         LoginRequest: {
             username: string;
             password: string;
+        };
+        NotBookedStudentsView: {
+            admittedStudents: components["schemas"]["StudentView"][];
+            notAdmittedStudents: components["schemas"]["StudentView"][];
         };
         PatchableOfboolean: {
             hasValue?: boolean;
@@ -1486,6 +1611,13 @@ export interface components {
             lastName?: components["schemas"]["PatchableOfstring"];
             middleName?: components["schemas"]["PatchableOfstring"];
             birthDate?: components["schemas"]["PatchableOfDateOnly"];
+        };
+        UpdateUserEmailRequest: {
+            email: string;
+        };
+        UpdateUserPasswordRequest: {
+            currentPassword: string;
+            newPassword: string;
         };
     };
     responses: never;

@@ -11,4 +11,6 @@ public interface IStudentQueryService : IQueryService
     public Task<StudentView?> GetByIdAsync(StudentId id, CancellationToken cancellationToken = new());
 
     public Task<IEnumerable<StudentView>> GetByGroupIdAsync(GroupId groupId, CancellationToken cancellationToken = new());
+    
+    public Task<IEnumerable<StudentView>> GetByGroupIdsAsync(IEnumerable<GroupId> groupId, CancellationToken cancellationToken = new());
 }

@@ -236,12 +236,12 @@
                 <label>
                   <span>Дисциплина <b>*</b></span>
                   <div class="custom-select" [class.open]="customSelectOpen() === 'slotSubject'">
-                    <button type="button" (click)="toggleCustomSelect('slotSubject')" [disabled]="!data().subjects.length">
-                      <span>{{ data().subjects.length ? slotSubjectLabel() : 'Нет дисциплин' }}</span>
+                    <button type="button" (click)="toggleCustomSelect('slotSubject')" [disabled]="!slotSubjects().length">
+                      <span>{{ slotSubjects().length ? slotSubjectLabel() : 'Нет дисциплин' }}</span>
                     </button>
                     @if (customSelectOpen() === 'slotSubject') {
                       <div class="custom-select-menu">
-                        @for (subject of data().subjects; track subject.id) {
+                        @for (subject of slotSubjects(); track subject.id) {
                           <button type="button" [class.selected]="slotForm.subjectId === subject.id" (click)="selectSlotSubject(subject)">
                             {{ subject.name }}
                           </button>
@@ -249,11 +249,11 @@
                       </div>
                     }
                   </div>
-                  <select class="native-shadow" name="slotSubject" [(ngModel)]="slotForm.subjectId" required tabindex="-1">
-                    @if (!data().subjects.length) {
+                  <select class="native-shadow" name="slotSubject" [ngModel]="slotForm.subjectId" (ngModelChange)="selectSlotSubjectById($event)" required tabindex="-1">
+                    @if (!slotSubjects().length) {
                       <option value="" disabled>Нет дисциплин</option>
                     }
-                    @for (subject of data().subjects; track subject.id) {
+                    @for (subject of slotSubjects(); track subject.id) {
                       <option [value]="subject.id">{{ subject.name }}</option>
                     }
                   </select>
@@ -265,12 +265,12 @@
                   <label>
                     <span>Преподаватель <b>*</b></span>
                     <div class="custom-select" [class.open]="customSelectOpen() === 'slotTeacher'">
-                      <button type="button" (click)="toggleCustomSelect('slotTeacher')" [disabled]="!data().teachers.length">
-                        <span>{{ data().teachers.length ? slotTeacherLabel() : 'Нет преподавателей' }}</span>
+                      <button type="button" (click)="toggleCustomSelect('slotTeacher')" [disabled]="!slotTeachers().length">
+                        <span>{{ slotTeachers().length ? slotTeacherLabel() : 'Нет преподавателей' }}</span>
                       </button>
                       @if (customSelectOpen() === 'slotTeacher') {
                         <div class="custom-select-menu">
-                          @for (teacher of data().teachers; track teacher.id) {
+                          @for (teacher of slotTeachers(); track teacher.id) {
                             <button type="button" [class.selected]="slotForm.teacherId === teacher.id" (click)="selectSlotTeacher(teacher)">
                               {{ fullName(teacher) }}
                             </button>
@@ -278,11 +278,11 @@
                         </div>
                       }
                     </div>
-                    <select class="native-shadow" name="slotTeacher" [(ngModel)]="slotForm.teacherId" required tabindex="-1">
-                      @if (!data().teachers.length) {
+                    <select class="native-shadow" name="slotTeacher" [ngModel]="slotForm.teacherId" (ngModelChange)="selectSlotTeacherById($event)" required tabindex="-1">
+                      @if (!slotTeachers().length) {
                         <option value="" disabled>Нет преподавателей</option>
                       }
-                      @for (teacher of data().teachers; track teacher.id) {
+                      @for (teacher of slotTeachers(); track teacher.id) {
                         <option [value]="teacher.id">{{ fullName(teacher) }}</option>
                       }
                     </select>
@@ -379,12 +379,12 @@
                       <span class="empty-inline">{{ slotForm.subjectId ? 'У дисциплины нет групп' : 'Выберите дисциплину' }}</span>
                     }
                     @for (group of filteredSlotAllowedGroups(); track group.id) {
-                      <button type="button" [class.selected]="slotForm.allowedGroupIds.includes(group.id)" (click)="toggleSelection(slotForm.allowedGroupIds, group.id)">
-                        <span>{{ group.name }}</span>
-                        <span class="switch" aria-hidden="true"></span>
-                      </button>
+                      <app-toggle-item [title]="group.name" [selected]="slotForm.allowedGroupIds.includes(group.id)" (toggle)="toggleSelection(slotForm.allowedGroupIds, group.id)" />
                     }
                   </div>
+                  @if (fieldError('slotGroups')) {
+                    <small class="field-error">{{ fieldError('slotGroups') }}</small>
+                  }
                 }
               </div>
               <button class="primary-action" type="submit" [disabled]="!slotForm.subjectId || !slotForm.startTime || !slotForm.endTime || (auth.hasRole('Admin') && !slotForm.teacherId)">
@@ -471,10 +471,7 @@
                   </label>
                   <div class="toggle-list">
                     @for (group of filteredSlotEditableGroups(slot); track group.id) {
-                      <button type="button" [class.selected]="slotGroupIds(slot).includes(group.id)" (click)="toggleSlotAllowedGroup(slot, group.id)">
-                        <span>{{ group.name }}</span>
-                        <span class="switch" aria-hidden="true"></span>
-                      </button>
+                      <app-toggle-item [title]="group.name" [selected]="slotGroupIds(slot).includes(group.id)" (toggle)="toggleSlotAllowedGroup(slot, group.id)" />
                     } @empty {
                       <span class="empty-inline">Нет групп для ограничения доступа</span>
                     }
@@ -581,6 +578,7 @@
                       }
                       <button class="secondary-action" type="button" (click)="openAdmissions(slot)">Допуски</button>
                     </span>
+                    <button class="secondary-action" type="button" (click)="openNotBookedStudents(slot)">Не записались</button>
                     @if (canConfigureSlotNotifications()) {
                       <span class="notification-action">
                         @if (slotNotificationWarningHint(slot); as hint) {
@@ -968,10 +966,7 @@
                 <span class="empty-inline">Нет групп для привязки</span>
               }
               @for (group of data().groups; track group.id) {
-                <button type="button" [class.selected]="subjectForm.groupIds.includes(group.id)" (click)="toggleSelection(subjectForm.groupIds, group.id)">
-                  <span>{{ group.name }}</span>
-                  <span class="switch" aria-hidden="true"></span>
-                </button>
+                <app-toggle-item [title]="group.name" [selected]="subjectForm.groupIds.includes(group.id)" (toggle)="toggleSelection(subjectForm.groupIds, group.id)" />
               }
             </div>
             <button class="primary-action" type="submit" [disabled]="!data().teachers.length">Создать дисциплину</button>
@@ -1093,16 +1088,67 @@
         <input [ngModel]="admissionSearch()" (ngModelChange)="admissionSearch.set($event)" name="admissionSearch" placeholder="Имя, фамилия, группа" />
       </label>
       <div class="toggle-list admission-list">
-        @for (student of admissionStudents(slot); track student.id) {
-          <button type="button" [class.selected]="isAdmitted(slot, student.id)" (click)="toggleAdmission(slot, student)">
-            <span>
-              <strong>{{ fullName(student) }}</strong>
-              <small>{{ student.group?.name || 'Группа не указана' }}</small>
-            </span>
-            <span class="switch" aria-hidden="true"></span>
-          </button>
+        @for (student of admissionStudents(); track student.id) {
+          <app-toggle-item
+            [title]="fullName(student)"
+            [subtitle]="student.group?.name || 'Группа не указана'"
+            [selected]="isAdmitted(slot, student.id)"
+            (toggle)="toggleAdmission(slot, student)"
+          />
         } @empty {
           <span class="empty-inline">Нет студентов для допуска</span>
+        }
+      </div>
+    </section>
+  </div>
+}
+
+@if (activeModal() === 'notBookedStudents' && selectedSlot(); as slot) {
+  <div class="modal-backdrop" (click)="closeModal()">
+    <section class="panel form-panel modal-panel wide" (click)="$event.stopPropagation()">
+      <div class="panel-heading">
+        <div>
+          <p class="eyebrow">Не записались</p>
+          <h2>{{ slotTitle(slot) }}</h2>
+        </div>
+        <lucide-icon name="user-x" />
+      </div>
+      <div class="student-status-list">
+        @if (!notBookedStudents()) {
+          <span class="empty-inline">Загрузка студентов...</span>
+        } @else if (notBookedStudents(); as students) {
+          @if (notBookedStudentList().length) {
+            @if (students.admittedStudents.length) {
+              <section>
+                <h3>Допущены</h3>
+                @for (student of students.admittedStudents; track student.id) {
+                  <article>
+                    <div>
+                      <strong>{{ fullName(student) }}</strong>
+                      <span>{{ student.group?.name || 'Группа не указана' }}</span>
+                    </div>
+                    <span class="status-pill success">с допуском</span>
+                  </article>
+                }
+              </section>
+            }
+            @if (students.notAdmittedStudents.length) {
+              <section>
+                <h3>Без допуска</h3>
+                @for (student of students.notAdmittedStudents; track student.id) {
+                  <article>
+                    <div>
+                      <strong>{{ fullName(student) }}</strong>
+                      <span>{{ student.group?.name || 'Группа не указана' }}</span>
+                    </div>
+                    <span class="status-pill">без допуска</span>
+                  </article>
+                }
+              </section>
+            }
+          } @else {
+            <span class="empty-inline">Все доступные студенты уже записались</span>
+          }
         }
       </div>
     </section>
@@ -1268,10 +1314,7 @@
       </div>
       <div class="toggle-list">
         @for (group of data().groups; track group.id) {
-          <button type="button" [class.selected]="subjectGroupIds(subject).includes(group.id)" (click)="toggleSubjectGroup(subject, group.id)">
-            <span>{{ group.name }}</span>
-            <span class="switch" aria-hidden="true"></span>
-          </button>
+          <app-toggle-item [title]="group.name" [selected]="subjectGroupIds(subject).includes(group.id)" (toggle)="toggleSubjectGroup(subject, group.id)" />
         } @empty {
           <span class="empty-inline">Нет групп для привязки</span>
         }
@@ -1302,6 +1345,16 @@
         </p>
       }
       <p class="confirm-message">{{ confirm.message }}</p>
+      @if (confirm.items?.length) {
+        <details class="confirm-details">
+          <summary>Показать список</summary>
+          <ul>
+            @for (item of confirm.items; track item) {
+              <li>{{ item }}</li>
+            }
+          </ul>
+        </details>
+      }
       <div class="modal-actions confirm-actions">
         <button class="primary-action danger-action" type="button" (click)="confirmPendingAction()">
           <lucide-icon name="trash-2" />

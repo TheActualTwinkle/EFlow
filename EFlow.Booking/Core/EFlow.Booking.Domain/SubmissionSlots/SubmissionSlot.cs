@@ -54,6 +54,8 @@ public sealed class SubmissionSlot : Entity
         DateTime endTime,
         int maxStudents,
         bool allowAllGroups,
+        IEnumerable<GroupId> subjectGroupIds,
+        TeacherId subjectTeacherId,
         ICollection<GroupId>? allowedGroupIds = null,
         string? location = null,
         string? comment = null)
@@ -69,6 +71,10 @@ public sealed class SubmissionSlot : Entity
         ThrowIfBroken(new AllowedGroupIdsMustBeEmptyWhenAllowAllGroupsIsTrueRule(allowAllGroups, allowedGroupIds));
 
         ThrowIfBroken(new AllowedGroupIdsMustNotContainDuplicatesRule(allowedGroupIds));
+        
+        ThrowIfBroken(new AllowedGroupIdsMustBeWithinSubjectGroupIds(allowedGroupIds, subjectGroupIds));
+        
+        ThrowIfBroken(new TeacherMustOwnSubjectRule(teacherId, subjectTeacherId));
 
         Id = new SubmissionSlotId(Guid.CreateVersion7());
         SubjectId = subjectId;
@@ -108,6 +114,9 @@ public sealed class SubmissionSlot : Entity
 
     public string? GetComment() =>
         Comment;
+
+    public IReadOnlyCollection<StudentId> GetAdmittedStudentIds() =>
+        Admissions.Select(admission => admission.StudentId).ToArray();
     
     public static SubmissionSlot Create(
         SubjectId subjectId,
@@ -117,6 +126,8 @@ public sealed class SubmissionSlot : Entity
         int maxStudents,
         bool allowAllGroups,
         DateTime nowUtc,
+        IEnumerable<GroupId> subjectGroupIds,
+        TeacherId subjectTeacherId,
         ICollection<GroupId>? allowedGroupIds = null,
         string? location = null,
         string? comment = null)
@@ -128,6 +139,8 @@ public sealed class SubmissionSlot : Entity
             endTime,
             maxStudents,
             allowAllGroups,
+            subjectGroupIds,
+            subjectTeacherId,
             allowedGroupIds,
             location,
             comment);
@@ -172,7 +185,12 @@ public sealed class SubmissionSlot : Entity
                 settings.BookingNotificationMode))
             .ToArray();
 
-    public void Update(SubmissionSlotPatch patch, DateTime utcNow)
+    public void Update(
+        SubmissionSlotPatch patch,
+        IEnumerable<GroupId> subjectGroupIds,
+        TeacherId subjectTeacherId,
+        IEnumerable<Student> admittedStudents,
+        DateTime utcNow)
     {
         var oldSlot = CreateSnapshot();
         
@@ -188,9 +206,13 @@ public sealed class SubmissionSlot : Entity
             EndTime,
             MaxStudents,
             AllowAllGroups,
+            subjectGroupIds,
+            subjectTeacherId,
             AllowedGroupIds,
             Location,
             Comment);
+
+        RemoveAdmissionsOutsideAllowedGroups(admittedStudents);
 
         AddDomainEvent(new SubmissionSlotUpdatedDomainEvent
         {
@@ -247,8 +269,10 @@ public sealed class SubmissionSlot : Entity
         NotificationSettings.Remove(existingSettings);
     }
 
-    public SubmissionSlotAdmission AddAdmission(StudentId studentId)
+    public SubmissionSlotAdmission AddAdmission(StudentId studentId, GroupId studentGroupId)
     {
+        ThrowIfBroken(new StudentGroupMustBeAllowedToSubmissionSlotRule(AllowAllGroups, AllowedGroupIds, studentGroupId));
+        
         var existingAdmission = Admissions.FirstOrDefault(admission => admission.StudentId == studentId);
 
         if (existingAdmission is not null)
@@ -290,5 +314,24 @@ public sealed class SubmissionSlot : Entity
             bookingNotificationMode);
 
         NotificationSettings.Add(settings);
+    }
+
+    private void RemoveAdmissionsOutsideAllowedGroups(IEnumerable<Student> admittedStudents)
+    {
+        if (AllowAllGroups)
+            return;
+
+        var allowedGroupIds = AllowedGroupIds.ToHashSet();
+        var allowedStudentIds = admittedStudents
+            .Where(student => allowedGroupIds.Contains(student.GetGroupId()))
+            .Select(student => student.Id)
+            .ToHashSet();
+
+        var admissionsToRemove = Admissions
+            .Where(admission => !allowedStudentIds.Contains(admission.StudentId))
+            .ToArray();
+
+        foreach (var admission in admissionsToRemove)
+            Admissions.Remove(admission);
     }
 }

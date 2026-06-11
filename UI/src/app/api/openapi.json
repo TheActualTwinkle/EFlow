@@ -318,6 +318,46 @@
         }
       }
     },
+    "/api/bookings/{slotId}/not-booked-students": {
+      "get": {
+        "tags": [
+          "Bookings"
+        ],
+        "parameters": [
+          {
+            "name": "slotId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotBookedStudentsView"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotBookedStudentsView"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotBookedStudentsView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/groups": {
       "post": {
         "tags": [
@@ -1145,18 +1185,19 @@
         }
       }
     },
-    "/api/submission-slots/available": {
+    "/api/submission-slots/{id}/allowed-students": {
       "get": {
         "tags": [
           "SubmissionSlots"
         ],
         "parameters": [
           {
-            "name": "FromDate",
-            "in": "query",
+            "name": "id",
+            "in": "path",
+            "required": true,
             "schema": {
               "type": "string",
-              "format": "date-time"
+              "format": "uuid"
             }
           }
         ],
@@ -1168,7 +1209,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/SubmissionSlotView"
+                    "$ref": "#/components/schemas/StudentView"
                   }
                 }
               },
@@ -1176,7 +1217,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/SubmissionSlotView"
+                    "$ref": "#/components/schemas/StudentView"
                   }
                 }
               },
@@ -1184,7 +1225,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/SubmissionSlotView"
+                    "$ref": "#/components/schemas/StudentView"
                   }
                 }
               }
@@ -1461,6 +1502,92 @@
             }
           }
         ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/users/{id}/email": {
+      "patch": {
+        "tags": [
+          "Users"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateUserEmailRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateUserEmailRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateUserEmailRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/users/{id}/password": {
+      "patch": {
+        "tags": [
+          "Users"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateUserPasswordRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateUserPasswordRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateUserPasswordRequest"
+              }
+            }
+          },
+          "required": true
+        },
         "responses": {
           "200": {
             "description": "OK"
@@ -1769,6 +1896,27 @@
           },
           "password": {
             "type": "string"
+          }
+        }
+      },
+      "NotBookedStudentsView": {
+        "required": [
+          "admittedStudents",
+          "notAdmittedStudents"
+        ],
+        "type": "object",
+        "properties": {
+          "admittedStudents": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StudentView"
+            }
+          },
+          "notAdmittedStudents": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StudentView"
+            }
           }
         }
       },
@@ -2240,6 +2388,38 @@
             "$ref": "#/components/schemas/PatchableOfDateOnly"
           }
         }
+      },
+      "UpdateUserEmailRequest": {
+        "required": [
+          "email"
+        ],
+        "type": "object",
+        "properties": {
+          "email": {
+            "maxLength": 256,
+            "minLength": 0,
+            "type": "string"
+          }
+        }
+      },
+      "UpdateUserPasswordRequest": {
+        "required": [
+          "currentPassword",
+          "newPassword"
+        ],
+        "type": "object",
+        "properties": {
+          "currentPassword": {
+            "maxLength": 63,
+            "minLength": 6,
+            "type": "string"
+          },
+          "newPassword": {
+            "maxLength": 63,
+            "minLength": 6,
+            "type": "string"
+          }
+        }
       }
     }
   },
@@ -2264,6 +2444,9 @@
     },
     {
       "name": "Teachers"
+    },
+    {
+      "name": "Users"
     }
   ]
 }

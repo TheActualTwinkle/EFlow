@@ -1,0 +1,9 @@
+<button type="button" class="toggle-item" [class.selected]="selected" (click)="toggle.emit()">
+  <span class="toggle-item-text">
+    <strong>{{ title }}</strong>
+    @if (subtitle) {
+      <small>{{ subtitle }}</small>
+    }
+  </span>
+  <span class="toggle-switch" aria-hidden="true"></span>
+</button>

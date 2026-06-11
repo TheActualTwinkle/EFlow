@@ -33,14 +33,6 @@ public class SubmissionSlotRepository(ApplicationDbContext context) :
             .Where(s => s.SubjectId == subjectId)
             .ToListAsync(cancellationToken);
 
-    public async Task<IEnumerable<SubmissionSlot>> GetAvailableSlotsAsync(DateTime fromDate, CancellationToken cancellationToken = new()) =>
-        await context.SubmissionSlots
-            .Include(slot => slot.Admissions)
-            .Include(slot => slot.NotificationSettings)
-            .AsSplitQuery()
-            .Where(s => s.StartTime >= fromDate)
-            .ToListAsync(cancellationToken);
-
     public void Update(SubmissionSlot slot) =>
         context.SubmissionSlots.Update(slot);
 

@@ -27,6 +27,14 @@ public sealed class StudentQueryService(ApplicationDbContext context) : IStudent
             .Select(MapToView())
             .ToListAsync(cancellationToken);
 
+    public async Task<IEnumerable<StudentView>> GetByGroupIdsAsync(
+        IEnumerable<GroupId> groupId,
+        CancellationToken cancellationToken = new()) =>
+        await context.Students
+            .Where(s => groupId.Contains(s.GroupId))
+            .Select(MapToView())
+            .ToListAsync(cancellationToken);
+
     private Expression<Func<Student, StudentView>> MapToView() =>
         student => new StudentView
         {

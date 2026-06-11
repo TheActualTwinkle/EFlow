@@ -66,7 +66,17 @@ public class BookingNotificationHandlersIntegrationTests
         var noEmailStudent = CreateStudent(Guid.NewGuid(), allowedGroup.Id, NoEmailStudentFirstName, NoEmailStudentLastName);
 
         var slot = SubmissionSlot.Create(
-            subject.Id, teacher.Id, DefaultSlotStart, DefaultSlotEnd, DefaultMaxStudents, false, Now, [allowedGroup.Id], DefaultLocation,
+            subject.Id,
+            teacher.Id,
+            DefaultSlotStart,
+            DefaultSlotEnd,
+            DefaultMaxStudents,
+            false,
+            Now,
+            subject.GetGroupIds(),
+            subject.GetTeacherId(),
+            [allowedGroup.Id],
+            DefaultLocation,
             DefaultComment);
 
         var domainEvent = slot.DequeueDomainEvents().OfType<SubmissionSlotCreatedDomainEvent>().Single();
@@ -131,7 +141,17 @@ public class BookingNotificationHandlersIntegrationTests
         var noEmailStudent = CreateStudent(Guid.NewGuid(), oldGroup.Id, NoEmailStudentFirstName, NoEmailStudentLastName);
 
         var slot = SubmissionSlot.Create(
-            subject.Id, teacher.Id, oldSlotStart, oldSlotEnd, DefaultMaxStudents, false, Now, [oldGroup.Id], DefaultLocation,
+            subject.Id,
+            teacher.Id,
+            oldSlotStart,
+            oldSlotEnd,
+            DefaultMaxStudents,
+            false,
+            Now,
+            subject.GetGroupIds(),
+            subject.GetTeacherId(),
+            [oldGroup.Id],
+            DefaultLocation,
             DefaultComment);
 
         slot.DequeueDomainEvents();
@@ -228,7 +248,16 @@ public class BookingNotificationHandlersIntegrationTests
         var subject = Subject.Create("Databases", teacher.Id, [group.Id]);
         var bookedStudent = CreateStudent(Guid.NewGuid(), group.Id, "Artem", "Fedorov");
 
-        var slot = SubmissionSlot.Create(subject.Id, teacher.Id, DefaultSlotStart, DefaultSlotEnd, DefaultMaxStudents, true, Now);
+        var slot = SubmissionSlot.Create(
+            subject.Id,
+            teacher.Id,
+            DefaultSlotStart,
+            DefaultSlotEnd,
+            DefaultMaxStudents,
+            true,
+            Now,
+            subject.GetGroupIds(),
+            subject.GetTeacherId());
         slot.DequeueDomainEvents();
 
         var notifyAllId = Guid.NewGuid();
@@ -245,7 +274,7 @@ public class BookingNotificationHandlersIntegrationTests
         slot.UpdateNotificationSettings(
             teacherId, [], [SubmissionRemindTime.FourHours], BookingNotificationMode.OnlyNewBooking);
 
-        slot.AddAdmission(bookedStudent.Id);
+        slot.AddAdmission(bookedStudent.Id, bookedStudent.GetGroupId());
         var bookingRecord = slot.BookToSlot(bookedStudent, [], Now);
         var domainEvent = bookingRecord.DequeueDomainEvents().OfType<BookingRecordCreatedDomainEvent>().Single();
         var outboxRepository = new FakeOutboxMessageRepository();

@@ -1,5 +1,7 @@
 using EFlow.Booking.Application.Common.Errors;
 using EFlow.Booking.Application.Common.Errors.Abstractions;
+using EFlow.Booking.Domain.Students;
+using EFlow.Booking.Domain.Subjects;
 using EFlow.Booking.Domain.SubmissionSlots;
 using EFlow.Common.Infrastructure;
 using FluentResults;
@@ -22,7 +24,34 @@ public class UpdateSubmissionSlotCommandHandler(IUnitOfWork unitOfWork, ISystemC
                     .WithMessage("Submission slot not found")
                     .WithId(request.Id));
 
-        slot.Update(request.Patch, systemClock.UtcNow);
+        var subjectId = request.Patch.SubjectId.HasValue ?
+            request.Patch.SubjectId.Value! :
+            slot.GetSubjectId();
+
+        var subject = await unitOfWork
+            .GetRepository<ISubjectRepository>()
+            .GetByIdAsync(subjectId, cancellationToken);
+
+        if (subject is null)
+            return Result.Fail(
+                new NotFoundError()
+                    .WithMessage("Subject not found")
+                    .WithId(subjectId.Value));
+
+        var admittedStudentIds = slot.GetAdmittedStudentIds().ToHashSet();
+        var admittedStudents = admittedStudentIds.Count == 0
+            ? []
+            : (await unitOfWork
+                    .GetRepository<IStudentRepository>()
+                    .GetAllAsync(cancellationToken))
+                .Where(student => admittedStudentIds.Contains(student.Id));
+
+        slot.Update(
+            request.Patch,
+            subject.GetGroupIds(),
+            subject.GetTeacherId(),
+            admittedStudents,
+            systemClock.UtcNow);
 
         repository.Update(slot);
 

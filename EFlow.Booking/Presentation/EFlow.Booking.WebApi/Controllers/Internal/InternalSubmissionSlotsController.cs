@@ -5,7 +5,7 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace EFlow.Booking.WebApi.Controllers;
+namespace EFlow.Booking.WebApi.Controllers.Internal;
 
 [ApiController]
 [Route("api/internal/submission-slots")]

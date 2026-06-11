@@ -45,16 +45,6 @@ public sealed class SubmissionSlotQueryService(ApplicationDbContext context) : I
         return await MapToViewsAsync(slots, cancellationToken);
     }
 
-    public async Task<IEnumerable<SubmissionSlotView>> GetAvailableSlotsAsync(DateTime fromDate, CancellationToken cancellationToken = new())
-    {
-        var slots = await QuerySlots()
-            .Where(slot => slot.StartTime >= fromDate)
-            // TODO: filter out slots that are already fully booked
-            .ToListAsync(cancellationToken);
-
-        return await MapToViewsAsync(slots, cancellationToken);
-    }
-
     public async Task<IEnumerable<SubmissionSlotReminderSnapshotView>> GetReminderSnapshotAsync(CancellationToken cancellationToken = new())
     {
         var slots = await QuerySlots().ToListAsync(cancellationToken);

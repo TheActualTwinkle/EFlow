@@ -19,40 +19,6 @@ namespace EFlow.Booking.ApiTests.SubmissionSlots;
 public sealed class SubmissionSlotsApiTests(ApiTestStackFixture fixture)
 {
     /// <summary>
-    /// Verifies that <c>GetSubmissionSlots</c> returns the created slot when the slot exists.
-    /// </summary>
-    [Fact]
-    public Task GetSubmissionSlots_WhenSlotExists_ShouldReturnCreatedSlot() =>
-        WithSubmissionSlotFixtureAsync(async (scenario, context) =>
-        {
-            // Arrange
-            var slot = await scenario.GetSlotAsync(context.AdminSession, context.SlotId);
-
-            // Act
-            var bySubjectResponse = await context.AdminSession.GetAsync($"/api/submission-slots/by-subject/{context.SubjectId}");
-            var availableResponse = await context.AdminSession.GetAsync(
-                $"/api/submission-slots/available?fromDate={Uri.EscapeDataString(DateTime.UtcNow.Date.ToString("O"))}");
-
-            // Assert
-            slot.Id.Should().Be(context.SlotId);
-            slot.Subject.Should().NotBeNull();
-            slot.Subject!.Id.Should().Be(context.SubjectId);
-            slot.Teacher.Should().NotBeNull();
-            slot.Teacher!.Id.Should().Be(context.TeacherId);
-            slot.StartTime.Should().Be(context.SlotStart);
-            slot.EndTime.Should().Be(context.SlotStart + ApiScenario.SlotDuration);
-            slot.MaxStudents.Should().Be(ApiScenario.SlotMaxStudents);
-            slot.Location.Should().Be(ApiScenario.SlotLocation);
-            slot.Comment.Should().Be(ApiScenario.SlotComment);
-            bySubjectResponse.StatusCode.Should().Be(HttpStatusCode.OK);
-            availableResponse.StatusCode.Should().Be(HttpStatusCode.OK);
-            var slotsBySubject = (await context.AdminSession.ReadAsync<SubmissionSlotView[]>(bySubjectResponse))!;
-            var availableSlots = (await context.AdminSession.ReadAsync<SubmissionSlotView[]>(availableResponse))!;
-            slotsBySubject.Should().Contain(x => x.Id == context.SlotId && x.Subject != null && x.Subject.Id == context.SubjectId);
-            availableSlots.Should().Contain(x => x.Id == context.SlotId);
-        });
-
-    /// <summary>
     /// Verifies that <c>UpdateSubmissionSlot</c> replaces the allowed groups stored for the slot.
     /// </summary>
     [Fact]

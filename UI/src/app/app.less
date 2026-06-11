@@ -1184,8 +1184,7 @@ nav {
   display: grid;
   gap: 6px;
 
-  button,
-  span {
+  .empty-inline {
     min-height: 36px;
     border: 1px solid var(--line);
     border-radius: 8px;
@@ -1194,89 +1193,6 @@ nav {
     padding: 8px 10px;
     text-align: left;
     font-weight: 620;
-  }
-
-  button {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 10px;
-    min-width: 0;
-    overflow: hidden;
-
-    span:first-child {
-      display: grid;
-      gap: 3px;
-      min-width: 0;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    strong {
-      color: inherit;
-      line-height: 1.15;
-    }
-
-    small {
-      color: color-mix(in srgb, currentColor 68%, transparent);
-      font-size: 12px;
-      font-weight: 620;
-      line-height: 1.2;
-    }
-  }
-
-  .switch {
-    position: relative;
-    display: grid;
-    flex: 0 0 auto;
-    width: 20px;
-    height: 20px;
-    place-items: center;
-    border: 1px solid var(--line);
-    border-radius: 999px;
-    background: var(--surface);
-    padding: 0;
-    transition:
-      background-color 160ms ease,
-      border-color 160ms ease;
-
-    &::after {
-      content: '';
-      width: 8px;
-      height: 8px;
-      border-radius: 999px;
-      background: transparent;
-      transition: background-color 160ms ease;
-    }
-  }
-
-  .selected {
-    border-color: var(--text);
-    background: var(--primary);
-    color: var(--bg);
-
-    .switch {
-      border-color: var(--bg);
-      background: transparent;
-
-      &::after {
-        background: var(--bg);
-      }
-    }
-  }
-
-  &.admission-list {
-    max-width: 680px;
-
-    button {
-      min-height: 34px;
-      padding: 7px 9px;
-    }
-
-    .switch {
-      width: 18px;
-      height: 18px;
-    }
   }
 }
 
@@ -1309,6 +1225,86 @@ nav {
   padding: 7px 10px;
   font-weight: 760;
   line-height: 1;
+}
+
+.student-status-list {
+  display: grid;
+  gap: 14px;
+
+  section {
+    display: grid;
+    gap: 8px;
+  }
+
+  h3 {
+    margin: 0;
+    color: var(--muted);
+    font-size: 13px;
+    font-weight: 760;
+  }
+
+  article {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 12px;
+    align-items: center;
+    min-height: 48px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--surface-strong);
+    padding: 9px 10px;
+  }
+
+  article > div {
+    display: grid;
+    min-width: 0;
+    gap: 3px;
+  }
+
+  strong,
+  span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  strong {
+    color: var(--text);
+    font-size: 14px;
+    line-height: 1.2;
+  }
+
+  article > div span {
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 640;
+    line-height: 1.2;
+  }
+
+  .empty-inline {
+    min-height: 42px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--surface-strong);
+    padding: 10px;
+  }
+}
+
+.status-pill {
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--surface) 88%, var(--line));
+  color: var(--muted);
+  padding: 5px 8px;
+  font-size: 12px;
+  font-weight: 760;
+  line-height: 1;
+
+  &.success {
+    border-color: color-mix(in srgb, var(--success) 36%, var(--line));
+    background: color-mix(in srgb, var(--success) 12%, var(--surface));
+    color: color-mix(in srgb, var(--success) 76%, var(--text));
+  }
 }
 
 .muted,
@@ -1530,6 +1526,29 @@ lucide-icon {
 
   strong {
     color: var(--text);
+  }
+}
+
+.confirm-details {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--surface) 94%, var(--line));
+  margin: 12px 0 0;
+  padding: 10px 12px;
+
+  summary {
+    cursor: pointer;
+    font-weight: 680;
+  }
+
+  ul {
+    display: grid;
+    max-height: 180px;
+    gap: 8px;
+    overflow: auto;
+    margin: 10px 0 0;
+    padding-left: 18px;
+    color: var(--muted);
   }
 }
 

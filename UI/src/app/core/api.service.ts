@@ -13,6 +13,7 @@ type CreateStudentRequest = Schemas['CreateStudentRequest'];
 type CreateSubmissionSlotRequest = Schemas['CreateSubmissionSlotRequest'];
 type CreateTeacherRequest = Schemas['CreateTeacherRequest'];
 type GroupView = Schemas['GroupView'];
+type NotBookedStudentsView = Schemas['NotBookedStudentsView'];
 type StudentView = Schemas['StudentView'];
 type SubjectView = Schemas['SubjectView'];
 type SubmissionSlotView = Schemas['SubmissionSlotView'];
@@ -121,6 +122,18 @@ export class ApiService {
   getBookingsBySlot(slotId: string, fetchGroups = false) {
     const params = fetchGroups ? new HttpParams().set('fetchGroups', true) : undefined;
     return this.http.get<BookingRecordView[]>(`${apiBaseUrl}/bookings/by-slot/${slotId}`, { params }).pipe(catchError((error) => this.fail(error)));
+  }
+
+  getNotBookedStudents(slotId: string) {
+    return this.http
+      .get<NotBookedStudentsView>(`${apiBaseUrl}/bookings/${slotId}/not-booked-students`)
+      .pipe(catchError((error) => this.fail(error)));
+  }
+
+  getSlotAllowedStudents(slotId: string) {
+    return this.http
+      .get<StudentView[]>(`${apiBaseUrl}/submission-slots/${slotId}/allowed-students`)
+      .pipe(catchError((error) => this.fail(error)));
   }
 
   createGroup(name: string) {
