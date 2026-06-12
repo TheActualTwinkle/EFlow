@@ -211,7 +211,7 @@
             <h2>Расписание защит</h2>
           </div>
           @if (auth.hasRole('Admin', 'Teacher')) {
-            <button class="primary-action" type="button" (click)="openModal('createSlot')">
+            <button class="primary-action" type="button" (click)="openCreateSlotModal()">
               <app-icon name="plus" />
               Создать
             </button>
@@ -467,7 +467,12 @@
                   </label>
                   <div class="toggle-list">
                     @for (group of filteredSlotEditableGroups(slot); track group.id) {
-                      <app-toggle-item [title]="group.name" [selected]="slotGroupIds(slot).includes(group.id)" (toggle)="toggleSlotAllowedGroup(slot, group.id)" />
+                      <app-toggle-item
+                        [title]="group.name"
+                        [warningHint]="excludedBookedGroupWarningHint(slot, group.id)"
+                        [selected]="slotGroupIds(slot).includes(group.id)"
+                        (toggle)="toggleSlotAllowedGroup(slot, group.id)"
+                      />
                     } @empty {
                       <span class="empty-inline">Нет групп для ограничения доступа</span>
                     }

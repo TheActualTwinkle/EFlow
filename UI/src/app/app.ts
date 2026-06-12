@@ -327,7 +327,7 @@ export class App {
 
     if (keyChanged) {
       this.resetBookingExpansion();
-    } else if (force && view === 'bookings') {
+    } else if (force) {
       this.loadedBookingSlotIds.set([]);
     }
 
@@ -599,21 +599,23 @@ export class App {
       return;
     }
 
-    const affectedAdmissions = this.admissionsOutsideAllowedGroups(slot, allowedGroupIds);
+    this.api.getBookingsBySlot(slot.id, true).subscribe((bookings) => {
+      const affectedStudents = this.bookedStudentsOutsideAllowedGroups(bookings, allowedGroupIds, slot.allowAllGroups);
 
-    if (affectedAdmissions.length > 0) {
-      this.confirmDestructiveAction({
-        title: 'Снять допуски у студентов?',
-        summaryTitle: `${affectedAdmissions.length} ${this.studentCountLabel(affectedAdmissions.length)} вне выбранных групп`,
-        message: 'После сохранения студенты из исключенных групп потеряют допуск к этому окну защиты.',
-        items: affectedAdmissions.map((student) => `${this.fullName(student)} · ${student.group?.name ?? 'Группа не указана'}`),
-        confirmLabel: 'Сохранить и снять допуски',
-        action: () => this.submitSlotUpdate(slot, allowedGroupIds),
-      });
-      return;
-    }
+      if (affectedStudents.length > 0) {
+        this.confirmDestructiveAction({
+          title: 'Есть записанные студенты вне выбранных групп',
+          summaryTitle: `${affectedStudents.length} ${this.studentCountLabel(affectedStudents.length)} вне выбранных групп`,
+          message: 'После сохранения изменений записи следующих студентов будут отменены:',
+          items: affectedStudents.map((student) => `${this.fullName(student)} · ${student.group?.name ?? 'Группа не указана'}`),
+          confirmLabel: 'Сохранить изменения',
+          action: () => this.submitSlotUpdate(slot, allowedGroupIds),
+        });
+        return;
+      }
 
-    this.submitSlotUpdate(slot, allowedGroupIds);
+      this.submitSlotUpdate(slot, allowedGroupIds);
+    });
   }
 
   private submitSlotUpdate(slot: SubmissionSlotView, allowedGroupIds: string[]): void {
@@ -630,9 +632,20 @@ export class App {
         comment: slot.comment,
       })
       .subscribe(() => {
-        this.showToast('Окно защиты обновлено', 'success');
-        this.closeModal();
-        this.refresh();
+        forkJoin({
+          slot: this.api.getSlot(slot.id),
+          bookings: this.api.getBookingsBySlot(slot.id, true),
+        }).subscribe(({ slot: freshSlot, bookings }) => {
+          this.data.update((current) => ({
+            ...current,
+            slots: this.replaceSlot(current.slots, freshSlot),
+            bookings: [...current.bookings.filter((booking) => booking.slot?.id !== freshSlot.id), ...bookings],
+          }));
+          this.loadedBookingSlotIds.update((ids) => (ids.includes(freshSlot.id) ? ids : [...ids, freshSlot.id]));
+          this.selectedSlotId.set(freshSlot.id);
+          this.showToast('Окно защиты обновлено', 'success');
+          this.closeModal();
+        });
       });
   }
 
@@ -860,9 +873,7 @@ export class App {
 
   toggleAdmission(slot: SubmissionSlotView, student: StudentView): void {
     const admitted = this.isAdmitted(slot, student.id);
-    const onSaved = () => {
-      this.refreshAdmissionSlot(slot.id);
-    };
+    const onSaved = () => this.setStudentAdmission(slot, student, !admitted);
 
     if (admitted) {
       this.api.removeAdmission(slot.id, student.id).subscribe(onSaved);
@@ -1038,14 +1049,21 @@ export class App {
     this.activeModal.set(modal);
   }
 
+  openCreateSlotModal(): void {
+    this.ensureCreateSlotReferenceData(() => {
+      this.normalizeSlotFormSelection();
+      this.openModal('createSlot');
+    });
+  }
+
   openSlotEditor(slot: SubmissionSlotView): void {
-    this.selectedSlotId.set(slot.id);
-    this.slotGroupSearch.set('');
-    this.admissionSlotStudents.set([]);
-    this.editSlotDraft.set(this.cloneSlot(slot));
-    this.openModal('editSlot');
-    this.api.getSlotAllowedStudents(slot.id).subscribe((students) => {
-      this.admissionSlotStudents.set(students);
+    this.ensureEditSlotReferenceData(slot, () => {
+      this.selectedSlotId.set(slot.id);
+      this.slotGroupSearch.set('');
+      this.admissionSlotStudents.set([]);
+      this.editSlotDraft.set(this.cloneSlot(slot));
+      this.openModal('editSlot');
+      this.loadBookingsForSlot(slot.id);
     });
   }
 
@@ -1055,13 +1073,8 @@ export class App {
     this.admissionSearch.set('');
     this.admissionSlotStudents.set([]);
     this.openModal('admissions');
-    forkJoin({
-      students: this.api.getSlotAllowedStudents(slot.id),
-      slot: this.api.getSlot(slot.id),
-    }).subscribe(({ students, slot: freshSlot }) => {
+    this.api.getSlotAllowedStudents(slot.id).subscribe((students) => {
       this.admissionSlotStudents.set(students);
-      this.applyWorkspace({ slots: this.replaceSlot(this.data().slots, freshSlot) });
-      this.selectedSlotId.set(freshSlot.id);
     });
   }
 
@@ -1229,7 +1242,7 @@ export class App {
   }
 
   slotBookingCount(slot: SubmissionSlotView): number {
-    return Math.max(Number(slot.bookingCount) || 0, this.bookingsForSlot(slot.id).length);
+    return this.loadedBookingSlotIds().includes(slot.id) ? this.bookingsForSlot(slot.id).length : Number(slot.bookingCount) || 0;
   }
 
   isBookingSlotExpanded(slotId: string): boolean {
@@ -1458,6 +1471,20 @@ export class App {
     }
 
     return slot.subject?.groups ?? [];
+  }
+
+  excludedBookedGroupWarningHint(slot: SubmissionSlotView, groupId: string): string {
+    if (slot.allowAllGroups || this.slotGroupIds(slot).includes(groupId)) {
+      return '';
+    }
+
+    const hasBookedStudents = this.bookingsForSlot(slot.id)
+      .map((booking) => booking.student)
+      .filter((student): student is StudentView => !!student)
+      .map((student) => this.withKnownStudentDetails(student))
+      .some((student) => student.group?.id === groupId);
+
+    return hasBookedStudents ? 'При исключении этой группы будут отменены записи студентов' : '';
   }
 
   filteredSlotEditableGroups(slot: SubmissionSlotView): GroupView[] {
@@ -1971,18 +1998,35 @@ export class App {
     return true;
   }
 
-  private admissionsOutsideAllowedGroups(slot: SubmissionSlotView, allowedGroupIds: string[]): StudentView[] {
-    if (slot.allowAllGroups) {
+  private bookedStudentsOutsideAllowedGroups(bookings: BookingRecordView[], allowedGroupIds: string[], allowAllGroups?: boolean | null): StudentView[] {
+    if (allowAllGroups) {
       return [];
     }
 
     const allowed = new Set(allowedGroupIds);
 
-    return (slot.admittedStudents ?? []).filter((student) => {
-      const fullStudent = this.findStudent(student.id) ?? student;
-      const groupId = fullStudent.group?.id;
-      return !groupId || !allowed.has(groupId);
-    }).map((student) => this.findStudent(student.id) ?? student);
+    return bookings
+      .map((booking) => booking.student)
+      .filter((student): student is StudentView => !!student)
+      .map((student) => this.withKnownStudentDetails(student))
+      .filter((student) => {
+        const groupId = student.group?.id;
+        return !groupId || !allowed.has(groupId);
+      });
+  }
+
+  private withKnownStudentDetails(student: StudentView): StudentView {
+    const knownStudent = this.findStudent(student.id);
+
+    if (!knownStudent) {
+      return student;
+    }
+
+    return {
+      ...student,
+      ...knownStudent,
+      group: knownStudent.group ?? student.group,
+    };
   }
 
   private findStudent(studentId: string): StudentView | null {
@@ -2179,20 +2223,130 @@ export class App {
 
   private refreshSlot(slotId: string): void {
     this.api.getSlot(slotId).subscribe((slot) => {
-      this.applyWorkspace({ slots: this.replaceSlot(this.data().slots, slot) });
+      this.replaceSlotInWorkspace(slot);
       this.selectedSlotId.set(slot.id);
     });
   }
 
-  private refreshAdmissionSlot(slotId: string): void {
-    forkJoin({
-      students: this.api.getSlotAllowedStudents(slotId),
-      slot: this.api.getSlot(slotId),
-    }).subscribe(({ students, slot }) => {
-      this.admissionSlotStudents.set(students);
-      this.applyWorkspace({ slots: this.replaceSlot(this.data().slots, slot) });
-      this.selectedSlotId.set(slot.id);
+  private setStudentAdmission(slot: SubmissionSlotView, student: StudentView, admitted: boolean): void {
+    const admittedStudents = slot.admittedStudents ?? [];
+    const nextSlot = {
+      ...slot,
+      admittedStudents: admitted
+        ? admittedStudents.some((item) => item.id === student.id)
+          ? admittedStudents
+          : [...admittedStudents, student]
+        : admittedStudents.filter((item) => item.id !== student.id),
+    };
+
+    this.replaceSlotInWorkspace(nextSlot);
+    this.selectedSlotId.set(nextSlot.id);
+  }
+
+  private replaceSlotInWorkspace(slot: SubmissionSlotView): void {
+    this.data.update((current) => ({
+      ...current,
+      slots: this.replaceSlot(current.slots, slot),
+    }));
+  }
+
+  private ensureCreateSlotReferenceData(onReady: () => void): void {
+    if (this.hasCreateSlotReferenceData()) {
+      onReady();
+      return;
+    }
+
+    const userId = this.auth.user()?.id;
+
+    if (this.auth.hasRole('Teacher') && userId) {
+      this.api.getSubjectsByTeacher(userId).subscribe((subjects) => {
+        this.mergeSubjectReferenceData(subjects);
+        onReady();
+      });
+      return;
+    }
+
+    if (this.auth.hasRole('Admin')) {
+      this.api.getSubjects().subscribe((subjects) => {
+        this.mergeSubjectReferenceData(subjects);
+        onReady();
+      });
+      return;
+    }
+
+    onReady();
+  }
+
+  private ensureEditSlotReferenceData(slot: SubmissionSlotView, onReady: () => void): void {
+    const subjectId = slot.subject?.id;
+
+    if (!subjectId || this.subjectHasGroups(subjectId) || slot.subject?.groups?.length) {
+      onReady();
+      return;
+    }
+
+    this.api.getSubject(subjectId).subscribe((subject) => {
+      this.mergeSubjectReferenceData([subject]);
+      onReady();
     });
+  }
+
+  private hasCreateSlotReferenceData(): boolean {
+    const userId = this.auth.user()?.id;
+
+    if (this.auth.hasRole('Teacher')) {
+      return !!userId && this.data().subjects.some((subject) => subject.teacher?.id === userId);
+    }
+
+    return this.auth.hasRole('Admin') ? this.data().subjects.length > 0 : true;
+  }
+
+  private subjectHasGroups(subjectId: string): boolean {
+    return !!this.data().subjects.find((subject) => subject.id === subjectId)?.groups?.length;
+  }
+
+  private mergeSubjectReferenceData(subjects: SubjectView[]): void {
+    this.data.update((current) => ({
+      ...current,
+      groups: this.mergeById(current.groups, this.groupsFromSubjects(subjects)),
+      teachers: this.mergeById(current.teachers, this.teachersFromSubjects(subjects)),
+      subjects: this.mergeById(current.subjects, subjects),
+    }));
+    this.syncDefaultSelections(this.data());
+  }
+
+  private mergeById<T extends { id: string }>(current: T[], incoming: T[]): T[] {
+    const items = new Map(current.map((item) => [item.id, item]));
+
+    for (const item of incoming) {
+      items.set(item.id, item);
+    }
+
+    return [...items.values()];
+  }
+
+  private groupsFromSubjects(subjects: SubjectView[]): GroupView[] {
+    const groups = new Map<string, GroupView>();
+
+    for (const subject of subjects) {
+      for (const group of subject.groups ?? []) {
+        groups.set(group.id, group);
+      }
+    }
+
+    return [...groups.values()];
+  }
+
+  private teachersFromSubjects(subjects: SubjectView[]): TeacherView[] {
+    const teachers = new Map<string, TeacherView>();
+
+    for (const subject of subjects) {
+      if (subject.teacher) {
+        teachers.set(subject.teacher.id, subject.teacher);
+      }
+    }
+
+    return [...teachers.values()];
   }
 
   private replaceSlot(slots: SubmissionSlotView[], slot: SubmissionSlotView): SubmissionSlotView[] {

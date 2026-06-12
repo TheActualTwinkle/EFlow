@@ -1,6 +1,13 @@
 <button type="button" class="toggle-item" [class.selected]="selected" (click)="toggle.emit()">
   <span class="toggle-item-text">
-    <strong>{{ title }}</strong>
+    <span class="toggle-item-title">
+      <strong>{{ title }}</strong>
+      @if (warningHint) {
+        <span class="toggle-warning-icon" aria-label="Предупреждение" [appHoverHint]="warningHint">
+          <app-icon name="triangle-alert" />
+        </span>
+      }
+    </span>
     @if (subtitle) {
       <small>{{ subtitle }}</small>
     }

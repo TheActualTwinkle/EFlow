@@ -95,6 +95,10 @@ export class ApiService {
     return this.http.get<SubjectView[]>(`${apiBaseUrl}/subjects`).pipe(catchError((error) => this.fail(error)));
   }
 
+  getSubject(id: string) {
+    return this.http.get<SubjectView>(`${apiBaseUrl}/subjects/${id}`).pipe(catchError((error) => this.fail(error)));
+  }
+
   getSubjectsByTeacher(teacherId: string) {
     return this.http.get<SubjectView[]>(`${apiBaseUrl}/subjects/by-teacher/${teacherId}`).pipe(catchError((error) => this.fail(error)));
   }
