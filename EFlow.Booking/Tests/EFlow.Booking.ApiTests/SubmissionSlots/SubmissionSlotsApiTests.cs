@@ -188,7 +188,7 @@ public sealed class SubmissionSlotsApiTests(ApiTestStackFixture fixture)
         WithSubmissionSlotFixtureAsync(async (scenario, context) =>
         {
             // Arrange
-            var foreignTeacherUsername = $"not_booked_teacher_foreign_{context.Suffix}";
+            var foreignTeacherUsername = $"foreign_{context.Suffix}";
             var foreignTeacherId = await scenario.CreateTeacherAsync(
                 context.AdminSession,
                 foreignTeacherUsername,
