@@ -123,8 +123,6 @@ export class App {
   };
   readonly personRoles = ['Student', 'Teacher'] as const;
   readonly slotGroupSearch = signal('');
-  readonly loginReadonly = signal(true);
-  readonly passwordReadonly = signal(true);
   readonly accountCurrentPasswordVisible = signal(false);
   readonly accountNewPasswordVisible = signal(false);
   readonly accountConfirmPasswordVisible = signal(false);
@@ -294,8 +292,6 @@ export class App {
     this.auth.logoutOnServer().subscribe(() => {
       this.loginForm.username = '';
       this.loginForm.password = '';
-      this.loginReadonly.set(true);
-      this.passwordReadonly.set(true);
       this.loaded.set(false);
       this.lastLoadedKey = '';
       this.fieldErrors.set({});

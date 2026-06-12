@@ -7,14 +7,6 @@ public class UpdateSubmissionSlotCommandValidator : AbstractValidator<UpdateSubm
     public UpdateSubmissionSlotCommandValidator()
     {
         When(
-            x => x.Patch.SubjectId.HasValue,
-            () =>
-            {
-                RuleFor(x => x.Patch.SubjectId.Value)
-                    .NotEmpty().WithMessage("Subject ID cannot be empty");
-            });
-
-        When(
             x => x.Patch.StartTime.HasValue && x.Patch.EndTime.HasValue,
             () =>
             {

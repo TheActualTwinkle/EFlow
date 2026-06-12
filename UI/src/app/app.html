@@ -21,16 +21,14 @@
 <!--        <h2>Рабочее пространство</h2>-->
       </div>
 
-      <form (ngSubmit)="login()" #loginFormRef="ngForm" autocomplete="off">
-        <input class="decoy-field" name="username" autocomplete="username" tabindex="-1" aria-hidden="true" />
-        <input class="decoy-field" name="password" type="password" autocomplete="current-password" tabindex="-1" aria-hidden="true" />
+      <form (ngSubmit)="login()" #loginFormRef="ngForm" autocomplete="on">
         <label>
           <span>Логин <b>*</b></span>
-          <input name="eflow-login" [(ngModel)]="loginForm.username" autocomplete="new-password" [readonly]="loginReadonly()" (focus)="loginReadonly.set(false)" required />
+          <input name="username" [(ngModel)]="loginForm.username" autocomplete="username" required />
         </label>
         <label>
           <span>Пароль <b>*</b></span>
-          <input name="eflow-login-password" [(ngModel)]="loginForm.password" type="password" autocomplete="new-password" [readonly]="passwordReadonly()" (focus)="passwordReadonly.set(false)" required />
+          <input name="password" [(ngModel)]="loginForm.password" type="password" autocomplete="current-password" required />
         </label>
 
         @if (auth.error()) {

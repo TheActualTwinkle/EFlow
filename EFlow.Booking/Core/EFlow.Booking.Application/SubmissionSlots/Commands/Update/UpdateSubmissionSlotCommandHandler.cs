@@ -24,19 +24,15 @@ public class UpdateSubmissionSlotCommandHandler(IUnitOfWork unitOfWork, ISystemC
                     .WithMessage("Submission slot not found")
                     .WithId(request.Id));
 
-        var subjectId = request.Patch.SubjectId.HasValue ?
-            request.Patch.SubjectId.Value! :
-            slot.GetSubjectId();
-
         var subject = await unitOfWork
             .GetRepository<ISubjectRepository>()
-            .GetByIdAsync(subjectId, cancellationToken);
+            .GetByIdAsync(slot.GetSubjectId(), cancellationToken);
 
         if (subject is null)
             return Result.Fail(
                 new NotFoundError()
                     .WithMessage("Subject not found")
-                    .WithId(subjectId.Value));
+                    .WithId(slot.GetSubjectId().Value));
 
         var admittedStudentIds = slot.GetAdmittedStudentIds().ToHashSet();
         var admittedStudents = admittedStudentIds.Count == 0

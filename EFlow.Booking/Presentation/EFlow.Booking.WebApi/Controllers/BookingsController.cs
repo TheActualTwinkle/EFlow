@@ -2,6 +2,7 @@ using System.Security.Claims;
 using EFlow.Booking.Application.BookingRecords.Commands;
 using EFlow.Booking.Application.BookingRecords.Queries;
 using EFlow.Booking.Application.BookingRecords.Queries.GetNotBookedStudents;
+using EFlow.Booking.Application.SubmissionSlots.Queries;
 using EFlow.Booking.Contracts.BookingRecords;
 using EFlow.Booking.Contracts.Students;
 using EFlow.Booking.Domain;
@@ -120,6 +121,20 @@ public class BookingsController(ISender sender) : ControllerBase
     [ProducesResponseType(typeof(NotBookedStudentsView), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetNotBookedStudentsForSlot(Guid slotId, CancellationToken cancellationToken)
     {
+        if (!User.IsInRole(Identity.Roles.Admin))
+        {
+            var getSlotResult = await sender.Send(new GetSubmissionSlotByIdQuery { Id = slotId }, cancellationToken);
+
+            if (getSlotResult.IsFailed)
+                return getSlotResult.Errors[0].ToProblemDetails();
+
+            if (getSlotResult.Value.Teacher!.Id.ToString() != User.FindFirst(ClaimTypes.NameIdentifier)?.Value)
+                return Problem(
+                    title: "Forbidden",
+                    detail: "You can only view students for your own slots.",
+                    statusCode: StatusCodes.Status403Forbidden);
+        }
+
         var result = await sender.Send(new GetNotBookedStudentsQuery { SlotId = slotId }, cancellationToken);
 
         return result.IsFailed ?

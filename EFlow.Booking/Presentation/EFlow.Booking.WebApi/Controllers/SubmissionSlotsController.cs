@@ -9,8 +9,6 @@ using EFlow.Booking.Contracts.SubmissionSlots;
 using EFlow.Booking.Domain;
 using EFlow.Booking.Domain.Groups;
 using EFlow.Booking.Domain.SubmissionSlots;
-using EFlow.Booking.Domain.Subjects;
-using EFlow.Booking.Domain.Teachers;
 using EFlow.Booking.WebApi.Contracts.SubmissionSlots;
 using EFlow.Booking.WebApi.Extensions;
 using MediatR;
@@ -154,8 +152,6 @@ public class SubmissionSlotsController(ISender sender) : ControllerBase
             Id = id,
             Patch = new SubmissionSlotPatch
             {
-                TeacherId = request.TeacherId.Map(teacherId => new TeacherId(teacherId)),
-                SubjectId = request.SubjectId.Map(subjectId => new SubjectId(subjectId)),
                 StartTime = request.StartTime,
                 EndTime = request.EndTime,
                 MaxStudents = request.MaxStudents,

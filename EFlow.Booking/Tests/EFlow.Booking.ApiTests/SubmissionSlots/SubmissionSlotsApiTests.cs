@@ -181,6 +181,36 @@ public sealed class SubmissionSlotsApiTests(ApiTestStackFixture fixture)
         });
 
     /// <summary>
+    /// Verifies that <c>GetNotBookedStudentsForSlot</c> returns <c>Forbidden</c> when the caller is another teacher.
+    /// </summary>
+    [Fact]
+    public Task GetNotBookedStudentsForSlot_WhenUserIsAnotherTeacher_ShouldReturnForbidden() =>
+        WithSubmissionSlotFixtureAsync(async (scenario, context) =>
+        {
+            // Arrange
+            var foreignTeacherUsername = $"not_booked_teacher_foreign_{context.Suffix}";
+            var foreignTeacherId = await scenario.CreateTeacherAsync(
+                context.AdminSession,
+                foreignTeacherUsername,
+                $"{foreignTeacherUsername}@example.com",
+                "Pavel",
+                "Sidorov");
+
+            context.AddCleanup(ApiScenario.DeleteTeacher(foreignTeacherId));
+
+            var foreignTeacherSession = await scenario.LoginAsync(foreignTeacherUsername, ApiScenario.TeacherPassword);
+
+            using (foreignTeacherSession)
+            {
+                // Act
+                var response = await foreignTeacherSession.GetAsync($"/api/bookings/{context.SlotId}/not-booked-students");
+
+                // Assert
+                await foreignTeacherSession.AssertProblemAsync(response, HttpStatusCode.Forbidden, ApiAssertions.ForbiddenTitle, "own slots");
+            }
+        });
+
+    /// <summary>
     /// Verifies that <c>UpdateNotificationSettings</c> succeeds when a student targets themselves.
     /// </summary>
     [Fact]
