@@ -466,10 +466,10 @@ textarea {
   text-align: left;
 }
 
-.primary-action lucide-icon,
-.secondary-action lucide-icon,
-.ghost-button lucide-icon,
-.icon-button lucide-icon {
+.primary-action app-icon,
+.secondary-action app-icon,
+.ghost-button app-icon,
+.icon-button app-icon {
   flex: 0 0 auto;
 }
 
@@ -504,7 +504,7 @@ textarea {
     display: none;
   }
 
-  lucide-icon {
+  app-icon {
     width: 16px;
     height: 16px;
   }
@@ -526,6 +526,29 @@ textarea {
 .icon-button {
   width: 42px;
   padding: 0;
+}
+
+.action-hint-wrapper {
+  display: inline-flex;
+}
+
+.not-booked-action {
+  position: relative;
+
+  > app-icon:first-child {
+    width: 19px;
+    height: 19px;
+  }
+
+  .question-mark {
+    position: absolute;
+    top: 6px;
+    right: 7px;
+    width: 11px;
+    height: 11px;
+    background: var(--surface);
+    border-radius: 999px;
+  }
 }
 
 .danger {
@@ -1018,24 +1041,6 @@ nav {
   }
 }
 
-.admission-tooltip {
-  position: fixed;
-  z-index: 80;
-  width: max-content;
-  max-width: min(320px, calc(100vw - 28px));
-  transform: translate(-50%, calc(-100% - 14px));
-  pointer-events: none;
-  border: 1px solid color-mix(in srgb, var(--line) 82%, var(--text));
-  border-radius: 8px;
-  background: var(--surface);
-  box-shadow: var(--shadow);
-  color: var(--text);
-  padding: 9px 11px;
-  font-size: 12px;
-  font-weight: 720;
-  line-height: 1.35;
-}
-
 .details {
   display: grid;
   gap: 14px;
@@ -1079,7 +1084,7 @@ nav {
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: start;
 
-  > lucide-icon {
+  > app-icon {
     justify-self: end;
   }
 }
@@ -1448,7 +1453,7 @@ nav {
   }
 }
 
-lucide-icon {
+app-icon {
   display: inline-flex;
   width: 18px;
   height: 18px;
@@ -1502,7 +1507,7 @@ lucide-icon {
     opacity: 1;
     visibility: visible;
 
-    > lucide-icon {
+    > app-icon {
       color: var(--danger);
     }
   }

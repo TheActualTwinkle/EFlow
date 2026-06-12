@@ -14,7 +14,7 @@
 
     <section class="login-panel">
       <button class="icon-button theme-float" type="button" (click)="theme.toggle()" aria-label="Переключить тему">
-        <lucide-icon [name]="theme.mode() === 'dark' ? 'sun' : 'moon'" />
+        <app-icon [name]="theme.mode() === 'dark' ? 'sun' : 'moon'" />
       </button>
       <div>
         <p class="eyebrow">Вход в систему</p>
@@ -38,7 +38,7 @@
         }
 
         <button class="primary-action" type="submit" [disabled]="loginFormRef.invalid || auth.loading()">
-          <lucide-icon name="shield-check" />
+          <app-icon name="shield-check" />
           Войти
         </button>
       </form>
@@ -57,20 +57,20 @@
 
       <nav>
         <button type="button" [class.active]="activeView() === 'overview'" (click)="go('overview')">
-          <lucide-icon name="calendar-days" />
+          <app-icon name="calendar-days" />
           Обзор
         </button>
         <button type="button" [class.active]="activeView() === 'slots'" (click)="go('slots')">
-          <lucide-icon name="clock-3" />
+          <app-icon name="clock-3" />
           Окна защиты
         </button>
         <button type="button" [class.active]="activeView() === 'bookings'" (click)="go('bookings')">
-          <lucide-icon name="check-circle-2" />
+          <app-icon name="check-circle-2" />
           {{ auth.hasRole('Student') ? 'Мои записи' : 'Записи' }}
         </button>
         @if (auth.hasRole('Admin')) {
           <button type="button" [class.active]="activeView() === 'admin'" (click)="go('admin')">
-            <lucide-icon name="users" />
+            <app-icon name="users" />
             Администрирование
           </button>
         }
@@ -79,20 +79,20 @@
       <div class="sidebar-footer">
         @if (auth.hasRole('Student', 'Teacher')) {
           <button class="ghost-button" type="button" (click)="openAccountEmail()">
-            <lucide-icon name="mail" />
+            <app-icon name="mail" />
             Сменить почту
           </button>
           <button class="ghost-button" type="button" (click)="openAccountPassword()">
-            <lucide-icon name="key-round" />
+            <app-icon name="key-round" />
             Сменить пароль
           </button>
         }
         <button class="ghost-button" type="button" (click)="theme.toggle()">
-          <lucide-icon [name]="theme.mode() === 'dark' ? 'sun' : 'moon'" />
+          <app-icon [name]="theme.mode() === 'dark' ? 'sun' : 'moon'" />
           {{ theme.mode() === 'dark' ? 'Светлая тема' : 'Тёмная тема' }}
         </button>
         <button class="ghost-button danger" type="button" (click)="logout()">
-          <lucide-icon name="log-out" />
+          <app-icon name="log-out" />
           Выйти
         </button>
       </div>
@@ -102,7 +102,7 @@
       <header class="topbar">
         <div class="page-title">EFlow</div>
         <button class="secondary-action" type="button" (click)="refresh()" [disabled]="api.busy()">
-          <lucide-icon name="refresh-cw" />
+          <app-icon name="refresh-cw" />
           Обновить
         </button>
       </header>
@@ -163,7 +163,7 @@
                 <p class="eyebrow">Ближайшие защиты</p>
                 <h2>Расписание</h2>
               </div>
-              <lucide-icon name="calendar-days" />
+              <app-icon name="calendar-days" />
             </div>
             <div class="timeline">
               @for (slot of overviewSlots(); track slot.id) {
@@ -172,9 +172,7 @@
                   type="button"
                   [class.active]="selectedSlotId() === slot.id"
                   [class.no-admission]="studentLacksAdmission(slot)"
-                  (mouseenter)="showAdmissionTooltip(slot, $event)"
-                  (mousemove)="moveAdmissionTooltip($event)"
-                  (mouseleave)="hideAdmissionTooltip()"
+                  [appHoverHint]="slotAdmissionHint(slot)"
                   (click)="selectedSlotId.set(slot.id)"
                 >
                   <span>{{ formatDateTime(slot.startTime) }}</span>
@@ -193,7 +191,7 @@
                 <p class="eyebrow">Детали</p>
                 <h2>{{ selectedSlot() ? slotTitle(selectedSlot()!) : 'Выберите окно защиты' }}</h2>
               </div>
-              <lucide-icon name="map-pin" />
+              <app-icon name="map-pin" />
             </div>
             @if (selectedSlot(); as slot) {
               <dl class="details">
@@ -216,7 +214,7 @@
           </div>
           @if (auth.hasRole('Admin', 'Teacher')) {
             <button class="primary-action" type="button" (click)="openModal('createSlot')">
-              <lucide-icon name="plus" />
+              <app-icon name="plus" />
               Создать
             </button>
           }
@@ -230,7 +228,7 @@
                   <p class="eyebrow">Преподаватель</p>
                   <h2>Создать окно защиты</h2>
                 </div>
-                <lucide-icon name="plus" />
+                <app-icon name="plus" />
               </div>
               <div class="form-grid">
                 <label>
@@ -388,7 +386,7 @@
                 }
               </div>
               <button class="primary-action" type="submit" [disabled]="!slotForm.subjectId || !slotForm.startTime || !slotForm.endTime || (auth.hasRole('Admin') && !slotForm.teacherId)">
-                <lucide-icon name="plus" />
+                <app-icon name="plus" />
                 Создать окно защиты
               </button>
             </form>
@@ -403,7 +401,7 @@
                   <p class="eyebrow">Редактирование</p>
                   <h2>{{ slotTitle(slot) }}</h2>
                 </div>
-                <lucide-icon name="clock-3" />
+                <app-icon name="clock-3" />
               </div>
               <div class="date-pair">
                 <label>
@@ -509,9 +507,7 @@
                 class="slot-card"
                 [class.finished]="isSlotFinished(slot)"
                 [class.no-admission]="studentLacksAdmission(slot)"
-                (mouseenter)="showAdmissionTooltip(slot, $event)"
-                (mousemove)="moveAdmissionTooltip($event)"
-                (mouseleave)="hideAdmissionTooltip()"
+                [appHoverHint]="slotAdmissionHint(slot)"
               >
                 @if (isSlotFinished(slot)) {
                 <p class="slot-hint">Окно защиты уже завершено.</p>
@@ -530,13 +526,15 @@
                   <div class="action-row">
                     @if (currentUserBookingForSlot(slot.id)) {
                       <button class="secondary-action danger" type="button" (click)="cancelCurrentUserBookingForSlot(slot)">
-                        <lucide-icon name="trash-2" />
+                        <app-icon name="trash-2" />
                         Отменить запись
                       </button>
                     } @else {
-                      <button class="primary-action" type="button" [disabled]="!!slotBookingDisabledReason(slot)" [title]="slotBookingDisabledReason(slot)" (click)="bookSlot(slot)">
-                        Записаться
-                      </button>
+                      <span class="action-hint-wrapper" [appHoverHint]="slotBookingDisabledReason(slot)">
+                        <button class="primary-action" type="button" [disabled]="!!slotBookingDisabledReason(slot)" (click)="bookSlot(slot)">
+                          Записаться
+                        </button>
+                      </span>
                     }
                     <span class="notification-action">
                       @if (slotNotificationWarningHint(slot); as hint) {
@@ -544,17 +542,14 @@
                           class="slot-warning-icon"
                           type="button"
                           aria-label="Предупреждение по окну защиты"
-                          (mouseenter)="showSlotWarningTooltip(hint, $event)"
-                          (mousemove)="moveAdmissionTooltip($event)"
-                          (mouseleave)="hideAdmissionTooltip()"
+                          [appHoverHint]="hint"
                         >
-                          <lucide-icon name="triangle-alert" />
+                          <app-icon name="triangle-alert" />
                         </button>
                       }
                       @if (canConfigureSlotNotifications()) {
-                        <button class="secondary-action" type="button" (click)="openNotificationsForSlot(slot)">
-                          <lucide-icon name="bell" />
-                          Уведомления
+                        <button class="icon-button" type="button" (click)="openNotificationsForSlot(slot)" aria-label="Настроить уведомления" appHoverHint="Уведомления">
+                          <app-icon name="bell" />
                         </button>
                       }
                     </span>
@@ -569,16 +564,17 @@
                           class="slot-warning-icon"
                           type="button"
                           aria-label="Предупреждение по окну защиты"
-                          (mouseenter)="showSlotWarningTooltip(hint, $event)"
-                          (mousemove)="moveAdmissionTooltip($event)"
-                          (mouseleave)="hideAdmissionTooltip()"
+                          [appHoverHint]="hint"
                         >
-                          <lucide-icon name="triangle-alert" />
+                          <app-icon name="triangle-alert" />
                         </button>
                       }
                       <button class="secondary-action" type="button" (click)="openAdmissions(slot)">Допуски</button>
                     </span>
-                    <button class="secondary-action" type="button" (click)="openNotBookedStudents(slot)">Не записались</button>
+                    <button class="icon-button not-booked-action" type="button" (click)="openNotBookedStudents(slot)" aria-label="Показать студентов без записи" appHoverHint="Не записались">
+                      <app-icon name="user" />
+                      <app-icon class="question-mark" name="circle-question-mark" />
+                    </button>
                     @if (canConfigureSlotNotifications()) {
                       <span class="notification-action">
                         @if (slotNotificationWarningHint(slot); as hint) {
@@ -586,21 +582,18 @@
                             class="slot-warning-icon"
                             type="button"
                             aria-label="Предупреждение по окну защиты"
-                            (mouseenter)="showSlotWarningTooltip(hint, $event)"
-                            (mousemove)="moveAdmissionTooltip($event)"
-                            (mouseleave)="hideAdmissionTooltip()"
+                            [appHoverHint]="hint"
                           >
-                            <lucide-icon name="triangle-alert" />
+                            <app-icon name="triangle-alert" />
                           </button>
                         }
-                        <button class="secondary-action" type="button" (click)="openNotificationsForSlot(slot)">
-                          <lucide-icon name="bell" />
-                          Уведомления
+                        <button class="icon-button" type="button" (click)="openNotificationsForSlot(slot)" aria-label="Настроить уведомления" appHoverHint="Уведомления">
+                          <app-icon name="bell" />
                         </button>
                       </span>
                     }
                     <button class="icon-button danger" type="button" (click)="deleteSlot(slot.id)" aria-label="Удалить окно защиты">
-                      <lucide-icon name="trash-2" />
+                      <app-icon name="trash-2" />
                     </button>
                   </div>
                 }
@@ -664,7 +657,7 @@
                             </div>
                             @if (auth.hasRole('Admin') || isCurrentUserBooking(booking)) {
                               <button class="icon-button danger" type="button" (click)="cancelBooking(booking.id)" aria-label="Отменить запись">
-                                <lucide-icon name="trash-2" />
+                                <app-icon name="trash-2" />
                               </button>
                             }
                           </article>
@@ -691,7 +684,7 @@
                   </div>
                   @if (auth.hasRole('Student', 'Admin')) {
                     <button class="icon-button danger" type="button" (click)="cancelBooking(booking.id)" aria-label="Отменить запись">
-                      <lucide-icon name="trash-2" />
+                      <app-icon name="trash-2" />
                     </button>
                   }
                 </article>
@@ -719,7 +712,7 @@
               <h2>Группы</h2>
             </div>
             <button class="primary-action" type="button" (click)="openModal('createGroup')">
-              <lucide-icon name="plus" />
+              <app-icon name="plus" />
               Создать
             </button>
           </section>
@@ -738,7 +731,7 @@
                   <div class="action-row">
                     <button class="secondary-action" type="button" (click)="editGroup(group)">Редактировать</button>
                     <button class="icon-button danger" type="button" (click)="deleteGroup(group)" aria-label="Удалить группу">
-                      <lucide-icon name="trash-2" />
+                      <app-icon name="trash-2" />
                     </button>
                   </div>
                 </article>
@@ -754,7 +747,7 @@
               <h2>Пользователи</h2>
             </div>
             <button class="primary-action" type="button" (click)="openModal('createUser')">
-              <lucide-icon name="plus" />
+              <app-icon name="plus" />
               Создать
             </button>
           </section>
@@ -766,7 +759,7 @@
                 <p class="eyebrow">Учётные записи</p>
                 <h2>Создать пользователя</h2>
               </div>
-              <lucide-icon name="shield-check" />
+              <app-icon name="shield-check" />
             </div>
             <div class="form-grid">
               <label>
@@ -854,15 +847,15 @@
                   <article class="entity-grid">
                     <strong>{{ fullName(teacher) }}</strong>
                     <div class="action-row">
-                      <button class="icon-button" type="button" (click)="openAccountEmail(teacher.id)" aria-label="Сменить почту преподавателя" title="Сменить почту">
-                        <lucide-icon name="mail" />
+                      <button class="icon-button" type="button" (click)="openAccountEmail(teacher.id)" aria-label="Сменить почту преподавателя" appHoverHint="Сменить почту">
+                        <app-icon name="mail" />
                       </button>
-                      <button class="icon-button" type="button" (click)="openAccountPassword(teacher.id)" aria-label="Сменить пароль преподавателя" title="Сменить пароль">
-                        <lucide-icon name="key-round" />
+                      <button class="icon-button" type="button" (click)="openAccountPassword(teacher.id)" aria-label="Сменить пароль преподавателя" appHoverHint="Сменить пароль">
+                        <app-icon name="key-round" />
                       </button>
                       <button class="secondary-action" type="button" (click)="editTeacher(teacher)">Редактировать</button>
                       <button class="icon-button danger" type="button" (click)="deleteTeacher(teacher)" aria-label="Удалить преподавателя">
-                        <lucide-icon name="trash-2" />
+                        <app-icon name="trash-2" />
                       </button>
                     </div>
                   </article>
@@ -888,15 +881,15 @@
                       <span>Группа: {{ student.group?.name || 'не указана' }}</span>
                     </span>
                     <div class="action-row">
-                      <button class="icon-button" type="button" (click)="openAccountEmail(student.id)" aria-label="Сменить почту студента" title="Сменить почту">
-                        <lucide-icon name="mail" />
+                      <button class="icon-button" type="button" (click)="openAccountEmail(student.id)" aria-label="Сменить почту студента" appHoverHint="Сменить почту">
+                        <app-icon name="mail" />
                       </button>
-                      <button class="icon-button" type="button" (click)="openAccountPassword(student.id)" aria-label="Сменить пароль студента" title="Сменить пароль">
-                        <lucide-icon name="key-round" />
+                      <button class="icon-button" type="button" (click)="openAccountPassword(student.id)" aria-label="Сменить пароль студента" appHoverHint="Сменить пароль">
+                        <app-icon name="key-round" />
                       </button>
                       <button class="secondary-action" type="button" (click)="editStudent(student)">Редактировать</button>
                       <button class="icon-button danger" type="button" (click)="deleteStudent(student)" aria-label="Удалить студента">
-                        <lucide-icon name="trash-2" />
+                        <app-icon name="trash-2" />
                       </button>
                     </div>
                   </article>
@@ -916,7 +909,7 @@
               <h2>Дисциплины</h2>
             </div>
             <button class="primary-action" type="button" (click)="openModal('createSubject')">
-              <lucide-icon name="plus" />
+              <app-icon name="plus" />
               Создать
             </button>
           </section>
@@ -928,7 +921,7 @@
                 <p class="eyebrow">Дисциплины</p>
                 <h2>Связать дисциплину с группами</h2>
               </div>
-              <lucide-icon name="book-open" />
+              <app-icon name="book-open" />
             </div>
             <div class="form-grid">
               <label><span>Название <b>*</b></span><input name="subjectName" [(ngModel)]="subjectForm.name" autocomplete="off" required />@if (fieldError('subjectName')) { <small class="field-error">{{ fieldError('subjectName') }}</small> }</label>
@@ -988,7 +981,7 @@
                   <div class="action-row">
                     <button class="secondary-action" type="button" (click)="editSubject(subject)">Редактировать</button>
                     <button class="icon-button danger" type="button" (click)="deleteSubject(subject)" aria-label="Удалить дисциплину">
-                      <lucide-icon name="trash-2" />
+                      <app-icon name="trash-2" />
                     </button>
                   </div>
                 </article>
@@ -1014,7 +1007,7 @@
           <p class="eyebrow">Справочник</p>
           <h2>Группы</h2>
         </div>
-        <lucide-icon name="users" />
+        <app-icon name="users" />
       </div>
       <label>
         <span>Название группы <b>*</b></span>
@@ -1036,7 +1029,7 @@
           <p class="eyebrow">Напоминания</p>
           <h2>Настройки уведомлений</h2>
         </div>
-        <lucide-icon name="bell" />
+        <app-icon name="bell" />
       </div>
       @if (notificationSlot(); as slot) {
         <div class="selected-summary">
@@ -1081,7 +1074,7 @@
           <p class="eyebrow">Допуски</p>
           <h2>{{ slotTitle(slot) }}</h2>
         </div>
-        <lucide-icon name="users" />
+        <app-icon name="users" />
       </div>
       <label class="search-field">
         <span>Поиск</span>
@@ -1111,7 +1104,7 @@
           <p class="eyebrow">Не записались</p>
           <h2>{{ slotTitle(slot) }}</h2>
         </div>
-        <lucide-icon name="user-x" />
+        <app-icon name="user-x" />
       </div>
       <div class="student-status-list">
         @if (!notBookedStudents()) {
@@ -1175,7 +1168,7 @@
           <p class="eyebrow">Учётная запись</p>
           <h2>Смена почты</h2>
         </div>
-        <lucide-icon name="mail" />
+        <app-icon name="mail" />
       </div>
       <label>
         <span>Email <b>*</b></span>
@@ -1197,14 +1190,14 @@
           <p class="eyebrow">Учётная запись</p>
           <h2>Смена пароля</h2>
         </div>
-        <lucide-icon name="key-round" />
+        <app-icon name="key-round" />
       </div>
       <label>
         <span>{{ accountPasswordForm.adminReset ? 'Пароль администратора' : 'Текущий пароль' }} <b>*</b></span>
         <span class="password-field">
           <input name="accountCurrentPassword" [(ngModel)]="accountPasswordForm.currentPassword" [type]="accountCurrentPasswordVisible() ? 'text' : 'password'" autocomplete="current-password" required />
           <button type="button" (click)="accountCurrentPasswordVisible.set(!accountCurrentPasswordVisible())" [attr.aria-label]="accountCurrentPasswordVisible() ? 'Скрыть пароль' : 'Показать пароль'">
-            <lucide-icon [name]="accountCurrentPasswordVisible() ? 'eye-off' : 'eye'" />
+            <app-icon [name]="accountCurrentPasswordVisible() ? 'eye-off' : 'eye'" />
           </button>
         </span>
         @if (fieldError('accountCurrentPassword')) { <small class="field-error">{{ fieldError('accountCurrentPassword') }}</small> }
@@ -1214,7 +1207,7 @@
         <span class="password-field">
           <input name="accountNewPassword" [(ngModel)]="accountPasswordForm.newPassword" [type]="accountNewPasswordVisible() ? 'text' : 'password'" autocomplete="new-password" required />
           <button type="button" (click)="accountNewPasswordVisible.set(!accountNewPasswordVisible())" [attr.aria-label]="accountNewPasswordVisible() ? 'Скрыть пароль' : 'Показать пароль'">
-            <lucide-icon [name]="accountNewPasswordVisible() ? 'eye-off' : 'eye'" />
+            <app-icon [name]="accountNewPasswordVisible() ? 'eye-off' : 'eye'" />
           </button>
         </span>
         @if (fieldError('accountNewPassword')) { <small class="field-error">{{ fieldError('accountNewPassword') }}</small> }
@@ -1224,7 +1217,7 @@
         <span class="password-field">
           <input name="accountConfirmPassword" [(ngModel)]="accountPasswordForm.confirmPassword" [type]="accountConfirmPasswordVisible() ? 'text' : 'password'" autocomplete="new-password" required />
           <button type="button" (click)="accountConfirmPasswordVisible.set(!accountConfirmPasswordVisible())" [attr.aria-label]="accountConfirmPasswordVisible() ? 'Скрыть пароль' : 'Показать пароль'">
-            <lucide-icon [name]="accountConfirmPasswordVisible() ? 'eye-off' : 'eye'" />
+            <app-icon [name]="accountConfirmPasswordVisible() ? 'eye-off' : 'eye'" />
           </button>
         </span>
         @if (accountPasswordMismatch()) {
@@ -1268,10 +1261,10 @@
         <label><span>Дата рождения</span><input [(ngModel)]="student.birthDate" name="editStudentBirth" type="date" /></label>
         <label>
           <span>Группа <b>*</b></span>
-          <div class="custom-select locked-select" title="Смена группы студента пока недоступна">
+          <div class="custom-select locked-select" appHoverHint="Смена группы студента пока недоступна">
             <button type="button" disabled aria-label="Смена группы студента пока недоступна">
               <span>{{ editStudentGroupLabel(student) }}</span>
-              <lucide-icon name="lock" />
+              <app-icon name="lock" />
             </button>
           </div>
         </label>
@@ -1334,7 +1327,7 @@
           <p class="eyebrow">Подтверждение</p>
           <h2 id="confirm-title">{{ confirm.title }}</h2>
         </div>
-        <lucide-icon name="triangle-alert" />
+        <app-icon name="triangle-alert" />
       </div>
       @if (confirm.summaryTitle) {
         <p class="confirm-summary">
@@ -1357,18 +1350,12 @@
       }
       <div class="modal-actions confirm-actions">
         <button class="primary-action danger-action" type="button" (click)="confirmPendingAction()">
-          <lucide-icon name="trash-2" />
+          <app-icon name="trash-2" />
           {{ confirm.confirmLabel }}
         </button>
         <button class="secondary-action" type="button" (click)="closeConfirmDialog()">Отмена</button>
       </div>
     </section>
-  </div>
-}
-
-@if (admissionTooltip().visible) {
-  <div class="admission-tooltip" [style.left.px]="admissionTooltip().x" [style.top.px]="admissionTooltip().y">
-    {{ admissionTooltip().text }}
   </div>
 }
 

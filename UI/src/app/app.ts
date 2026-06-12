@@ -3,7 +3,6 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { Component, computed, effect, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { NavigationEnd, Router } from '@angular/router';
-import { LucideAngularModule } from 'lucide-angular';
 import { filter, finalize, forkJoin } from 'rxjs';
 
 import type { components } from './api/contracts';
@@ -33,7 +32,9 @@ import {
   utcOffsetLabel,
 } from './shared/utils/date-time.utils';
 import { fullName, initials, remindTimeLabel, roleLabel } from './shared/utils/person.utils';
+import { AppIconComponent } from './shared/ui/app-icon/app-icon.component';
 import { ErrorModalComponent } from './shared/ui/error-modal/error-modal.component';
+import { HoverHintDirective } from './shared/ui/hover-hint/hover-hint.directive';
 import { ToastStackComponent } from './shared/ui/toast-stack/toast-stack.component';
 import { ToggleItemComponent } from './shared/ui/toggle-item/toggle-item.component';
 import { WorkspaceDataService } from './features/workspace/workspace-data.service';
@@ -62,8 +63,9 @@ type ConfirmDialog = {
   imports: [
     CommonModule,
     FormsModule,
+    AppIconComponent,
     ErrorModalComponent,
-    LucideAngularModule,
+    HoverHintDirective,
     ToastStackComponent,
     ToggleItemComponent,
   ],
@@ -108,7 +110,6 @@ export class App {
   readonly expandedBookingSlotIds = signal<string[]>([]);
   readonly loadedBookingSlotIds = signal<string[]>([]);
   readonly loadingBookingSlotIds = signal<string[]>([]);
-  readonly admissionTooltip = signal({ visible: false, text: '', x: 0, y: 0 });
   readonly loginForm = { username: '', password: '' };
   readonly groupForm = { name: '' };
   readonly personForm = createPersonForm();
@@ -1422,38 +1423,6 @@ export class App {
 
   slotAdmissionHint(slot: SubmissionSlotView): string {
     return this.studentLacksAdmission(slot) ? this.noAdmissionHint : '';
-  }
-
-  showAdmissionTooltip(slot: SubmissionSlotView, event: MouseEvent): void {
-    const text = this.slotAdmissionHint(slot);
-    if (!text) {
-      this.hideAdmissionTooltip();
-      return;
-    }
-
-    this.admissionTooltip.set({ visible: true, text, x: event.clientX, y: event.clientY });
-  }
-
-  showSlotWarningTooltip(text: string, event: MouseEvent): void {
-    if (!text) {
-      this.hideAdmissionTooltip();
-      return;
-    }
-
-    this.admissionTooltip.set({ visible: true, text, x: event.clientX, y: event.clientY });
-  }
-
-  moveAdmissionTooltip(event: MouseEvent): void {
-    const tooltip = this.admissionTooltip();
-    if (!tooltip.visible) {
-      return;
-    }
-
-    this.admissionTooltip.set({ ...tooltip, x: event.clientX, y: event.clientY });
-  }
-
-  hideAdmissionTooltip(): void {
-    this.admissionTooltip.set({ visible: false, text: '', x: 0, y: 0 });
   }
 
   studentLacksAdmission(slot: SubmissionSlotView): boolean {
