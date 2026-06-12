@@ -54,6 +54,85 @@ public sealed class SubmissionSlotsApiTests(ApiTestStackFixture fixture)
         });
 
     /// <summary>
+    /// Verifies that <c>CreateSubmissionSlot</c> rejects allowed groups that are not assigned to the subject.
+    /// </summary>
+    [Fact]
+    public Task CreateSubmissionSlot_WhenAllowedGroupIsOutsideSubjectGroups_ShouldReturnBusinessRuleError() =>
+        WithSubmissionSlotFixtureAsync(async (scenario, context) =>
+        {
+            // Arrange
+            var foreignGroupId = await scenario.CreateGroupAsync(context.AdminSession, $"Foreign Group {context.Suffix}");
+            context.AddCleanup(ApiScenario.DeleteGroup(foreignGroupId));
+            var slotStart = context.SlotStart.AddDays(1);
+
+            // Act
+            var response = await context.AdminSession.PostAsync(
+                ApiScenario.SubmissionSlotsPath,
+                new
+                {
+                    subjectId = context.SubjectId,
+                    teacherId = context.TeacherId,
+                    startTime = slotStart,
+                    endTime = slotStart + ApiScenario.SlotDuration,
+                    maxStudents = ApiScenario.SlotMaxStudents,
+                    allowAllGroups = false,
+                    allowedGroupIds = new[] { foreignGroupId },
+                    location = ApiScenario.SlotLocation,
+                    comment = ApiScenario.SlotComment
+                });
+
+            // Assert
+            await context.AdminSession.AssertProblemAsync(
+                response,
+                HttpStatusCode.UnprocessableEntity,
+                "Business Rule Violation",
+                code: "BusinessRule.AllowedGroupIdsMustBeWithinSubjectGroupIds");
+        });
+
+    /// <summary>
+    /// Verifies that <c>CreateSubmissionSlot</c> rejects teachers that do not own the subject.
+    /// </summary>
+    [Fact]
+    public Task CreateSubmissionSlot_WhenTeacherDoesNotOwnSubject_ShouldReturnBusinessRuleError() =>
+        WithSubmissionSlotFixtureAsync(async (scenario, context) =>
+        {
+            // Arrange
+            var foreignTeacherUsername = $"slot_teacher_foreign_{context.Suffix}";
+            var foreignTeacherId = await scenario.CreateTeacherAsync(
+                context.AdminSession,
+                foreignTeacherUsername,
+                $"{foreignTeacherUsername}@example.com",
+                "Pavel",
+                "Sidorov");
+
+            context.AddCleanup(ApiScenario.DeleteTeacher(foreignTeacherId));
+            var slotStart = context.SlotStart.AddDays(1);
+
+            // Act
+            var response = await context.AdminSession.PostAsync(
+                ApiScenario.SubmissionSlotsPath,
+                new
+                {
+                    subjectId = context.SubjectId,
+                    teacherId = foreignTeacherId,
+                    startTime = slotStart,
+                    endTime = slotStart + ApiScenario.SlotDuration,
+                    maxStudents = ApiScenario.SlotMaxStudents,
+                    allowAllGroups = true,
+                    allowedGroupIds = Array.Empty<Guid>(),
+                    location = ApiScenario.SlotLocation,
+                    comment = ApiScenario.SlotComment
+                });
+
+            // Assert
+            await context.AdminSession.AssertProblemAsync(
+                response,
+                HttpStatusCode.UnprocessableEntity,
+                "Business Rule Violation",
+                code: "BusinessRule.TeacherMustOwnSubjectRule");
+        });
+
+    /// <summary>
     /// Verifies that <c>AddAdmission</c> succeeds when the caller is the assigned teacher.
     /// </summary>
     [Fact]
