@@ -212,7 +212,7 @@ public sealed class SubmissionSlot : Entity
             Location,
             Comment);
 
-        RemoveAdmissionsOutsideAllowedGroups(admittedStudents);
+        RemoveStudentDataOutsideAllowedGroups(admittedStudents);
 
         AddDomainEvent(new SubmissionSlotUpdatedDomainEvent
         {
@@ -316,22 +316,30 @@ public sealed class SubmissionSlot : Entity
         NotificationSettings.Add(settings);
     }
 
-    private void RemoveAdmissionsOutsideAllowedGroups(IEnumerable<Student> admittedStudents)
+    private void RemoveStudentDataOutsideAllowedGroups(IEnumerable<Student> admittedStudents)
     {
         if (AllowAllGroups)
             return;
 
         var allowedGroupIds = AllowedGroupIds.ToHashSet();
-        var allowedStudentIds = admittedStudents
+
+        var allowedAndAdmittedStudentIds = admittedStudents
             .Where(student => allowedGroupIds.Contains(student.GetGroupId()))
             .Select(student => student.Id)
             .ToHashSet();
 
         var admissionsToRemove = Admissions
-            .Where(admission => !allowedStudentIds.Contains(admission.StudentId))
+            .Where(admission => !allowedAndAdmittedStudentIds.Contains(admission.StudentId))
             .ToArray();
 
         foreach (var admission in admissionsToRemove)
             Admissions.Remove(admission);
+        
+        var settingsToRemove = NotificationSettings
+            .Where(settings => !allowedAndAdmittedStudentIds.Contains(new StudentId(settings.UserId)))
+            .ToArray();
+        
+        foreach (var settings in settingsToRemove)
+            NotificationSettings.Remove(settings);
     }
 }

@@ -126,6 +126,8 @@ public class SubmissionSlotTests
 
         slot.AddAdmission(allowedStudent.Id, allowedStudent.GetGroupId());
         slot.AddAdmission(excludedStudent.Id, excludedStudent.GetGroupId());
+        slot.UpdateNotificationSettings(allowedStudent.Id.Value, [], [SubmissionRemindTime.OneWeek], BookingNotificationMode.All);
+        slot.UpdateNotificationSettings(excludedStudent.Id.Value, [], [SubmissionRemindTime.TwoDays], BookingNotificationMode.All);
 
         // Act
         slot.Update(
@@ -141,5 +143,11 @@ public class SubmissionSlotTests
 
         // Assert
         slot.GetAdmittedStudentIds().Should().ContainSingle().Which.Should().Be(allowedStudent.Id);
+        slot.GetNotificationRecipients()
+            .Should()
+            .ContainSingle(recipient => recipient.UserId == allowedStudent.Id.Value);
+        slot.GetNotificationRecipients()
+            .Should()
+            .NotContain(recipient => recipient.UserId == excludedStudent.Id.Value);
     }
 }

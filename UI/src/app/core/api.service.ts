@@ -1,6 +1,6 @@
 import { HttpClient, HttpErrorResponse, HttpParams } from '@angular/common/http';
 import { Injectable, inject, signal } from '@angular/core';
-import { catchError, map, of, throwError } from 'rxjs';
+import { catchError, map, throwError } from 'rxjs';
 
 import type { components } from '../api/contracts';
 import { apiBaseUrl } from './environment';
@@ -233,11 +233,6 @@ export class ApiService {
         bookingNotificationMode,
       })
       .pipe(catchError((error) => this.fail(error)));
-  }
-
-  getAvailableSlots(fromDate: string) {
-    const params = new HttpParams().set('fromDate', fromDate);
-    return this.http.get<SubmissionSlotView[]>(`${apiBaseUrl}/submission-slots/available`, { params }).pipe(catchError(() => of([])));
   }
 
   private postLocation(url: string, body: unknown) {
