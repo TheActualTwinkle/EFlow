@@ -27,7 +27,16 @@ public sealed class SubmissionSlotsApiTests(ApiTestStackFixture fixture)
         {
             // Arrange
             var newGroupId = await scenario.CreateGroupAsync(context.AdminSession, $"New Group {context.Suffix}");
-            context.AddCleanup(ApiScenario.DeleteGroup(newGroupId));
+            context.CleanupActions.Add(ApiScenario.DeleteGroup(newGroupId));
+
+            var updateSubjectResponse = await context.AdminSession.PatchAsync(
+                $"/api/subjects/{context.SubjectId}",
+                new
+                {
+                    groupIds = new[] { context.GroupId, newGroupId }
+                });
+
+            updateSubjectResponse.StatusCode.Should().Be(HttpStatusCode.NoContent);
 
             // Act
             var response = await context.AdminSession.PatchAsync(
