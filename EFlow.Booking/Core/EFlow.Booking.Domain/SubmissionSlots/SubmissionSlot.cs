@@ -185,11 +185,12 @@ public sealed class SubmissionSlot : Entity
                 settings.BookingNotificationMode))
             .ToArray();
 
-    public void Update(
+    public IReadOnlyCollection<BookingRecord> Update(
         SubmissionSlotPatch patch,
         IEnumerable<GroupId> subjectGroupIds,
         TeacherId subjectTeacherId,
         IEnumerable<Student> admittedStudents,
+        IDictionary<Student, BookingRecord> bookedStudents,
         DateTime utcNow)
     {
         var oldSlot = CreateSnapshot();
@@ -197,7 +198,7 @@ public sealed class SubmissionSlot : Entity
         var context = patch.ApplyInto(this);
 
         if (!context.HasChanges())
-            return;
+            return [];
 
         _ = new SubmissionSlot(
             SubjectId,
@@ -212,7 +213,8 @@ public sealed class SubmissionSlot : Entity
             Location,
             Comment);
 
-        RemoveStudentDataOutsideAllowedGroups(admittedStudents);
+        var canceledBookings = CancelBookingForStudentsOutsideAllowedGroups(bookedStudents, utcNow);
+        RemoveAdmissionsOutsideAllowedGroups(admittedStudents);
 
         AddDomainEvent(new SubmissionSlotUpdatedDomainEvent
         {
@@ -221,6 +223,8 @@ public sealed class SubmissionSlot : Entity
             NewSlot = CreateSnapshot(),
             UpdatedAt = utcNow
         });
+
+        return canceledBookings;
     }
 
     private SubmissionSlotSnapshot CreateSnapshot() =>
@@ -316,7 +320,27 @@ public sealed class SubmissionSlot : Entity
         NotificationSettings.Add(settings);
     }
 
-    private void RemoveStudentDataOutsideAllowedGroups(IEnumerable<Student> admittedStudents)
+    private IReadOnlyCollection<BookingRecord> CancelBookingForStudentsOutsideAllowedGroups(
+        IDictionary<Student, BookingRecord> bookings,
+        DateTime utcNow)
+    {
+        if (AllowAllGroups)
+            return [];
+
+        var allowedGroupIds = AllowedGroupIds.ToHashSet();
+
+        var bookingsToCancel = bookings
+            .Where(kv => !allowedGroupIds.Contains(kv.Key.GroupId))
+            .Select(kv => kv.Value)
+            .ToArray();
+
+        foreach (var booking in bookingsToCancel)
+            CancelBooking(booking, utcNow);
+
+        return bookingsToCancel;
+    }
+
+    private void RemoveAdmissionsOutsideAllowedGroups(IEnumerable<Student> admittedStudents)
     {
         if (AllowAllGroups)
             return;
@@ -334,12 +358,5 @@ public sealed class SubmissionSlot : Entity
 
         foreach (var admission in admissionsToRemove)
             Admissions.Remove(admission);
-        
-        var settingsToRemove = NotificationSettings
-            .Where(settings => !allowedAndAdmittedStudentIds.Contains(new StudentId(settings.UserId)))
-            .ToArray();
-        
-        foreach (var settings in settingsToRemove)
-            NotificationSettings.Remove(settings);
     }
 }

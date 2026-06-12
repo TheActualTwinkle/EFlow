@@ -6,6 +6,7 @@ using EFlow.Booking.ApiTests.Infrastructure.Fixtures;
 using EFlow.Booking.ApiTests.Infrastructure.Scenarios;
 using EFlow.Booking.ApiTests.Infrastructure.Sessions;
 using EFlow.Booking.ApiTests.SubmissionSlots.Support;
+using EFlow.Booking.Contracts.BookingRecords;
 using EFlow.Booking.Contracts.SubmissionSlots;
 using EFlow.Booking.Domain.Notifications;
 using FluentAssertions;
@@ -51,6 +52,92 @@ public sealed class SubmissionSlotsApiTests(ApiTestStackFixture fixture)
             var updatedSlot = await scenario.GetSlotAsync(context.AdminSession, context.SlotId);
             updatedSlot.AllowedGroups.Should().NotBeNull();
             updatedSlot.AllowedGroups!.Select(group => group.Id).Should().BeEquivalentTo([newGroupId]);
+        });
+
+    /// <summary>
+    /// Verifies that <c>UpdateSubmissionSlot</c> removes admissions, bookings, and notification settings outside the updated allowed groups.
+    /// </summary>
+    [Fact]
+    public Task UpdateSubmissionSlot_WhenAllowedGroupsExcludeBookedStudentGroup_ShouldRemoveStudentData() =>
+        WithSubmissionSlotFixtureAsync(async (scenario, context) =>
+        {
+            // Arrange
+            var excludedGroupId = await scenario.CreateGroupAsync(context.AdminSession, $"Excluded Group {context.Suffix}");
+            context.AddCleanup(ApiScenario.DeleteGroup(excludedGroupId));
+
+            var excludedStudentUsername = $"excluded_student_{context.Suffix}";
+            var excludedStudentId = await scenario.CreateStudentAsync(
+                context.AdminSession,
+                excludedGroupId,
+                excludedStudentUsername,
+                $"{excludedStudentUsername}@example.com",
+                "Pavel",
+                "Sidorov");
+
+            context.AddCleanup(ApiScenario.DeleteStudent(excludedStudentId));
+
+            var updateSubjectResponse = await context.AdminSession.PatchAsync(
+                $"/api/subjects/{context.SubjectId}",
+                new
+                {
+                    groupIds = new[] { context.GroupId, excludedGroupId }
+                });
+
+            updateSubjectResponse.StatusCode.Should().Be(HttpStatusCode.NoContent);
+
+            var openSlotResponse = await context.AdminSession.PatchAsync(
+                $"/api/submission-slots/{context.SlotId}",
+                new
+                {
+                    allowAllGroups = true,
+                    allowedGroupIds = Array.Empty<Guid>()
+                });
+
+            openSlotResponse.StatusCode.Should().Be(HttpStatusCode.NoContent);
+
+            await scenario.AddAdmissionAsync(context.AdminSession, context.SlotId, context.StudentId);
+            await scenario.AddAdmissionAsync(context.AdminSession, context.SlotId, excludedStudentId);
+
+            var allowedBookingId = await scenario.CreateBookingAsync(context.AdminSession, context.StudentId, context.SlotId);
+            context.AddCleanup(ApiScenario.DeleteBooking(allowedBookingId));
+
+            var excludedBookingId = await scenario.CreateBookingAsync(context.AdminSession, excludedStudentId, context.SlotId);
+            context.AddCleanup(ApiScenario.DeleteBooking(excludedBookingId));
+
+            var notificationResponse = await context.AdminSession.PutAsync(
+                $"/api/submission-slots/{context.SlotId}/notification-settings",
+                new
+                {
+                    userId = excludedStudentId,
+                    submissionRemindTimes = new[] { SubmissionRemindTime.TwoDays },
+                    bookingNotificationMode = BookingNotificationMode.All
+                });
+
+            notificationResponse.StatusCode.Should().Be(HttpStatusCode.NoContent);
+
+            // Act
+            var response = await context.AdminSession.PatchAsync(
+                $"/api/submission-slots/{context.SlotId}",
+                new
+                {
+                    allowAllGroups = false,
+                    allowedGroupIds = new[] { context.GroupId }
+                });
+
+            // Assert
+            response.StatusCode.Should().Be(HttpStatusCode.NoContent);
+
+            var updatedSlot = await scenario.GetSlotAsync(context.AdminSession, context.SlotId);
+            updatedSlot.AdmittedStudents.Should().NotBeNull();
+            updatedSlot.AdmittedStudents!.Select(student => student.Id).Should().BeEquivalentTo([context.StudentId]);
+            updatedSlot.NotificationSettings.Should().NotContain(settings => settings.UserId == excludedStudentId);
+
+            var bookingsResponse = await context.AdminSession.GetAsync($"/api/bookings/by-slot/{context.SlotId}");
+            bookingsResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+
+            var bookings = (await context.AdminSession.ReadAsync<BookingRecordView[]>(bookingsResponse))!;
+            bookings.Select(booking => booking.Id).Should().Contain(allowedBookingId);
+            bookings.Select(booking => booking.Id).Should().NotContain(excludedBookingId);
         });
 
     /// <summary>
