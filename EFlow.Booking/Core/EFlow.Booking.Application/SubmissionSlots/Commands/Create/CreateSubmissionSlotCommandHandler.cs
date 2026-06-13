@@ -46,6 +46,8 @@ public class CreateSubmissionSlotCommandHandler(IUnitOfWork unitOfWork, ISystemC
             request.MaxStudents,
             request.AllowAllGroups,
             systemClock.UtcNow,
+            subject.GetGroupIds(),
+            subject.GetTeacherId(),
             allowedGroupIds,
             request.Location,
             request.Comment);

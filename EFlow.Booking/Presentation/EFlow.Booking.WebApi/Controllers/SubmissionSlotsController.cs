@@ -2,13 +2,13 @@ using System.Security.Claims;
 using EFlow.Booking.Application.SubmissionSlots.Commands;
 using EFlow.Booking.Application.SubmissionSlots.Commands.Update;
 using EFlow.Booking.Application.SubmissionSlots.Queries;
+using EFlow.Booking.Application.SubmissionSlots.Queries.GetAllowedStudents;
 using EFlow.Booking.Application.SubmissionSlots.Queries.GetByTeacherId;
+using EFlow.Booking.Contracts.Students;
 using EFlow.Booking.Contracts.SubmissionSlots;
 using EFlow.Booking.Domain;
 using EFlow.Booking.Domain.Groups;
 using EFlow.Booking.Domain.SubmissionSlots;
-using EFlow.Booking.Domain.Subjects;
-using EFlow.Booking.Domain.Teachers;
 using EFlow.Booking.WebApi.Contracts.SubmissionSlots;
 using EFlow.Booking.WebApi.Extensions;
 using MediatR;
@@ -100,16 +100,30 @@ public class SubmissionSlotsController(ISender sender) : ControllerBase
             Ok(FilterNotificationSettings(result.Value));
     }
 
-    [HttpGet("available")]
-    [Authorize]
-    [ProducesResponseType(typeof(IEnumerable<SubmissionSlotView>), StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetAvailableSlots([FromQuery] GetAvailableSubmissionSlotsRequest request, CancellationToken cancellationToken)
+    [HttpGet("{id:guid}/allowed-students")]
+    [Authorize(Roles = $"{Identity.Roles.Admin},{Identity.Roles.Teacher}")]
+    [ProducesResponseType(typeof(IEnumerable<StudentView>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetAllowedStudents(Guid id, CancellationToken cancellationToken)
     {
-        var result = await sender.Send(new GetAvailableSubmissionSlotsQuery { FromDate = request.FromDate }, cancellationToken);
+        if (!User.IsInRole(Identity.Roles.Admin))
+        {
+            var getSlotResult = await sender.Send(new GetSubmissionSlotByIdQuery { Id = id }, cancellationToken);
+
+            if (getSlotResult.IsFailed)
+                return getSlotResult.Errors[0].ToProblemDetails();
+
+            if (getSlotResult.Value.Teacher!.Id.ToString() != User.FindFirst(ClaimTypes.NameIdentifier)?.Value)
+                return Problem(
+                    title: "Forbidden",
+                    detail: "You can only view students for your own slots.",
+                    statusCode: StatusCodes.Status403Forbidden);
+        }
+
+        var result = await sender.Send(new GetSubmissionSlotAllowedStudentsQuery { SlotId = id }, cancellationToken);
 
         return result.IsFailed ?
             result.Errors[0].ToProblemDetails() :
-            Ok(FilterNotificationSettings(result.Value));
+            Ok(result.Value);
     }
 
     [HttpPatch("{id:guid}")]
@@ -138,8 +152,6 @@ public class SubmissionSlotsController(ISender sender) : ControllerBase
             Id = id,
             Patch = new SubmissionSlotPatch
             {
-                TeacherId = request.TeacherId.Map(teacherId => new TeacherId(teacherId)),
-                SubjectId = request.SubjectId.Map(subjectId => new SubjectId(subjectId)),
                 StartTime = request.StartTime,
                 EndTime = request.EndTime,
                 MaxStudents = request.MaxStudents,

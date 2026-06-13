@@ -3,7 +3,6 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { Component, computed, effect, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { NavigationEnd, Router } from '@angular/router';
-import { LucideAngularModule } from 'lucide-angular';
 import { filter, finalize, forkJoin } from 'rxjs';
 
 import type { components } from './api/contracts';
@@ -33,13 +32,17 @@ import {
   utcOffsetLabel,
 } from './shared/utils/date-time.utils';
 import { fullName, initials, remindTimeLabel, roleLabel } from './shared/utils/person.utils';
+import { AppIconComponent } from './shared/ui/app-icon/app-icon.component';
 import { ErrorModalComponent } from './shared/ui/error-modal/error-modal.component';
+import { HoverHintDirective } from './shared/ui/hover-hint/hover-hint.directive';
 import { ToastStackComponent } from './shared/ui/toast-stack/toast-stack.component';
+import { ToggleItemComponent } from './shared/ui/toggle-item/toggle-item.component';
 import { WorkspaceDataService } from './features/workspace/workspace-data.service';
 
 type Schemas = components['schemas'];
 type BookingRecordView = Schemas['BookingRecordView'];
 type GroupView = Schemas['GroupView'];
+type NotBookedStudentsView = Schemas['NotBookedStudentsView'];
 type StudentView = Schemas['StudentView'];
 type SubjectView = Schemas['SubjectView'];
 type SubmissionSlotView = Schemas['SubmissionSlotView'];
@@ -50,6 +53,7 @@ type ConfirmDialog = {
   summaryTitle?: string;
   summaryMeta?: string;
   message: string;
+  items?: string[];
   confirmLabel: string;
   action: () => void;
 };
@@ -59,9 +63,11 @@ type ConfirmDialog = {
   imports: [
     CommonModule,
     FormsModule,
+    AppIconComponent,
     ErrorModalComponent,
-    LucideAngularModule,
+    HoverHintDirective,
     ToastStackComponent,
+    ToggleItemComponent,
   ],
   templateUrl: './app.html',
   styleUrl: './app.less',
@@ -98,11 +104,12 @@ export class App {
   readonly slotOnlyAdmitted = signal(false);
   readonly bookingOnlyAdmitted = signal(false);
   readonly admissionSearch = signal('');
+  readonly admissionSlotStudents = signal<StudentView[]>([]);
+  readonly notBookedStudents = signal<NotBookedStudentsView | null>(null);
   readonly slotCreateGroupSearch = signal('');
   readonly expandedBookingSlotIds = signal<string[]>([]);
   readonly loadedBookingSlotIds = signal<string[]>([]);
   readonly loadingBookingSlotIds = signal<string[]>([]);
-  readonly admissionTooltip = signal({ visible: false, text: '', x: 0, y: 0 });
   readonly loginForm = { username: '', password: '' };
   readonly groupForm = { name: '' };
   readonly personForm = createPersonForm();
@@ -116,8 +123,6 @@ export class App {
   };
   readonly personRoles = ['Student', 'Teacher'] as const;
   readonly slotGroupSearch = signal('');
-  readonly loginReadonly = signal(true);
-  readonly passwordReadonly = signal(true);
   readonly accountCurrentPasswordVisible = signal(false);
   readonly accountNewPasswordVisible = signal(false);
   readonly accountConfirmPasswordVisible = signal(false);
@@ -125,7 +130,6 @@ export class App {
   readonly customSelectOpen = signal<string | null>(null);
   readonly pickerMonth = signal(new Date());
   private toastId = 0;
-  private lastErrorToast: string | null = null;
   private lastLoadedKey = '';
 
   readonly todayIso = new Date().toISOString().slice(0, 10);
@@ -268,18 +272,6 @@ export class App {
       }
     });
 
-    effect(() => {
-      const error = this.api.error();
-
-      if (error && error !== this.lastErrorToast) {
-        this.lastErrorToast = error;
-        this.showToast(error, 'error');
-      }
-
-      if (!error) {
-        this.lastErrorToast = null;
-      }
-    });
   }
 
   login(): void {
@@ -300,8 +292,6 @@ export class App {
     this.auth.logoutOnServer().subscribe(() => {
       this.loginForm.username = '';
       this.loginForm.password = '';
-      this.loginReadonly.set(true);
-      this.passwordReadonly.set(true);
       this.loaded.set(false);
       this.lastLoadedKey = '';
       this.fieldErrors.set({});
@@ -337,7 +327,7 @@ export class App {
 
     if (keyChanged) {
       this.resetBookingExpansion();
-    } else if (force && view === 'bookings') {
+    } else if (force) {
       this.loadedBookingSlotIds.set([]);
     }
 
@@ -410,13 +400,7 @@ export class App {
       this.subjectForm.teacherId = data.teachers[0]?.id ?? '';
     }
 
-    if (!this.slotForm.teacherId || !data.teachers.some((teacher) => teacher.id === this.slotForm.teacherId)) {
-      this.slotForm.teacherId = data.teachers[0]?.id ?? user?.id ?? '';
-    }
-
-    if (!this.slotForm.subjectId || !data.subjects.some((subject) => subject.id === this.slotForm.subjectId)) {
-      this.slotForm.subjectId = data.subjects[0]?.id ?? '';
-    }
+    this.normalizeSlotFormSelection();
   }
 
   createGroup(): void {
@@ -611,6 +595,30 @@ export class App {
 
     const allowedGroupIds = this.slotGroupIds(slot);
 
+    if (!this.validateSlotDraft(slot, allowedGroupIds)) {
+      return;
+    }
+
+    this.api.getBookingsBySlot(slot.id, true).subscribe((bookings) => {
+      const affectedStudents = this.bookedStudentsOutsideAllowedGroups(bookings, allowedGroupIds, slot.allowAllGroups);
+
+      if (affectedStudents.length > 0) {
+        this.confirmDestructiveAction({
+          title: 'Есть записанные студенты вне выбранных групп',
+          summaryTitle: `${affectedStudents.length} ${this.studentCountLabel(affectedStudents.length)} вне выбранных групп`,
+          message: 'После сохранения изменений записи следующих студентов будут отменены:',
+          items: affectedStudents.map((student) => `${this.fullName(student)} · ${student.group?.name ?? 'Группа не указана'}`),
+          confirmLabel: 'Сохранить изменения',
+          action: () => this.submitSlotUpdate(slot, allowedGroupIds),
+        });
+        return;
+      }
+
+      this.submitSlotUpdate(slot, allowedGroupIds);
+    });
+  }
+
+  private submitSlotUpdate(slot: SubmissionSlotView, allowedGroupIds: string[]): void {
     this.api
       .updateSlot(slot.id, {
         subjectId: slot.subject?.id,
@@ -624,9 +632,20 @@ export class App {
         comment: slot.comment,
       })
       .subscribe(() => {
-        this.showToast('Окно защиты обновлено', 'success');
-        this.closeModal();
-        this.refresh();
+        forkJoin({
+          slot: this.api.getSlot(slot.id),
+          bookings: this.api.getBookingsBySlot(slot.id, true),
+        }).subscribe(({ slot: freshSlot, bookings }) => {
+          this.data.update((current) => ({
+            ...current,
+            slots: this.replaceSlot(current.slots, freshSlot),
+            bookings: [...current.bookings.filter((booking) => booking.slot?.id !== freshSlot.id), ...bookings],
+          }));
+          this.loadedBookingSlotIds.update((ids) => (ids.includes(freshSlot.id) ? ids : [...ids, freshSlot.id]));
+          this.selectedSlotId.set(freshSlot.id);
+          this.showToast('Окно защиты обновлено', 'success');
+          this.closeModal();
+        });
       });
   }
 
@@ -735,10 +754,20 @@ export class App {
 
   selectSlotSubject(subject: SubjectView): void {
     this.slotForm.subjectId = subject.id;
+    if (this.auth.hasRole('Admin') && subject.teacher?.id) {
+      this.slotForm.teacherId = subject.teacher.id;
+    }
     this.slotCreateGroupSearch.set('');
-    const allowed = new Set((subject.groups ?? []).map((group) => group.id));
-    this.slotForm.allowedGroupIds = this.slotForm.allowedGroupIds.filter((id) => allowed.has(id));
+    this.pruneSlotAllowedGroups(subject);
     this.closeCustomSelect();
+  }
+
+  selectSlotSubjectById(subjectId: string): void {
+    const subject = this.data().subjects.find((item) => item.id === subjectId);
+
+    if (subject) {
+      this.selectSlotSubject(subject);
+    }
   }
 
   slotSubjectLabel(): string {
@@ -747,11 +776,46 @@ export class App {
 
   selectSlotTeacher(teacher: TeacherView): void {
     this.slotForm.teacherId = teacher.id;
+    const subjects = this.slotSubjectsForTeacher(teacher.id);
+    const subject = subjects.some((item) => item.id === this.slotForm.subjectId)
+      ? this.data().subjects.find((item) => item.id === this.slotForm.subjectId)
+      : subjects[0];
+
+    this.slotForm.subjectId = subject?.id ?? '';
+    this.pruneSlotAllowedGroups(subject);
     this.closeCustomSelect();
+  }
+
+  selectSlotTeacherById(teacherId: string): void {
+    const teacher = this.data().teachers.find((item) => item.id === teacherId);
+
+    if (teacher) {
+      this.selectSlotTeacher(teacher);
+    }
   }
 
   slotTeacherLabel(): string {
     return this.data().teachers.find((teacher) => teacher.id === this.slotForm.teacherId) ? this.fullName(this.data().teachers.find((teacher) => teacher.id === this.slotForm.teacherId)) : 'Выберите преподавателя';
+  }
+
+  slotSubjects(): SubjectView[] {
+    if (this.auth.hasRole('Teacher')) {
+      const teacherId = this.auth.user()?.id;
+      return teacherId ? this.slotSubjectsForTeacher(teacherId) : [];
+    }
+
+    return this.slotForm.teacherId ? this.slotSubjectsForTeacher(this.slotForm.teacherId) : this.data().subjects;
+  }
+
+  slotTeachers(): TeacherView[] {
+    const teacherIdsWithSubjects = new Set(
+      this.data()
+        .subjects
+        .map((subject) => subject.teacher?.id)
+        .filter(Boolean),
+    );
+
+    return this.data().teachers.filter((teacher) => teacherIdsWithSubjects.has(teacher.id));
   }
 
   slotAllowedGroups(): GroupView[] {
@@ -809,9 +873,7 @@ export class App {
 
   toggleAdmission(slot: SubmissionSlotView, student: StudentView): void {
     const admitted = this.isAdmitted(slot, student.id);
-    const onSaved = () => {
-      this.refreshSlot(slot.id);
-    };
+    const onSaved = () => this.setStudentAdmission(slot, student, !admitted);
 
     if (admitted) {
       this.api.removeAdmission(slot.id, student.id).subscribe(onSaved);
@@ -979,27 +1041,49 @@ export class App {
     this.fieldErrors.set({});
     this.dateTimePickerOpen.set(null);
     this.customSelectOpen.set(null);
+
+    if (modal === 'createUser') {
+      this.personForm.role = this.userTable() === 'teachers' ? 'Teacher' : 'Student';
+    }
+
     this.activeModal.set(modal);
   }
 
+  openCreateSlotModal(): void {
+    this.ensureCreateSlotReferenceData(() => {
+      this.normalizeSlotFormSelection();
+      this.openModal('createSlot');
+    });
+  }
+
   openSlotEditor(slot: SubmissionSlotView): void {
-    this.selectedSlotId.set(slot.id);
-    this.slotGroupSearch.set('');
-    this.editSlotDraft.set(this.cloneSlot(slot));
-    this.openModal('editSlot');
+    this.ensureEditSlotReferenceData(slot, () => {
+      this.selectedSlotId.set(slot.id);
+      this.slotGroupSearch.set('');
+      this.admissionSlotStudents.set([]);
+      this.editSlotDraft.set(this.cloneSlot(slot));
+      this.openModal('editSlot');
+      this.loadBookingsForSlot(slot.id);
+    });
   }
 
   openAdmissions(slot: SubmissionSlotView): void {
     this.selectedSlotId.set(slot.id);
     this.selectedAdmissionStudentId = '';
     this.admissionSearch.set('');
+    this.admissionSlotStudents.set([]);
     this.openModal('admissions');
-    forkJoin({
-      students: this.api.getStudents(),
-      slot: this.api.getSlot(slot.id),
-    }).subscribe(({ students, slot: freshSlot }) => {
-      this.applyWorkspace({ students, slots: this.replaceSlot(this.data().slots, freshSlot) });
-      this.selectedSlotId.set(freshSlot.id);
+    this.api.getSlotAllowedStudents(slot.id).subscribe((students) => {
+      this.admissionSlotStudents.set(students);
+    });
+  }
+
+  openNotBookedStudents(slot: SubmissionSlotView): void {
+    this.selectedSlotId.set(slot.id);
+    this.notBookedStudents.set(null);
+    this.openModal('notBookedStudents');
+    this.api.getNotBookedStudents(slot.id).subscribe((students) => {
+      this.notBookedStudents.set(students);
     });
   }
 
@@ -1158,7 +1242,7 @@ export class App {
   }
 
   slotBookingCount(slot: SubmissionSlotView): number {
-    return Math.max(Number(slot.bookingCount) || 0, this.bookingsForSlot(slot.id).length);
+    return this.loadedBookingSlotIds().includes(slot.id) ? this.bookingsForSlot(slot.id).length : Number(slot.bookingCount) || 0;
   }
 
   isBookingSlotExpanded(slotId: string): boolean {
@@ -1350,38 +1434,6 @@ export class App {
     return this.studentLacksAdmission(slot) ? this.noAdmissionHint : '';
   }
 
-  showAdmissionTooltip(slot: SubmissionSlotView, event: MouseEvent): void {
-    const text = this.slotAdmissionHint(slot);
-    if (!text) {
-      this.hideAdmissionTooltip();
-      return;
-    }
-
-    this.admissionTooltip.set({ visible: true, text, x: event.clientX, y: event.clientY });
-  }
-
-  showSlotWarningTooltip(text: string, event: MouseEvent): void {
-    if (!text) {
-      this.hideAdmissionTooltip();
-      return;
-    }
-
-    this.admissionTooltip.set({ visible: true, text, x: event.clientX, y: event.clientY });
-  }
-
-  moveAdmissionTooltip(event: MouseEvent): void {
-    const tooltip = this.admissionTooltip();
-    if (!tooltip.visible) {
-      return;
-    }
-
-    this.admissionTooltip.set({ ...tooltip, x: event.clientX, y: event.clientY });
-  }
-
-  hideAdmissionTooltip(): void {
-    this.admissionTooltip.set({ visible: false, text: '', x: 0, y: 0 });
-  }
-
   studentLacksAdmission(slot: SubmissionSlotView): boolean {
     const user = this.auth.user();
     return !!user && this.auth.hasRole('Student') && !this.isAdmitted(slot, user.id);
@@ -1409,11 +1461,30 @@ export class App {
   }
 
   slotEditableGroups(slot: SubmissionSlotView): GroupView[] {
-    if (slot.subject?.groups?.length) {
-      return slot.subject.groups;
+    const subjectId = slot.subject?.id;
+
+    if (subjectId) {
+      const subject = this.data().subjects.find((item) => item.id === subjectId);
+      if (subject) {
+        return subject.groups ?? [];
+      }
     }
 
-    return this.data().groups;
+    return slot.subject?.groups ?? [];
+  }
+
+  excludedBookedGroupWarningHint(slot: SubmissionSlotView, groupId: string): string {
+    if (slot.allowAllGroups || this.slotGroupIds(slot).includes(groupId)) {
+      return '';
+    }
+
+    const hasBookedStudents = this.bookingsForSlot(slot.id)
+      .map((booking) => booking.student)
+      .filter((student): student is StudentView => !!student)
+      .map((student) => this.withKnownStudentDetails(student))
+      .some((student) => student.group?.id === groupId);
+
+    return hasBookedStudents ? 'При исключении этой группы будут отменены записи студентов' : '';
   }
 
   filteredSlotEditableGroups(slot: SubmissionSlotView): GroupView[] {
@@ -1444,13 +1515,15 @@ export class App {
   }
 
   admittedStudents(slot: SubmissionSlotView): StudentView[] {
-    return (slot.admittedStudents ?? []).map((student) => this.data().students.find((item) => item.id === student.id) ?? student);
+    return (slot.admittedStudents ?? []).map((student) =>
+      this.admissionSlotStudents().find((item) => item.id === student.id) ??
+      this.data().students.find((item) => item.id === student.id) ??
+      student);
   }
 
-  admissionStudents(slot: SubmissionSlotView): StudentView[] {
-    const groupIds = new Set(this.slotEditableGroups(slot).map((group) => group.id));
+  admissionStudents(): StudentView[] {
     const query = this.admissionSearch().trim().toLowerCase();
-    const students = this.data().students.filter((student) => {
+    return this.admissionSlotStudents().filter((student) => {
       if (!query) {
         return true;
       }
@@ -1459,15 +1532,16 @@ export class App {
         .filter(Boolean)
         .some((value) => value!.toLowerCase().includes(query));
     });
+  }
 
-    if (slot.allowAllGroups || !groupIds.size) {
-      return students;
+  notBookedStudentList(): StudentView[] {
+    const students = this.notBookedStudents();
+
+    if (!students) {
+      return [];
     }
 
-    return students.filter((student) => {
-      const groupId = student.group?.id;
-      return !!groupId && groupIds.has(groupId);
-    });
+    return [...students.admittedStudents, ...students.notAdmittedStudents];
   }
 
   bookingPosition(booking: BookingRecordView): number {
@@ -1869,6 +1943,8 @@ export class App {
 
   private validateSlotForm(): boolean {
     const errors: Record<string, string> = {};
+    const selectedSubject = this.data().subjects.find((subject) => subject.id === this.slotForm.subjectId);
+    const teacherId = this.auth.hasRole('Teacher') ? this.auth.user()?.id : this.slotForm.teacherId;
 
     if (!this.slotForm.subjectId) {
       errors['slotSubject'] = 'Выберите дисциплину.';
@@ -1876,6 +1952,15 @@ export class App {
 
     if (this.auth.hasRole('Admin') && !this.slotForm.teacherId) {
       errors['slotTeacher'] = 'Выберите преподавателя.';
+    }
+
+    if (selectedSubject?.teacher?.id && teacherId && selectedSubject.teacher.id !== teacherId) {
+      errors['slotTeacher'] = 'Преподаватель должен вести выбранную дисциплину.';
+    }
+
+    const allowedSubjectGroupIds = new Set((selectedSubject?.groups ?? []).map((group) => group.id));
+    if (!this.slotForm.allowAllGroups && this.slotForm.allowedGroupIds.some((groupId) => !allowedSubjectGroupIds.has(groupId))) {
+      errors['slotGroups'] = 'Выберите группы из списка групп дисциплины.';
     }
 
     if (!this.slotForm.startTime) {
@@ -1891,6 +1976,113 @@ export class App {
     }
 
     return this.setFieldErrors(errors);
+  }
+
+  private validateSlotDraft(slot: SubmissionSlotView, allowedGroupIds: string[]): boolean {
+    if (slot.subject?.teacher?.id && slot.teacher?.id && slot.subject.teacher.id !== slot.teacher.id) {
+      this.showToast('Преподаватель должен вести выбранную дисциплину', 'warning');
+      return false;
+    }
+
+    if (!slot.allowAllGroups && !allowedGroupIds.length) {
+      this.showToast('Выберите хотя бы одну группу для окна защиты', 'warning');
+      return false;
+    }
+
+    const subjectGroupIds = new Set(this.slotEditableGroups(slot).map((group) => group.id));
+    if (!slot.allowAllGroups && allowedGroupIds.some((groupId) => !subjectGroupIds.has(groupId))) {
+      this.showToast('Выберите группы из списка групп дисциплины', 'warning');
+      return false;
+    }
+
+    return true;
+  }
+
+  private bookedStudentsOutsideAllowedGroups(bookings: BookingRecordView[], allowedGroupIds: string[], allowAllGroups?: boolean | null): StudentView[] {
+    if (allowAllGroups) {
+      return [];
+    }
+
+    const allowed = new Set(allowedGroupIds);
+
+    return bookings
+      .map((booking) => booking.student)
+      .filter((student): student is StudentView => !!student)
+      .map((student) => this.withKnownStudentDetails(student))
+      .filter((student) => {
+        const groupId = student.group?.id;
+        return !groupId || !allowed.has(groupId);
+      });
+  }
+
+  private withKnownStudentDetails(student: StudentView): StudentView {
+    const knownStudent = this.findStudent(student.id);
+
+    if (!knownStudent) {
+      return student;
+    }
+
+    return {
+      ...student,
+      ...knownStudent,
+      group: knownStudent.group ?? student.group,
+    };
+  }
+
+  private findStudent(studentId: string): StudentView | null {
+    return this.admissionSlotStudents().find((student) => student.id === studentId) ??
+      this.data().students.find((student) => student.id === studentId) ??
+      null;
+  }
+
+  private studentCountLabel(count: number): string {
+    const modulo10 = count % 10;
+    const modulo100 = count % 100;
+
+    if (modulo10 === 1 && modulo100 !== 11) {
+      return 'студент';
+    }
+
+    if (modulo10 >= 2 && modulo10 <= 4 && (modulo100 < 12 || modulo100 > 14)) {
+      return 'студента';
+    }
+
+    return 'студентов';
+  }
+
+  private normalizeSlotFormSelection(): void {
+    const userId = this.auth.user()?.id;
+
+    if (this.auth.hasRole('Teacher')) {
+      this.slotForm.teacherId = userId ?? '';
+    }
+
+    if (this.auth.hasRole('Admin') && !this.slotForm.teacherId) {
+      const subject = this.data().subjects.find((item) => item.id === this.slotForm.subjectId);
+      this.slotForm.teacherId = subject?.teacher?.id ?? this.data().teachers[0]?.id ?? '';
+    }
+
+    const subjects = this.slotForm.teacherId ? this.slotSubjectsForTeacher(this.slotForm.teacherId) : this.data().subjects;
+    const subject = subjects.some((item) => item.id === this.slotForm.subjectId)
+      ? this.data().subjects.find((item) => item.id === this.slotForm.subjectId)
+      : subjects[0];
+
+    this.slotForm.subjectId = subject?.id ?? '';
+
+    if (this.auth.hasRole('Admin') && subject?.teacher?.id) {
+      this.slotForm.teacherId = subject.teacher.id;
+    }
+
+    this.pruneSlotAllowedGroups(subject);
+  }
+
+  private slotSubjectsForTeacher(teacherId: string): SubjectView[] {
+    return this.data().subjects.filter((subject) => subject.teacher?.id === teacherId);
+  }
+
+  private pruneSlotAllowedGroups(subject?: SubjectView): void {
+    const allowed = new Set((subject?.groups ?? []).map((group) => group.id));
+    this.slotForm.allowedGroupIds = this.slotForm.allowedGroupIds.filter((id) => allowed.has(id));
   }
 
   private ensureAdmin(): boolean {
@@ -1944,6 +2136,9 @@ export class App {
 
       if (kind.endsWith('Start')) {
         draft.startTime = value;
+        if (!draft.endTime || new Date(value).getTime() >= new Date(draft.endTime).getTime()) {
+          draft.endTime = addMinutesToDateTimeLocal(value, 90);
+        }
       } else {
         draft.endTime = value;
       }
@@ -1957,6 +2152,9 @@ export class App {
 
     if (kind.endsWith('Start')) {
       slot.startTime = value;
+      if (!slot.endTime || new Date(value).getTime() >= new Date(slot.endTime).getTime()) {
+        slot.endTime = addMinutesToDateTimeLocal(value, 90);
+      }
     } else {
       slot.endTime = value;
     }
@@ -2025,9 +2223,130 @@ export class App {
 
   private refreshSlot(slotId: string): void {
     this.api.getSlot(slotId).subscribe((slot) => {
-      this.applyWorkspace({ slots: this.replaceSlot(this.data().slots, slot) });
+      this.replaceSlotInWorkspace(slot);
       this.selectedSlotId.set(slot.id);
     });
+  }
+
+  private setStudentAdmission(slot: SubmissionSlotView, student: StudentView, admitted: boolean): void {
+    const admittedStudents = slot.admittedStudents ?? [];
+    const nextSlot = {
+      ...slot,
+      admittedStudents: admitted
+        ? admittedStudents.some((item) => item.id === student.id)
+          ? admittedStudents
+          : [...admittedStudents, student]
+        : admittedStudents.filter((item) => item.id !== student.id),
+    };
+
+    this.replaceSlotInWorkspace(nextSlot);
+    this.selectedSlotId.set(nextSlot.id);
+  }
+
+  private replaceSlotInWorkspace(slot: SubmissionSlotView): void {
+    this.data.update((current) => ({
+      ...current,
+      slots: this.replaceSlot(current.slots, slot),
+    }));
+  }
+
+  private ensureCreateSlotReferenceData(onReady: () => void): void {
+    if (this.hasCreateSlotReferenceData()) {
+      onReady();
+      return;
+    }
+
+    const userId = this.auth.user()?.id;
+
+    if (this.auth.hasRole('Teacher') && userId) {
+      this.api.getSubjectsByTeacher(userId).subscribe((subjects) => {
+        this.mergeSubjectReferenceData(subjects);
+        onReady();
+      });
+      return;
+    }
+
+    if (this.auth.hasRole('Admin')) {
+      this.api.getSubjects().subscribe((subjects) => {
+        this.mergeSubjectReferenceData(subjects);
+        onReady();
+      });
+      return;
+    }
+
+    onReady();
+  }
+
+  private ensureEditSlotReferenceData(slot: SubmissionSlotView, onReady: () => void): void {
+    const subjectId = slot.subject?.id;
+
+    if (!subjectId || this.subjectHasGroups(subjectId) || slot.subject?.groups?.length) {
+      onReady();
+      return;
+    }
+
+    this.api.getSubject(subjectId).subscribe((subject) => {
+      this.mergeSubjectReferenceData([subject]);
+      onReady();
+    });
+  }
+
+  private hasCreateSlotReferenceData(): boolean {
+    const userId = this.auth.user()?.id;
+
+    if (this.auth.hasRole('Teacher')) {
+      return !!userId && this.data().subjects.some((subject) => subject.teacher?.id === userId);
+    }
+
+    return this.auth.hasRole('Admin') ? this.data().subjects.length > 0 : true;
+  }
+
+  private subjectHasGroups(subjectId: string): boolean {
+    return !!this.data().subjects.find((subject) => subject.id === subjectId)?.groups?.length;
+  }
+
+  private mergeSubjectReferenceData(subjects: SubjectView[]): void {
+    this.data.update((current) => ({
+      ...current,
+      groups: this.mergeById(current.groups, this.groupsFromSubjects(subjects)),
+      teachers: this.mergeById(current.teachers, this.teachersFromSubjects(subjects)),
+      subjects: this.mergeById(current.subjects, subjects),
+    }));
+    this.syncDefaultSelections(this.data());
+  }
+
+  private mergeById<T extends { id: string }>(current: T[], incoming: T[]): T[] {
+    const items = new Map(current.map((item) => [item.id, item]));
+
+    for (const item of incoming) {
+      items.set(item.id, item);
+    }
+
+    return [...items.values()];
+  }
+
+  private groupsFromSubjects(subjects: SubjectView[]): GroupView[] {
+    const groups = new Map<string, GroupView>();
+
+    for (const subject of subjects) {
+      for (const group of subject.groups ?? []) {
+        groups.set(group.id, group);
+      }
+    }
+
+    return [...groups.values()];
+  }
+
+  private teachersFromSubjects(subjects: SubjectView[]): TeacherView[] {
+    const teachers = new Map<string, TeacherView>();
+
+    for (const subject of subjects) {
+      if (subject.teacher) {
+        teachers.set(subject.teacher.id, subject.teacher);
+      }
+    }
+
+    return [...teachers.values()];
   }
 
   private replaceSlot(slots: SubmissionSlotView[], slot: SubmissionSlotView): SubmissionSlotView[] {

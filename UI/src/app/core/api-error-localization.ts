@@ -3,6 +3,7 @@ const apiErrorMessages: Record<string, string> = {
   'BusinessRule.AllowedGroupIdsMustBeEmptyWhenAllowAllGroupsIsTrueRule': 'Очистите список групп, если окно защиты доступно всем группам.',
   'BusinessRule.AllowedGroupIdsMustNotBeEmptyWhenAllowAllGroupsIsFalseRule': 'Выберите хотя бы одну группу для окна защиты.',
   'BusinessRule.AllowedGroupIdsMustNotContainDuplicatesRule': 'Список групп не должен содержать дубликаты.',
+  'BusinessRule.AllowedGroupIdsMustBeWithinSubjectGroupIds': 'Выбранные группы должны быть из числа групп, связанных с дисциплиной.',
   'BusinessRule.CreationTimeMustBeInPastRule': 'Дата создания должна быть в прошлом.',
   'BusinessRule.GroupIdsMustNotBeEmpty': 'Выберите хотя бы одну группу.',
   'BusinessRule.GroupIdsMustNotDuplicateRule': 'Список групп не должен содержать дубликаты.',
@@ -24,6 +25,7 @@ const apiErrorMessages: Record<string, string> = {
   'BusinessRule.TeacherFirstNameMustBeProperLengthRule': 'Имя преподавателя должно быть допустимой длины.',
   'BusinessRule.TeacherLastNameMustBeProperLengthRule': 'Фамилия преподавателя должна быть допустимой длины.',
   'BusinessRule.TeacherMiddleNameMustBeProperLengthRule': 'Отчество преподавателя должно быть допустимой длины.',
+  'BusinessRule.TeacherMustOwnSubjectRule': 'Преподаватель должен вести выбранную дисциплину.',
   'BusinessRule.UserMustNotBeInUsersWithoutNotificationsRule': 'Для пользователя уже отключены уведомления.',
 };
 

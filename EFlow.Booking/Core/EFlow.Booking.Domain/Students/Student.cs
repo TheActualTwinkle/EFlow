@@ -91,6 +91,9 @@ public sealed class Student : Entity, IAggreagateRoot
         string.Join(
             ' ',
             new[] { LastName, FirstName, MiddleName }.Where(name => !string.IsNullOrWhiteSpace(name)));
+    
+    public GroupId GetGroupId() => 
+        GroupId;
 
     public StudentId Delete()
     {

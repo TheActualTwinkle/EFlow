@@ -7,8 +7,6 @@ import { AdminView, WorkspaceData } from './workspace.models';
 
 type Schemas = components['schemas'];
 type CurrentUser = Schemas['CurrentUserView'];
-type GroupView = Schemas['GroupView'];
-type SubjectView = Schemas['SubjectView'];
 
 @Injectable({ providedIn: 'root' })
 export class WorkspaceDataService {
@@ -41,25 +39,11 @@ export class WorkspaceDataService {
 
   loadSlots(user: CurrentUser, current: WorkspaceData, roles: RoleFlags): Observable<Partial<WorkspaceData>> {
     if (roles.admin) {
-      return forkJoin({
-        groups: this.api.getGroups(),
-        teachers: this.api.getTeachers(),
-        subjects: this.api.getSubjects(),
-        slots: this.api.getSlots(),
-      });
+      return this.api.getSlots().pipe(map((slots) => ({ slots })));
     }
 
     if (roles.teacher) {
-      return forkJoin({
-        teacher: this.api.getTeacher(user.id),
-        subjects: this.api.getSubjectsByTeacher(user.id),
-        slots: this.api.getSlotsByTeacher(user.id),
-      }).pipe(map((workspace) => ({
-        groups: groupsFromSubjects(workspace.subjects),
-        teachers: [workspace.teacher],
-        subjects: workspace.subjects,
-        slots: workspace.slots,
-      })));
+      return this.api.getSlotsByTeacher(user.id).pipe(map((slots) => ({ slots })));
     }
 
     return this.loadStudentSlots(user, current);
@@ -137,14 +121,4 @@ export interface RoleFlags {
   admin: boolean;
   teacher: boolean;
   student: boolean;
-}
-
-function groupsFromSubjects(subjects: SubjectView[]): GroupView[] {
-  const groups = new Map<string, GroupView>();
-  for (const subject of subjects) {
-    for (const group of subject.groups ?? []) {
-      groups.set(group.id, group);
-    }
-  }
-  return [...groups.values()];
 }

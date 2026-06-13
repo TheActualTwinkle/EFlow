@@ -1,0 +1,131 @@
+:host {
+  display: block;
+  min-width: 0;
+  --toggle-track: #8f8f8f;
+  --toggle-track-border: #6f6f6f;
+  --toggle-knob: #f4f4f4;
+  --toggle-knob-border: #5f5f5f;
+  --toggle-track-on: #2f9f5b;
+  --toggle-track-on-border: #1f7f43;
+  --toggle-knob-on: #f7fff9;
+  --toggle-knob-on-border: #1f7f43;
+}
+
+:host-context(:root[data-theme='dark']) {
+  --toggle-track: #6f6f6f;
+  --toggle-track-border: #9a9a9a;
+  --toggle-knob: #f1f1f1;
+  --toggle-knob-border: #cfcfcf;
+  --toggle-track-on: #3fc475;
+  --toggle-track-on-border: #7ae0a3;
+  --toggle-knob-on: #f6fff8;
+  --toggle-knob-on-border: #b7f2ca;
+}
+
+.toggle-item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  width: 100%;
+  min-height: 56px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface-strong);
+  color: var(--text);
+  padding: 10px 12px;
+  text-align: left;
+  font: inherit;
+  font-weight: 620;
+  cursor: pointer;
+}
+
+.toggle-item:hover {
+  border-color: color-mix(in srgb, var(--text) 24%, var(--line));
+}
+
+.toggle-item.selected {
+  border-color: color-mix(in srgb, var(--primary) 48%, var(--line));
+}
+
+.toggle-item-text {
+  display: grid;
+  min-width: 0;
+  gap: 3px;
+}
+
+.toggle-item-title {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 6px;
+}
+
+.toggle-item-text strong,
+.toggle-item-text small {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.toggle-item-text strong {
+  color: var(--text);
+  line-height: 1.15;
+}
+
+.toggle-warning-icon {
+  display: inline-grid;
+  flex: 0 0 auto;
+  width: 18px;
+  height: 18px;
+  place-items: center;
+  color: var(--warning);
+}
+
+.toggle-item-text small {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 620;
+  line-height: 1.2;
+}
+
+.toggle-switch {
+  position: relative;
+  width: 43px;
+  height: 24px;
+  border: 1px solid var(--toggle-track-border);
+  border-radius: 999px;
+  background: var(--toggle-track);
+  transition:
+    background-color 180ms ease,
+    border-color 180ms ease;
+}
+
+.toggle-switch::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 1px;
+  width: 19px;
+  height: 19px;
+  border: 1px solid var(--toggle-knob-border);
+  border-radius: 50%;
+  background: var(--toggle-knob);
+  box-shadow:
+    0 1px 4px rgb(0 0 0 / 0.38),
+    0 0 0 1px color-mix(in srgb, var(--text) 12%, transparent);
+  transform: translateY(-50%);
+  transition: transform 180ms ease;
+}
+
+.toggle-item.selected .toggle-switch {
+  border-color: var(--toggle-track-on-border);
+  background: var(--toggle-track-on);
+}
+
+.toggle-item.selected .toggle-switch::after {
+  border-color: var(--toggle-knob-on-border);
+  background: var(--toggle-knob-on);
+  transform: translate(19px, -50%);
+}

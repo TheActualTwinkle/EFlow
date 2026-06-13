@@ -4,10 +4,6 @@ namespace EFlow.Booking.WebApi.Contracts.SubmissionSlots;
 
 public record UpdateSubmissionSlotRequest
 {
-    public Patchable<Guid> SubjectId { get; init; }
-    
-    public Patchable<Guid> TeacherId { get; init; }
-
     public Patchable<DateTime> StartTime { get; init; }
 
     public Patchable<DateTime> EndTime { get; init; }

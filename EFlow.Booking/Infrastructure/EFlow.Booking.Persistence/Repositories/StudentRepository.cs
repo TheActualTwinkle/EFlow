@@ -17,6 +17,18 @@ public class StudentRepository(ApplicationDbContext context) :
     public async Task<Student?> GetByIdAsync(StudentId id, CancellationToken cancellationToken = new()) =>
         await context.Students.FirstOrDefaultAsync(s => s.Id == id, cancellationToken);
 
+    public async Task<IEnumerable<Student>> GetByIdsAsync(IEnumerable<StudentId> ids, CancellationToken cancellationToken = new())
+    {
+        var targetIds = ids.Distinct().ToArray();
+
+        if (targetIds.Length == 0)
+            return [];
+
+        return await context.Students
+            .Where(student => targetIds.AsEnumerable().Contains(student.Id))
+            .ToListAsync(cancellationToken);
+    }
+
     public async Task<IEnumerable<Student>> GetByGroupIdAsync(GroupId groupId, CancellationToken cancellationToken = new()) =>
         await context.Students
             .Where(s => s.GroupId == groupId)

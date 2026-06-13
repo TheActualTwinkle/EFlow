@@ -35,6 +35,9 @@ public sealed class BookingRecord : Entity, IAggreagateRoot
     public SubmissionSlotId GetSlotId() => 
         SlotId;
     
+    public StudentId GetStudentId() => 
+        StudentId;
+    
     internal static BookingRecord Create(
         StudentId studentId,
         SubmissionSlotId slotId,

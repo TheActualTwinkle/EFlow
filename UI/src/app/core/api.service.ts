@@ -1,6 +1,6 @@
 import { HttpClient, HttpErrorResponse, HttpParams } from '@angular/common/http';
 import { Injectable, inject, signal } from '@angular/core';
-import { catchError, map, of, throwError } from 'rxjs';
+import { catchError, map, throwError } from 'rxjs';
 
 import type { components } from '../api/contracts';
 import { apiBaseUrl } from './environment';
@@ -13,6 +13,7 @@ type CreateStudentRequest = Schemas['CreateStudentRequest'];
 type CreateSubmissionSlotRequest = Schemas['CreateSubmissionSlotRequest'];
 type CreateTeacherRequest = Schemas['CreateTeacherRequest'];
 type GroupView = Schemas['GroupView'];
+type NotBookedStudentsView = Schemas['NotBookedStudentsView'];
 type StudentView = Schemas['StudentView'];
 type SubjectView = Schemas['SubjectView'];
 type SubmissionSlotView = Schemas['SubmissionSlotView'];
@@ -94,6 +95,10 @@ export class ApiService {
     return this.http.get<SubjectView[]>(`${apiBaseUrl}/subjects`).pipe(catchError((error) => this.fail(error)));
   }
 
+  getSubject(id: string) {
+    return this.http.get<SubjectView>(`${apiBaseUrl}/subjects/${id}`).pipe(catchError((error) => this.fail(error)));
+  }
+
   getSubjectsByTeacher(teacherId: string) {
     return this.http.get<SubjectView[]>(`${apiBaseUrl}/subjects/by-teacher/${teacherId}`).pipe(catchError((error) => this.fail(error)));
   }
@@ -121,6 +126,18 @@ export class ApiService {
   getBookingsBySlot(slotId: string, fetchGroups = false) {
     const params = fetchGroups ? new HttpParams().set('fetchGroups', true) : undefined;
     return this.http.get<BookingRecordView[]>(`${apiBaseUrl}/bookings/by-slot/${slotId}`, { params }).pipe(catchError((error) => this.fail(error)));
+  }
+
+  getNotBookedStudents(slotId: string) {
+    return this.http
+      .get<NotBookedStudentsView>(`${apiBaseUrl}/bookings/${slotId}/not-booked-students`)
+      .pipe(catchError((error) => this.fail(error)));
+  }
+
+  getSlotAllowedStudents(slotId: string) {
+    return this.http
+      .get<StudentView[]>(`${apiBaseUrl}/submission-slots/${slotId}/allowed-students`)
+      .pipe(catchError((error) => this.fail(error)));
   }
 
   createGroup(name: string) {
@@ -220,11 +237,6 @@ export class ApiService {
         bookingNotificationMode,
       })
       .pipe(catchError((error) => this.fail(error)));
-  }
-
-  getAvailableSlots(fromDate: string) {
-    const params = new HttpParams().set('fromDate', fromDate);
-    return this.http.get<SubmissionSlotView[]>(`${apiBaseUrl}/submission-slots/available`, { params }).pipe(catchError(() => of([])));
   }
 
   private postLocation(url: string, body: unknown) {

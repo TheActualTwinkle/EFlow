@@ -25,6 +25,7 @@ export type ModalView =
   | 'editStudent'
   | 'editSubject'
   | 'admissions'
+  | 'notBookedStudents'
   | 'accountEmail'
   | 'accountPassword'
   | null;

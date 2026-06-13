@@ -10,6 +10,8 @@ public interface IStudentRepository : IRepository
     public Task<IEnumerable<Student>> GetAllAsync(CancellationToken cancellationToken = new());
 
     public Task<Student?> GetByIdAsync(StudentId id, CancellationToken cancellationToken = new());
+    
+    public Task<IEnumerable<Student>> GetByIdsAsync(IEnumerable<StudentId> ids, CancellationToken cancellationToken = new());
 
     public Task<IEnumerable<Student>> GetByGroupIdAsync(GroupId groupId, CancellationToken cancellationToken = new());
 

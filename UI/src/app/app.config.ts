@@ -1,30 +1,7 @@
-import { ApplicationConfig, LOCALE_ID, importProvidersFrom, inject, provideBrowserGlobalErrorListeners } from '@angular/core';
+import { ApplicationConfig, LOCALE_ID, inject, provideBrowserGlobalErrorListeners } from '@angular/core';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { provideRouter } from '@angular/router';
 import { finalize } from 'rxjs';
-import {
-  Bell,
-  BookOpen,
-  CalendarDays,
-  CheckCircle2,
-  Clock3,
-  Eye,
-  EyeOff,
-  KeyRound,
-  Lock,
-  LogOut,
-  LucideAngularModule,
-  MapPin,
-  Mail,
-  Moon,
-  Plus,
-  RefreshCw,
-  ShieldCheck,
-  Sun,
-  Trash2,
-  TriangleAlert,
-  Users,
-} from 'lucide-angular';
 
 import { routes } from './app.routes';
 import { HttpActivityService } from './core/http-activity.service';
@@ -34,30 +11,6 @@ export const appConfig: ApplicationConfig = {
     provideBrowserGlobalErrorListeners(),
     { provide: LOCALE_ID, useValue: 'ru-RU' },
     provideRouter(routes),
-    importProvidersFrom(
-      LucideAngularModule.pick({
-        Bell,
-        BookOpen,
-        CalendarDays,
-        CheckCircle2,
-        Clock3,
-        Eye,
-        EyeOff,
-        KeyRound,
-        Lock,
-        LogOut,
-        MapPin,
-        Mail,
-        Moon,
-        Plus,
-        RefreshCw,
-        ShieldCheck,
-        Sun,
-        Trash2,
-        TriangleAlert,
-        Users,
-      }),
-    ),
     provideHttpClient(
       withInterceptors([
         (request, next) => {

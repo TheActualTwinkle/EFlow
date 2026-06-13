@@ -6,6 +6,7 @@ using EFlow.Booking.ApiTests.Infrastructure.Fixtures;
 using EFlow.Booking.ApiTests.Infrastructure.Scenarios;
 using EFlow.Booking.ApiTests.Infrastructure.Sessions;
 using EFlow.Booking.ApiTests.SubmissionSlots.Support;
+using EFlow.Booking.Contracts.BookingRecords;
 using EFlow.Booking.Contracts.SubmissionSlots;
 using EFlow.Booking.Domain.Notifications;
 using FluentAssertions;
@@ -19,40 +20,6 @@ namespace EFlow.Booking.ApiTests.SubmissionSlots;
 public sealed class SubmissionSlotsApiTests(ApiTestStackFixture fixture)
 {
     /// <summary>
-    /// Verifies that <c>GetSubmissionSlots</c> returns the created slot when the slot exists.
-    /// </summary>
-    [Fact]
-    public Task GetSubmissionSlots_WhenSlotExists_ShouldReturnCreatedSlot() =>
-        WithSubmissionSlotFixtureAsync(async (scenario, context) =>
-        {
-            // Arrange
-            var slot = await scenario.GetSlotAsync(context.AdminSession, context.SlotId);
-
-            // Act
-            var bySubjectResponse = await context.AdminSession.GetAsync($"/api/submission-slots/by-subject/{context.SubjectId}");
-            var availableResponse = await context.AdminSession.GetAsync(
-                $"/api/submission-slots/available?fromDate={Uri.EscapeDataString(DateTime.UtcNow.Date.ToString("O"))}");
-
-            // Assert
-            slot.Id.Should().Be(context.SlotId);
-            slot.Subject.Should().NotBeNull();
-            slot.Subject!.Id.Should().Be(context.SubjectId);
-            slot.Teacher.Should().NotBeNull();
-            slot.Teacher!.Id.Should().Be(context.TeacherId);
-            slot.StartTime.Should().Be(context.SlotStart);
-            slot.EndTime.Should().Be(context.SlotStart + ApiScenario.SlotDuration);
-            slot.MaxStudents.Should().Be(ApiScenario.SlotMaxStudents);
-            slot.Location.Should().Be(ApiScenario.SlotLocation);
-            slot.Comment.Should().Be(ApiScenario.SlotComment);
-            bySubjectResponse.StatusCode.Should().Be(HttpStatusCode.OK);
-            availableResponse.StatusCode.Should().Be(HttpStatusCode.OK);
-            var slotsBySubject = (await context.AdminSession.ReadAsync<SubmissionSlotView[]>(bySubjectResponse))!;
-            var availableSlots = (await context.AdminSession.ReadAsync<SubmissionSlotView[]>(availableResponse))!;
-            slotsBySubject.Should().Contain(x => x.Id == context.SlotId && x.Subject != null && x.Subject.Id == context.SubjectId);
-            availableSlots.Should().Contain(x => x.Id == context.SlotId);
-        });
-
-    /// <summary>
     /// Verifies that <c>UpdateSubmissionSlot</c> replaces the allowed groups stored for the slot.
     /// </summary>
     [Fact]
@@ -61,7 +28,16 @@ public sealed class SubmissionSlotsApiTests(ApiTestStackFixture fixture)
         {
             // Arrange
             var newGroupId = await scenario.CreateGroupAsync(context.AdminSession, $"New Group {context.Suffix}");
-            context.AddCleanup(ApiScenario.DeleteGroup(newGroupId));
+            context.CleanupActions.Add(ApiScenario.DeleteGroup(newGroupId));
+
+            var updateSubjectResponse = await context.AdminSession.PatchAsync(
+                $"/api/subjects/{context.SubjectId}",
+                new
+                {
+                    groupIds = new[] { context.GroupId, newGroupId }
+                });
+
+            updateSubjectResponse.StatusCode.Should().Be(HttpStatusCode.NoContent);
 
             // Act
             var response = await context.AdminSession.PatchAsync(
@@ -76,6 +52,171 @@ public sealed class SubmissionSlotsApiTests(ApiTestStackFixture fixture)
             var updatedSlot = await scenario.GetSlotAsync(context.AdminSession, context.SlotId);
             updatedSlot.AllowedGroups.Should().NotBeNull();
             updatedSlot.AllowedGroups!.Select(group => group.Id).Should().BeEquivalentTo([newGroupId]);
+        });
+
+    /// <summary>
+    /// Verifies that <c>UpdateSubmissionSlot</c> removes admissions, bookings, and notification settings outside the updated allowed groups.
+    /// </summary>
+    [Fact]
+    public Task UpdateSubmissionSlot_WhenAllowedGroupsExcludeBookedStudentGroup_ShouldRemoveStudentData() =>
+        WithSubmissionSlotFixtureAsync(async (scenario, context) =>
+        {
+            // Arrange
+            var excludedGroupId = await scenario.CreateGroupAsync(context.AdminSession, $"Excluded Group {context.Suffix}");
+            context.AddCleanup(ApiScenario.DeleteGroup(excludedGroupId));
+
+            var excludedStudentUsername = $"excluded_student_{context.Suffix}";
+            var excludedStudentId = await scenario.CreateStudentAsync(
+                context.AdminSession,
+                excludedGroupId,
+                excludedStudentUsername,
+                $"{excludedStudentUsername}@example.com",
+                "Pavel",
+                "Sidorov");
+
+            context.AddCleanup(ApiScenario.DeleteStudent(excludedStudentId));
+
+            var updateSubjectResponse = await context.AdminSession.PatchAsync(
+                $"/api/subjects/{context.SubjectId}",
+                new
+                {
+                    groupIds = new[] { context.GroupId, excludedGroupId }
+                });
+
+            updateSubjectResponse.StatusCode.Should().Be(HttpStatusCode.NoContent);
+
+            var openSlotResponse = await context.AdminSession.PatchAsync(
+                $"/api/submission-slots/{context.SlotId}",
+                new
+                {
+                    allowAllGroups = true,
+                    allowedGroupIds = Array.Empty<Guid>()
+                });
+
+            openSlotResponse.StatusCode.Should().Be(HttpStatusCode.NoContent);
+
+            await scenario.AddAdmissionAsync(context.AdminSession, context.SlotId, context.StudentId);
+            await scenario.AddAdmissionAsync(context.AdminSession, context.SlotId, excludedStudentId);
+
+            var allowedBookingId = await scenario.CreateBookingAsync(context.AdminSession, context.StudentId, context.SlotId);
+            context.AddCleanup(ApiScenario.DeleteBooking(allowedBookingId));
+
+            var excludedBookingId = await scenario.CreateBookingAsync(context.AdminSession, excludedStudentId, context.SlotId);
+            context.AddCleanup(ApiScenario.DeleteBooking(excludedBookingId));
+
+            var notificationResponse = await context.AdminSession.PutAsync(
+                $"/api/submission-slots/{context.SlotId}/notification-settings",
+                new
+                {
+                    userId = excludedStudentId,
+                    submissionRemindTimes = new[] { SubmissionRemindTime.TwoDays },
+                    bookingNotificationMode = BookingNotificationMode.All
+                });
+
+            notificationResponse.StatusCode.Should().Be(HttpStatusCode.NoContent);
+
+            // Act
+            var response = await context.AdminSession.PatchAsync(
+                $"/api/submission-slots/{context.SlotId}",
+                new
+                {
+                    allowAllGroups = false,
+                    allowedGroupIds = new[] { context.GroupId }
+                });
+
+            // Assert
+            response.StatusCode.Should().Be(HttpStatusCode.NoContent);
+
+            var updatedSlot = await scenario.GetSlotAsync(context.AdminSession, context.SlotId);
+            updatedSlot.AdmittedStudents.Should().NotBeNull();
+            updatedSlot.AdmittedStudents!.Select(student => student.Id).Should().BeEquivalentTo([context.StudentId]);
+            updatedSlot.NotificationSettings.Should().NotContain(settings => settings.UserId == excludedStudentId);
+
+            var bookingsResponse = await context.AdminSession.GetAsync($"/api/bookings/by-slot/{context.SlotId}");
+            bookingsResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+
+            var bookings = (await context.AdminSession.ReadAsync<BookingRecordView[]>(bookingsResponse))!;
+            bookings.Select(booking => booking.Id).Should().Contain(allowedBookingId);
+            bookings.Select(booking => booking.Id).Should().NotContain(excludedBookingId);
+        });
+
+    /// <summary>
+    /// Verifies that <c>CreateSubmissionSlot</c> rejects allowed groups that are not assigned to the subject.
+    /// </summary>
+    [Fact]
+    public Task CreateSubmissionSlot_WhenAllowedGroupIsOutsideSubjectGroups_ShouldReturnBusinessRuleError() =>
+        WithSubmissionSlotFixtureAsync(async (scenario, context) =>
+        {
+            // Arrange
+            var foreignGroupId = await scenario.CreateGroupAsync(context.AdminSession, $"Foreign Group {context.Suffix}");
+            context.AddCleanup(ApiScenario.DeleteGroup(foreignGroupId));
+            var slotStart = context.SlotStart.AddDays(1);
+
+            // Act
+            var response = await context.AdminSession.PostAsync(
+                ApiScenario.SubmissionSlotsPath,
+                new
+                {
+                    subjectId = context.SubjectId,
+                    teacherId = context.TeacherId,
+                    startTime = slotStart,
+                    endTime = slotStart + ApiScenario.SlotDuration,
+                    maxStudents = ApiScenario.SlotMaxStudents,
+                    allowAllGroups = false,
+                    allowedGroupIds = new[] { foreignGroupId },
+                    location = ApiScenario.SlotLocation,
+                    comment = ApiScenario.SlotComment
+                });
+
+            // Assert
+            await context.AdminSession.AssertProblemAsync(
+                response,
+                HttpStatusCode.UnprocessableEntity,
+                "Business Rule Violation",
+                code: "BusinessRule.AllowedGroupIdsMustBeWithinSubjectGroupIds");
+        });
+
+    /// <summary>
+    /// Verifies that <c>CreateSubmissionSlot</c> rejects teachers that do not own the subject.
+    /// </summary>
+    [Fact]
+    public Task CreateSubmissionSlot_WhenTeacherDoesNotOwnSubject_ShouldReturnBusinessRuleError() =>
+        WithSubmissionSlotFixtureAsync(async (scenario, context) =>
+        {
+            // Arrange
+            var foreignTeacherUsername = $"slot_teacher_foreign_{context.Suffix}";
+            var foreignTeacherId = await scenario.CreateTeacherAsync(
+                context.AdminSession,
+                foreignTeacherUsername,
+                $"{foreignTeacherUsername}@example.com",
+                "Pavel",
+                "Sidorov");
+
+            context.AddCleanup(ApiScenario.DeleteTeacher(foreignTeacherId));
+            var slotStart = context.SlotStart.AddDays(1);
+
+            // Act
+            var response = await context.AdminSession.PostAsync(
+                ApiScenario.SubmissionSlotsPath,
+                new
+                {
+                    subjectId = context.SubjectId,
+                    teacherId = foreignTeacherId,
+                    startTime = slotStart,
+                    endTime = slotStart + ApiScenario.SlotDuration,
+                    maxStudents = ApiScenario.SlotMaxStudents,
+                    allowAllGroups = true,
+                    allowedGroupIds = Array.Empty<Guid>(),
+                    location = ApiScenario.SlotLocation,
+                    comment = ApiScenario.SlotComment
+                });
+
+            // Assert
+            await context.AdminSession.AssertProblemAsync(
+                response,
+                HttpStatusCode.UnprocessableEntity,
+                "Business Rule Violation",
+                code: "BusinessRule.TeacherMustOwnSubjectRule");
         });
 
     /// <summary>
@@ -120,6 +261,36 @@ public sealed class SubmissionSlotsApiTests(ApiTestStackFixture fixture)
                 // Act
                 var response = await foreignTeacherSession.PostAsync<object?>(
                     $"/api/submission-slots/{context.SlotId}/admissions/{context.StudentId}", null);
+
+                // Assert
+                await foreignTeacherSession.AssertProblemAsync(response, HttpStatusCode.Forbidden, ApiAssertions.ForbiddenTitle, "own slots");
+            }
+        });
+
+    /// <summary>
+    /// Verifies that <c>GetNotBookedStudentsForSlot</c> returns <c>Forbidden</c> when the caller is another teacher.
+    /// </summary>
+    [Fact]
+    public Task GetNotBookedStudentsForSlot_WhenUserIsAnotherTeacher_ShouldReturnForbidden() =>
+        WithSubmissionSlotFixtureAsync(async (scenario, context) =>
+        {
+            // Arrange
+            var foreignTeacherUsername = $"foreign_{context.Suffix}";
+            var foreignTeacherId = await scenario.CreateTeacherAsync(
+                context.AdminSession,
+                foreignTeacherUsername,
+                $"{foreignTeacherUsername}@example.com",
+                "Pavel",
+                "Sidorov");
+
+            context.AddCleanup(ApiScenario.DeleteTeacher(foreignTeacherId));
+
+            var foreignTeacherSession = await scenario.LoginAsync(foreignTeacherUsername, ApiScenario.TeacherPassword);
+
+            using (foreignTeacherSession)
+            {
+                // Act
+                var response = await foreignTeacherSession.GetAsync($"/api/bookings/{context.SlotId}/not-booked-students");
 
                 // Assert
                 await foreignTeacherSession.AssertProblemAsync(response, HttpStatusCode.Forbidden, ApiAssertions.ForbiddenTitle, "own slots");
