@@ -1,18 +1,23 @@
 #!/bin/bash
 set -e
 
-ROOT_DIR="$(cd "$(dirname "$0")/../.." && pwd)"
+ROOT_DIR="$(cd "$(dirname "$0")" && pwd)"
 COMPOSE_FILE="$ROOT_DIR/docker/docker-compose.prod.yml"
 ENV_FILE="$ROOT_DIR/docker/prod.env"
+IMAGES_ARCHIVE="$ROOT_DIR/images.tar"
 
 cd "$ROOT_DIR"
+
+if [ -f "$IMAGES_ARCHIVE" ]; then
+  docker load -i "$IMAGES_ARCHIVE"
+fi
 
 TEMPLATE_FILE="$ROOT_DIR/docker/template.prod.env"
 
 if [ ! -f "$ENV_FILE" ]; then
   if [ -f "$TEMPLATE_FILE" ]; then
     cp "$TEMPLATE_FILE" "$ENV_FILE"
-    echo "prod.env file not found. Created $ENV_FILE from template $TEMPLATE_FILE"
+    echo "Env file not found. Created $ENV_FILE from template $TEMPLATE_FILE"
   else
     echo "Template $TEMPLATE_FILE not found. Please create it or provide $ENV_FILE" >&2
     exit 1
@@ -50,9 +55,18 @@ set -a
 source "$ENV_FILE"
 set +a
 
+if [ -z "${APP_DOMAIN_NAME:-}" ]; then
+  echo "APP_DOMAIN_NAME is required. Export it or create $ENV_FILE" >&2
+  exit 1
+fi
+
 if [ -z "${JWT_KEY:-}" ]; then
   echo "JWT_KEY is required. Export it or create $ENV_FILE" >&2
   exit 1
 fi
 
-docker compose -f "$COMPOSE_FILE" up -d --build
+if grep -q '^    build:$' "$COMPOSE_FILE"; then
+  docker compose --env-file "$ENV_FILE" -f "$COMPOSE_FILE" up -d --build
+else
+  docker compose --env-file "$ENV_FILE" -f "$COMPOSE_FILE" up -d
+fi
