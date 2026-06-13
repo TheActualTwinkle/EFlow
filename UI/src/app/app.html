@@ -51,6 +51,9 @@
           <strong>{{ sidebarName() }}</strong>
           <span>{{ sidebarSubtitle() }}</span>
         </div>
+        <a class="brand-github-link" href="https://github.com/TheActualTwinkle/EFlow" target="_blank" rel="noopener noreferrer" aria-label="GitHub проекта" appHoverHint="GitHub проекта">
+          <app-icon name="github" />
+        </a>
       </div>
 
       <nav>
@@ -104,10 +107,6 @@
           Обновить
         </button>
       </header>
-
-      @if (api.busy()) {
-        <div class="request-slider" aria-hidden="true"><span></span></div>
-      }
 
       <div class="workspace-content" [class.is-loading]="workspaceLoading()">
         @if (workspaceLoading()) {
@@ -1174,7 +1173,7 @@
         <app-icon name="mail" />
       </div>
       <label>
-        <span>Email <b>*</b></span>
+        <span>Новый Email <b>*</b></span>
         <input name="accountEmail" [(ngModel)]="accountEmailForm.email" type="email" autocomplete="off" required />
         @if (fieldError('accountEmail')) { <small class="field-error">{{ fieldError('accountEmail') }}</small> }
       </label>

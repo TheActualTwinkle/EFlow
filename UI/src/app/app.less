@@ -15,27 +15,13 @@
   }
 }
 
-@keyframes request-slide {
-  0% {
-    transform: translateX(-120%) scaleX(0.34);
-  }
-
-  45% {
-    transform: translateX(8%) scaleX(0.58);
-  }
-
-  100% {
-    transform: translateX(142%) scaleX(0.36);
-  }
-}
-
 @keyframes skeleton-flow {
-  0% {
-    background-position: 140% 0;
+  from {
+    transform: translateX(-140%);
   }
 
-  100% {
-    background-position: -140% 0;
+  to {
+    transform: translateX(140%);
   }
 }
 
@@ -508,6 +494,7 @@ textarea {
   border-color: transparent;
   background: transparent;
   color: var(--muted);
+  text-decoration: none;
 
   &:hover {
     background: var(--surface-strong);
@@ -592,14 +579,45 @@ textarea {
   align-items: center;
   gap: 12px;
 
+  > div:nth-child(2) {
+    min-width: 0;
+    flex: 1 1 auto;
+  }
+
   strong,
   span {
     display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   span {
     color: var(--muted);
     font-size: 13px;
+  }
+}
+
+.brand-github-link {
+  display: inline-grid;
+  flex: 0 0 auto;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--muted);
+  text-decoration: none;
+  transition:
+    background-color 160ms ease,
+    color 160ms ease,
+    transform 160ms ease;
+
+  &:hover {
+    background: var(--surface-strong);
+    color: var(--text);
+    transform: translateY(-1px);
   }
 }
 
@@ -647,28 +665,6 @@ nav {
   padding: 28px;
 }
 
-.request-slider {
-  position: sticky;
-  top: 0;
-  z-index: 20;
-  height: 3px;
-  overflow: hidden;
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--line) 64%, transparent);
-
-  span {
-    display: block;
-    width: 62%;
-    height: 100%;
-    border-radius: inherit;
-    background:
-      linear-gradient(90deg, transparent, color-mix(in srgb, var(--success) 68%, var(--primary)), transparent),
-      var(--primary);
-    transform-origin: center;
-    animation: request-slide 1.15s cubic-bezier(0.45, 0, 0.25, 1) infinite;
-  }
-}
-
 .workspace-content {
   position: relative;
   min-height: 260px;
@@ -706,16 +702,23 @@ nav {
   display: block;
   overflow: hidden;
   border-radius: 8px;
-  background:
-    linear-gradient(
-      100deg,
-      color-mix(in srgb, var(--surface-strong) 72%, var(--line)) 28%,
-      color-mix(in srgb, var(--success) 13%, var(--surface)) 42%,
-      color-mix(in srgb, var(--warning) 10%, var(--surface-strong)) 52%,
-      color-mix(in srgb, var(--surface-strong) 72%, var(--line)) 66%
-    );
-  background-size: 240% 100%;
-  animation: skeleton-flow 1.45s ease-in-out infinite;
+  background: color-mix(in srgb, var(--surface-strong) 72%, var(--line));
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(
+        100deg,
+        transparent 18%,
+        color-mix(in srgb, var(--success) 13%, var(--surface)) 42%,
+        color-mix(in srgb, var(--warning) 10%, var(--surface-strong)) 52%,
+        transparent 76%
+      );
+    animation: skeleton-flow 1.65s linear infinite;
+    will-change: transform;
+  }
 }
 
 .loading-stripe {
@@ -1480,6 +1483,7 @@ app-icon {
   max-height: calc(100vh - 40px);
   overflow: auto;
   box-shadow: var(--shadow);
+  animation: none;
 
   &.wide {
     width: min(100%, 920px);
