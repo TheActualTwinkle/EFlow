@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-ROOT_DIR="$(cd "$(dirname "$0")/../.." && pwd)"
+ROOT_DIR="$(cd "$(dirname "$0")" && pwd)"
 COMPOSE_FILE="$ROOT_DIR/docker/docker-compose.prod.yml"
 ENV_FILE="${ENV_FILE:-$ROOT_DIR/docker/prod.env}"
 

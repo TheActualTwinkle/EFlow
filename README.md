@@ -52,15 +52,15 @@ Password: admin123
 ## Build from source
 
 ```bash
-./scripts/prod/build.sh
+./scripts/prod/build.prod.sh 1.0.0
 ```
 
-This will build all required stuff and save them to `out` folder in repo root.
+This will build all required stuff and save it to `out/eflow-1.0.0` folder in repo root.
 
 ### Start production stack
 
 ```bash
-./out/up.sh
+./out/eflow-1.0.0/up.sh
 ```
 
 If you didn`t have `prod.env` in `/docker` it`ll not be copied to the out directory
@@ -69,7 +69,7 @@ So the first run will force you to fill in the `.env` file with your production 
 ### Stop production stack
 
 ```bash
-./out/down.sh
+./out/eflow-1.0.0/down.sh
 ```
 
 ## API Client Generation

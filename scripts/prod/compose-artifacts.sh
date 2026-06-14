@@ -2,9 +2,9 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "$0")/../.." && pwd)"
-OUT_DIR="$ROOT_DIR/out"
 IMAGE_TAG="${1:-}"
 ENV_FILE="${2:-}"
+OUT_DIR="${3:-$ROOT_DIR/out}"
 
 if [ -z "$IMAGE_TAG" ]; then
   echo "Usage: $0 <image-tag>" >&2
@@ -18,6 +18,11 @@ case "$IMAGE_TAG" in
     exit 1
     ;;
 esac
+
+if [ -z "$OUT_DIR" ] || [ "$OUT_DIR" = "/" ]; then
+  echo "Invalid output directory '$OUT_DIR'." >&2
+  exit 1
+fi
 
 rm -rf "$OUT_DIR"
 mkdir -p "$OUT_DIR/docker"

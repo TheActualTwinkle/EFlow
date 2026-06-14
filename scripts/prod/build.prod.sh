@@ -5,8 +5,6 @@ ROOT_DIR="$(cd "$(dirname "$0")/../.." && pwd)"
 COMPOSE_FILE="$ROOT_DIR/docker/docker-compose.prod.yml"
 ENV_FILE="${ENV_FILE:-$ROOT_DIR/docker/prod.env}"
 TEMPLATE_FILE="$ROOT_DIR/docker/template.prod.env"
-OUT_DIR="$ROOT_DIR/out"
-IMAGES_ARCHIVE="$OUT_DIR/images.tar"
 IMAGE_TAG="${1:-}"
 
 cd "$ROOT_DIR"
@@ -16,6 +14,16 @@ if [ -z "$IMAGE_TAG" ]; then
   echo "Example: $0 1.0.0" >&2
   exit 1
 fi
+
+case "$IMAGE_TAG" in
+  *[!A-Za-z0-9_.-]*)
+    echo "Invalid image tag '$IMAGE_TAG'. Use only letters, digits, underscore, dot, and dash." >&2
+    exit 1
+    ;;
+esac
+
+OUT_DIR="$ROOT_DIR/out/eflow-$IMAGE_TAG"
+IMAGES_ARCHIVE="$OUT_DIR/images.tar"
 
 if [ ! -f "$ENV_FILE" ]; then
   cp "$TEMPLATE_FILE" "$ENV_FILE"
@@ -34,9 +42,9 @@ export IMAGE_TAG
 docker compose --env-file "$ENV_FILE" -f "$COMPOSE_FILE" pull --ignore-buildable
 docker compose --progress=plain --env-file "$ENV_FILE" -f "$COMPOSE_FILE" build
 
-"$ROOT_DIR/scripts/prod/compose-artifacts.sh" "$IMAGE_TAG" "$ENV_FILE"
+"$ROOT_DIR/scripts/prod/compose-artifacts.sh" "$IMAGE_TAG" "$ENV_FILE" "$OUT_DIR"
 
-echo "Writting artifacts to $OUT_DIR"
+echo "Writing artifacts to $OUT_DIR"
 
 mapfile -t IMAGES < <(docker compose --env-file "$ENV_FILE" -f "$COMPOSE_FILE" config --images)
 docker save "${IMAGES[@]}" -o "$IMAGES_ARCHIVE"
