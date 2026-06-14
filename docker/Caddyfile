@@ -1,4 +1,4 @@
-eflow-edu.ru {
+{$APP_DOMAIN_NAME} {
     encode gzip zstd
 
     handle /api/* {
@@ -19,6 +19,6 @@ eflow-edu.ru {
     }
 }
 
-www.eflow-edu.ru {
-    redir https://eflow-edu.ru{uri} permanent
+www.{$APP_DOMAIN_NAME} {
+    redir https://{$APP_DOMAIN_NAME}{uri} permanent
 }

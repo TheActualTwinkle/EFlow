@@ -46,6 +46,7 @@ services:
       retries: 5
 
   booking-api:
+    image: eflow-booking-api:${IMAGE_TAG:?IMAGE_TAG is required}
     build:
       context: ..
       dockerfile: EFlow.Booking/Presentation/EFlow.Booking.WebApi/Dockerfile
@@ -61,8 +62,8 @@ services:
       AdminConfiguration__Password: ${ADMIN_PASSWORD?ADMIN_PASSWORD is required}
       AdminConfiguration__Email: ${ADMIN_EMAIL?ADMIN_EMAIL is required}
       Jwt__Key: ${JWT_KEY:?JWT_KEY is required}
-      Jwt__Issuer: ${JWT_ISSUER:-http://localhost:8081}
-      Jwt__Audience: ${JWT_AUDIENCE:-http://localhost:8081}
+      Jwt__Issuer: ${JWT_ISSUER:-https://${APP_DOMAIN_NAME}}
+      Jwt__Audience: ${JWT_AUDIENCE:-https://${APP_DOMAIN_NAME}}
       Jwt__ExpireMinutes: ${JWT_EXPIRE_MINUTES:-1440}
       Cors__AllowedOrigins__0: ${CORS_ALLOWED_ORIGIN_0?CORS_ALLOWED_ORIGIN_0 is required}
       ConnectionStrings__Database: Host=postgres;Port=5432;Database=${POSTGRES_DB:-eflow};Username=${POSTGRES_USER:-postgres};Password=${POSTGRES_PASSWORD:-123456789}
@@ -72,6 +73,7 @@ services:
       - "${BOOKING_API_PORT:-8081}"
 
   notifications-api:
+    image: eflow-notifications-api:${IMAGE_TAG:?IMAGE_TAG is required}
     build:
       context: ..
       dockerfile: EFlow.Notifications/Presentation/EFlow.Notifications.WebApi/Dockerfile
@@ -86,8 +88,8 @@ services:
       ConnectionStrings__HangfireDb: Host=postgres;Port=5432;Database=${POSTGRES_DB:-eflow};Username=${POSTGRES_USER:-postgres};Password=${POSTGRES_PASSWORD:-123456789}
       KafkaSettings__BootstrapServers: kafka:9092
       Jwt__Key: ${JWT_KEY:?JWT_KEY is required}
-      Jwt__Issuer: ${JWT_ISSUER:-http://localhost:8081}
-      Jwt__Audience: ${JWT_AUDIENCE:-http://localhost:8081}
+      Jwt__Issuer: ${JWT_ISSUER:-https://${APP_DOMAIN_NAME}}
+      Jwt__Audience: ${JWT_AUDIENCE:-https://${APP_DOMAIN_NAME}}
       Jwt__ExpireMinutes: 5
       Smtp__Host: ${SMTP_HOST?SMTP_HOST is required}
       Smtp__Port: ${SMTP_PORT?SMTP_PORT is required}
@@ -98,6 +100,7 @@ services:
       Smtp__SecureSocketOptions: ${SMTP_SECURE_SOCKET_OPTIONS:-Auto}
 
   ui:
+    image: eflow-ui:${IMAGE_TAG:?IMAGE_TAG is required}
     build:
       context: ..
       dockerfile: UI/Dockerfile
@@ -108,14 +111,17 @@ services:
       - "80"
     
   caddy:
+    image: eflow-caddy:${IMAGE_TAG:?IMAGE_TAG is required}
     build:
       context: .
       dockerfile: Caddy.Dockerfile
     restart: unless-stopped
+    environment:
+      APP_DOMAIN_NAME: ${APP_DOMAIN_NAME:?APP_DOMAIN_NAME is required}
     ports:
       - "80:80"
       - "443:443"
     volumes:
-      - ./Caddyfile:/etc/caddy/Caddyfile
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
       - ./data/caddy/data:/data
       - ./data/caddy/config:/config

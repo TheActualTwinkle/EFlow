@@ -19,6 +19,8 @@
 **/node_modules
 **/npm-debug.log
 **/obj
+out
+out/**
 **/secrets.dev.yaml
 **/values.dev.yaml
 docker/data

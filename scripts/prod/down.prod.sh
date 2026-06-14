@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-ROOT_DIR="$(cd "$(dirname "$0")/../.." && pwd)"
+ROOT_DIR="$(cd "$(dirname "$0")" && pwd)"
 COMPOSE_FILE="$ROOT_DIR/docker/docker-compose.prod.yml"
 ENV_FILE="${ENV_FILE:-$ROOT_DIR/docker/prod.env}"
 
@@ -14,4 +14,5 @@ if [ -f "$ENV_FILE" ]; then
 fi
 
 JWT_KEY="${JWT_KEY:-down-script-placeholder-key}"
-docker compose -f "$COMPOSE_FILE" down --remove-orphans
+APP_DOMAIN_NAME="${APP_DOMAIN_NAME:-localhost}"
+docker compose --env-file "$ENV_FILE" -f "$COMPOSE_FILE" down --remove-orphans

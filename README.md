@@ -49,57 +49,27 @@ Username: admin
 Password: admin123
 ```
 
-## Production Docker Setup
+## Build from source
 
-Production Compose builds and runs PostgreSQL, Kafka, Booking API, Notifications API, Angular UI, and Caddy.
+```bash
+./scripts/prod/build.prod.sh 1.0.0
+```
 
+This will build all required stuff and save it to `out/eflow-1.0.0` folder in repo root.
 
 ### Start production stack
 
 ```bash
-./scripts/prod/up.prod.sh
+./out/eflow-1.0.0/up.sh
 ```
 
-The first run creates `docker/prod.env` from `docker/template.prod.env` if it does not exist, asks you to fill it, and exits. Re-run the script after filling the values.
-
-Edit `docker/prod.env` and fill all required values.
-
-Minimum required values:
-
-```env
-POSTGRES_DB=eflow
-POSTGRES_USER=postgres
-POSTGRES_PASSWORD=change_me
-POSTGRES_PORT=5433
-
-KAFKA_PORT=19092
-
-BOOKING_API_PORT=8081
-NOTIFICATIONS_API_PORT=8082
-CORS_ALLOWED_ORIGIN_0=https://your-domain.example
-
-JWT_KEY=replace_with_a_long_random_secret_at_least_32_chars
-JWT_ISSUER=https://your-domain.example
-JWT_AUDIENCE=https://your-domain.example
-JWT_EXPIRE_MINUTES=1440
-
-ADMIN_USERNAME=admin
-ADMIN_PASSWORD=change_me
-ADMIN_EMAIL=admin@example.com
-
-SMTP_HOST=smtp.example.com
-SMTP_PORT=587
-SMTP_USERNAME=smtp_user
-SMTP_PASSWORD=smtp_password
-SMTP_FROM_EMAIL=notifications@example.com
-SMTP_FROM_NAME=EFlow
-SMTP_SECURE_SOCKET_OPTIONS=StartTls
-```
+If you didn`t have `prod.env` in `/docker` it`ll not be copied to the out directory
+So the first run will force you to fill in the `.env` file with your production configuration.
 
 ### Stop production stack
 
 ```bash
-./scripts/prod/down.prod.sh
+./out/eflow-1.0.0/down.sh
 ```
 
 ## API Client Generation
