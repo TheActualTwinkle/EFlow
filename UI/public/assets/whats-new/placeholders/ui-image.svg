@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="920" height="420" viewBox="0 0 920 420" fill="none">
+  <rect width="920" height="420" rx="18" fill="#F7FAF8"/>
+  <rect x="36" y="38" width="848" height="344" rx="14" fill="#FFFFFF" stroke="#DCE7DF"/>
+  <text x="64" y="92" fill="#5E7D68" font-family="Arial, sans-serif" font-size="28" font-weight="700">PLACEHOLDER IMAGE</text>
+  <text x="64" y="132" fill="#7B8F82" font-family="Arial, sans-serif" font-size="20">interface update screenshot</text>
+  <rect x="64" y="176" width="176" height="168" rx="10" fill="#E8F3EC"/>
+  <rect x="272" y="176" width="584" height="48" rx="8" fill="#F2F7F4"/>
+  <rect x="272" y="248" width="584" height="96" rx="8" fill="#F2F7F4"/>
+</svg>

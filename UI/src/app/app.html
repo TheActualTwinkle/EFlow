@@ -51,9 +51,14 @@
           <strong>{{ sidebarName() }}</strong>
           <span>{{ sidebarSubtitle() }}</span>
         </div>
-        <a class="brand-github-link" href="https://github.com/TheActualTwinkle/EFlow" target="_blank" rel="noopener noreferrer" aria-label="GitHub проекта" appHoverHint="GitHub проекта">
-          <app-icon name="github" />
-        </a>
+        <div class="brand-actions">
+          <button class="brand-news-button" type="button" (click)="openWhatsNew()" aria-label="Что нового" appHoverHint="Что нового?">
+            <app-icon name="newspaper" />
+          </button>
+          <a class="brand-github-link" href="https://github.com/TheActualTwinkle/EFlow" target="_blank" rel="noopener noreferrer" aria-label="GitHub проекта" appHoverHint="GitHub проекта">
+            <app-icon name="github" />
+          </a>
+        </div>
       </div>
 
       <nav>
@@ -230,28 +235,14 @@
               <div class="form-grid">
                 <label>
                   <span>Дисциплина <b>*</b></span>
-                  <div class="custom-select" [class.open]="customSelectOpen() === 'slotSubject'">
-                    <button type="button" (click)="toggleCustomSelect('slotSubject')" [disabled]="!slotSubjects().length">
-                      <span>{{ slotSubjects().length ? slotSubjectLabel() : 'Нет дисциплин' }}</span>
-                    </button>
-                    @if (customSelectOpen() === 'slotSubject') {
-                      <div class="custom-select-menu">
-                        @for (subject of slotSubjects(); track subject.id) {
-                          <button type="button" [class.selected]="slotForm.subjectId === subject.id" (click)="selectSlotSubject(subject)">
-                            {{ subject.name }}
-                          </button>
-                        }
-                      </div>
-                    }
-                  </div>
-                  <select class="native-shadow" name="slotSubject" [ngModel]="slotForm.subjectId" (ngModelChange)="selectSlotSubjectById($event)" required tabindex="-1">
-                    @if (!slotSubjects().length) {
-                      <option value="" disabled>Нет дисциплин</option>
-                    }
-                    @for (subject of slotSubjects(); track subject.id) {
-                      <option [value]="subject.id">{{ subject.name }}</option>
-                    }
-                  </select>
+                  <app-select
+                    name="slotSubject"
+                    [ngModel]="slotForm.subjectId"
+                    (ngModelChange)="selectSlotSubjectById($event)"
+                    [options]="subjectOptions(slotSubjects())"
+                    placeholder="Выберите дисциплину"
+                    emptyLabel="Нет дисциплин"
+                  />
                   @if (fieldError('slotSubject')) {
                     <small class="field-error">{{ fieldError('slotSubject') }}</small>
                   }
@@ -259,28 +250,14 @@
                 @if (auth.hasRole('Admin')) {
                   <label>
                     <span>Преподаватель <b>*</b></span>
-                    <div class="custom-select" [class.open]="customSelectOpen() === 'slotTeacher'">
-                      <button type="button" (click)="toggleCustomSelect('slotTeacher')" [disabled]="!slotTeachers().length">
-                        <span>{{ slotTeachers().length ? slotTeacherLabel() : 'Нет преподавателей' }}</span>
-                      </button>
-                      @if (customSelectOpen() === 'slotTeacher') {
-                        <div class="custom-select-menu">
-                          @for (teacher of slotTeachers(); track teacher.id) {
-                            <button type="button" [class.selected]="slotForm.teacherId === teacher.id" (click)="selectSlotTeacher(teacher)">
-                              {{ fullName(teacher) }}
-                            </button>
-                          }
-                        </div>
-                      }
-                    </div>
-                    <select class="native-shadow" name="slotTeacher" [ngModel]="slotForm.teacherId" (ngModelChange)="selectSlotTeacherById($event)" required tabindex="-1">
-                      @if (!slotTeachers().length) {
-                        <option value="" disabled>Нет преподавателей</option>
-                      }
-                      @for (teacher of slotTeachers(); track teacher.id) {
-                        <option [value]="teacher.id">{{ fullName(teacher) }}</option>
-                      }
-                    </select>
+                    <app-select
+                      name="slotTeacher"
+                      [ngModel]="slotForm.teacherId"
+                      (ngModelChange)="selectSlotTeacherById($event)"
+                      [options]="teacherOptions(slotTeachers())"
+                      placeholder="Выберите преподавателя"
+                      emptyLabel="Нет преподавателей"
+                    />
                     @if (fieldError('slotTeacher')) {
                       <small class="field-error">{{ fieldError('slotTeacher') }}</small>
                     }
@@ -360,10 +337,7 @@
                 </label>
               </div>
               <div class="access-block">
-                <label class="toggle-line">
-                  <input name="allowAllGroups" [(ngModel)]="slotForm.allowAllGroups" type="checkbox" />
-                  Доступен всем группам
-                </label>
+                <app-checkbox name="allowAllGroups" [(ngModel)]="slotForm.allowAllGroups" label="Доступен всем группам" />
                 @if (!slotForm.allowAllGroups) {
                   <label class="search-field compact-search">
                     <span>Поиск групп</span>
@@ -455,10 +429,7 @@
                 <label class="full-row">Комментарий<textarea class="comment-box" [(ngModel)]="slot.comment" name="editSlotComment{{ slot.id }}" rows="6"></textarea></label>
               </div>
               <div class="access-block">
-                <label class="toggle-line">
-                  <input [(ngModel)]="slot.allowAllGroups" name="editSlotAllowAll{{ slot.id }}" type="checkbox" />
-                  <span>Доступен всем группам</span>
-                </label>
+                <app-checkbox name="editSlotAllowAll{{ slot.id }}" [(ngModel)]="slot.allowAllGroups" label="Доступен всем группам" />
                 @if (!slot.allowAllGroups) {
                   <label class="search-field compact-search">
                     <span>Поиск групп</span>
@@ -491,16 +462,19 @@
             <input [ngModel]="slotSearch()" (ngModelChange)="slotSearch.set($event)" name="slotSearch" placeholder="Дисциплина, преподаватель, аудитория" />
           </label>
           <div class="filter-toolbar">
-            <div class="filter-pills" aria-label="Фильтр окон защиты по статусу">
+            <div
+              class="filter-pills sliding-tabs items-3"
+              [class.active-index-0]="slotCompletionFilter() === 'all'"
+              [class.active-index-1]="slotCompletionFilter() === 'active'"
+              [class.active-index-2]="slotCompletionFilter() === 'finished'"
+              aria-label="Фильтр окон защиты по статусу"
+            >
               <button type="button" [class.active]="slotCompletionFilter() === 'all'" (click)="slotCompletionFilter.set('all')">Все</button>
               <button type="button" [class.active]="slotCompletionFilter() === 'active'" (click)="slotCompletionFilter.set('active')">Активные</button>
               <button type="button" [class.active]="slotCompletionFilter() === 'finished'" (click)="slotCompletionFilter.set('finished')">Завершенные</button>
             </div>
             @if (auth.hasRole('Student')) {
-              <label class="filter-check">
-                <input type="checkbox" [checked]="slotOnlyAdmitted()" (change)="slotOnlyAdmitted.set(!slotOnlyAdmitted())" />
-                <span>Только с допуском</span>
-              </label>
+              <app-checkbox [ngModel]="slotOnlyAdmitted()" (ngModelChange)="slotOnlyAdmitted.set($event)" label="Только с допуском" />
             }
           </div>
           <div class="slot-list">
@@ -621,7 +595,13 @@
             <input [ngModel]="bookingSearch()" (ngModelChange)="bookingSearch.set($event)" name="bookingSearch" [placeholder]="auth.hasRole('Student') ? 'Дисциплина, аудитория' : 'Студент, дисциплина, аудитория'" />
           </label>
           <div class="filter-toolbar">
-            <div class="filter-pills" aria-label="Фильтр записей по статусу окна защиты">
+            <div
+              class="filter-pills sliding-tabs items-3"
+              [class.active-index-0]="bookingCompletionFilter() === 'all'"
+              [class.active-index-1]="bookingCompletionFilter() === 'active'"
+              [class.active-index-2]="bookingCompletionFilter() === 'finished'"
+              aria-label="Фильтр записей по статусу окна защиты"
+            >
               <button type="button" [class.active]="bookingCompletionFilter() === 'all'" (click)="bookingCompletionFilter.set('all')">Все</button>
               <button type="button" [class.active]="bookingCompletionFilter() === 'active'" (click)="bookingCompletionFilter.set('active')">Активные</button>
               <button type="button" [class.active]="bookingCompletionFilter() === 'finished'" (click)="bookingCompletionFilter.set('finished')">Завершенные</button>
@@ -701,10 +681,17 @@
 
       @if (activeView() === 'admin' && auth.hasRole('Admin')) {
         <section class="admin-layout">
-          <div class="tabs">
-            <button type="button" [class.active]="activeAdminView() === 'groups'" (click)="goAdmin('groups')">Группы</button>
-            <button type="button" [class.active]="activeAdminView() === 'users'" (click)="goAdmin('users')">Пользователи</button>
-            <button type="button" [class.active]="activeAdminView() === 'subjects'" (click)="goAdmin('subjects')">Дисциплины</button>
+          <div class="admin-tabs-row">
+            <div
+              class="tabs sliding-tabs admin-main-tabs items-3"
+              [class.active-index-0]="activeAdminView() === 'groups'"
+              [class.active-index-1]="activeAdminView() === 'users'"
+              [class.active-index-2]="activeAdminView() === 'subjects'"
+            >
+              <button type="button" [class.active]="activeAdminView() === 'groups'" (click)="goAdmin('groups')">Группы</button>
+              <button type="button" [class.active]="activeAdminView() === 'users'" (click)="goAdmin('users')">Пользователи</button>
+              <button type="button" [class.active]="activeAdminView() === 'subjects'" (click)="goAdmin('subjects')">Дисциплины</button>
+            </div>
           </div>
 
           @if (activeAdminView() === 'groups') {
@@ -748,10 +735,17 @@
               <p class="eyebrow">Учётные записи</p>
               <h2>Пользователи</h2>
             </div>
-            <button class="primary-action" type="button" (click)="openModal('createUser')">
-              <app-icon name="plus" />
-              Создать
-            </button>
+            <div class="action-row">
+              @if (userTable() === 'students') {
+                <button class="icon-button" type="button" (click)="openStudentImport()" aria-label="Импортировать студентов" appHoverHint="Импортировать студентов">
+                  <app-icon name="arrow-down-to-line" />
+                </button>
+              }
+              <button class="primary-action" type="button" (click)="openModal('createUser')">
+                <app-icon name="plus" />
+                Создать
+              </button>
+            </div>
           </section>
           @if (activeModal() === 'createUser') {
           <div class="modal-backdrop" (click)="closeModal()">
@@ -766,24 +760,13 @@
             <div class="form-grid">
               <label>
                 Роль
-                <div class="custom-select" [class.open]="customSelectOpen() === 'personRole'">
-                  <button type="button" (click)="toggleCustomSelect('personRole')">
-                    <span>{{ personRoleLabel() }}</span>
-                  </button>
-                  @if (customSelectOpen() === 'personRole') {
-                    <div class="custom-select-menu">
-                      @for (role of personRoles; track role) {
-                        <button type="button" [class.selected]="personForm.role === role" (click)="selectPersonRole(role)">
-                          {{ roleLabel(role) }}
-                        </button>
-                      }
-                    </div>
-                  }
-                </div>
-                <select class="native-shadow" name="personRole" [(ngModel)]="personForm.role" tabindex="-1">
-                  <option value="Student">Студент</option>
-                  <option value="Teacher">Преподаватель</option>
-                </select>
+                <app-select
+                  name="personRole"
+                  [ngModel]="personForm.role"
+                  (ngModelChange)="selectPersonRole($event)"
+                  [options]="personRoleOptions"
+                  placeholder="Выберите роль"
+                />
               </label>
               <label><span>Логин <b>*</b></span><input name="person-user-name" [(ngModel)]="personForm.userName" autocomplete="off" required />@if (fieldError('personUserName')) { <small class="field-error">{{ fieldError('personUserName') }}</small> }</label>
               <label><span>Email <b>*</b></span><input name="person-email" [(ngModel)]="personForm.email" type="email" autocomplete="off" required />@if (fieldError('personEmail')) { <small class="field-error">{{ fieldError('personEmail') }}</small> }</label>
@@ -795,28 +778,13 @@
               @if (personForm.role === 'Student') {
                 <label>
                   <span>Группа <b>*</b></span>
-                  <div class="custom-select" [class.open]="customSelectOpen() === 'personGroup'">
-                    <button type="button" (click)="toggleCustomSelect('personGroup')" [disabled]="!data().groups.length">
-                      <span>{{ data().groups.length ? personGroupLabel() : 'Нет групп. Сначала создайте группу' }}</span>
-                    </button>
-                    @if (customSelectOpen() === 'personGroup') {
-                      <div class="custom-select-menu">
-                        @for (group of data().groups; track group.id) {
-                          <button type="button" [class.selected]="personForm.groupId === group.id" (click)="selectPersonGroup(group)">
-                            {{ group.name }}
-                          </button>
-                        }
-                      </div>
-                    }
-                  </div>
-                  <select class="native-shadow" name="personGroup" [(ngModel)]="personForm.groupId" required tabindex="-1">
-                    @if (!data().groups.length) {
-                      <option value="" disabled>Нет групп. Сначала создайте группу</option>
-                    }
-                    @for (group of data().groups; track group.id) {
-                      <option [value]="group.id">{{ group.name }}</option>
-                    }
-                  </select>
+                  <app-select
+                    name="personGroup"
+                    [(ngModel)]="personForm.groupId"
+                    [options]="groupOptions()"
+                    placeholder="Выберите группу"
+                    emptyLabel="Нет групп. Сначала создайте группу"
+                  />
                   @if (fieldError('personGroup')) {
                     <small class="field-error">{{ fieldError('personGroup') }}</small>
                   }
@@ -827,7 +795,7 @@
           </form>
           </div>
           }
-          <div class="tabs switcher">
+          <div class="tabs switcher sliding-tabs items-2" [class.active-index-0]="userTable() === 'teachers'" [class.active-index-1]="userTable() === 'students'">
             <button type="button" [class.active]="userTable() === 'teachers'" (click)="userTable.set('teachers')">Преподаватели</button>
             <button type="button" [class.active]="userTable() === 'students'" (click)="userTable.set('students')">Студенты</button>
           </div>
@@ -929,28 +897,14 @@
               <label><span>Название <b>*</b></span><input name="subjectName" [(ngModel)]="subjectForm.name" autocomplete="off" required />@if (fieldError('subjectName')) { <small class="field-error">{{ fieldError('subjectName') }}</small> }</label>
               <label>
                 <span>Преподаватель <b>*</b></span>
-                <div class="custom-select" [class.open]="customSelectOpen() === 'subjectTeacher'">
-                  <button type="button" (click)="toggleCustomSelect('subjectTeacher')" [disabled]="!data().teachers.length">
-                    <span>{{ data().teachers.length ? subjectTeacherLabel() : 'Нет преподавателей. Сначала создайте преподавателя' }}</span>
-                  </button>
-                  @if (customSelectOpen() === 'subjectTeacher') {
-                    <div class="custom-select-menu">
-                      @for (teacher of data().teachers; track teacher.id) {
-                        <button type="button" [class.selected]="subjectForm.teacherId === teacher.id" (click)="selectSubjectTeacher(teacher)">
-                          {{ fullName(teacher) }}
-                        </button>
-                      }
-                    </div>
-                  }
-                </div>
-                <select class="native-shadow" name="subjectTeacher" [(ngModel)]="subjectForm.teacherId" required tabindex="-1">
-                  @if (!data().teachers.length) {
-                    <option value="" disabled>Нет преподавателей. Сначала создайте преподавателя</option>
-                  }
-                  @for (teacher of data().teachers; track teacher.id) {
-                    <option [value]="teacher.id">{{ fullName(teacher) }}</option>
-                  }
-                </select>
+                <app-select
+                  name="subjectTeacher"
+                  [ngModel]="subjectForm.teacherId"
+                  (ngModelChange)="selectSubjectTeacherById($event)"
+                  [options]="teacherOptions()"
+                  placeholder="Выберите преподавателя"
+                  emptyLabel="Нет преподавателей. Сначала создайте преподавателя"
+                />
                 @if (fieldError('subjectTeacher')) {
                   <small class="field-error">{{ fieldError('subjectTeacher') }}</small>
                 }
@@ -992,6 +946,10 @@
               }
             </div>
           </div>
+          }
+
+          @if (activeAdminView() === 'users') {
+            <app-student-import [groups]="data().groups" (imported)="handleStudentsImported($event)" />
           }
         </section>
       }
@@ -1055,7 +1013,13 @@
         <label>
           Уведомления о записях студентов
         </label>
-        <div class="chips">
+        <div
+          class="chips sliding-tabs items-4"
+          [class.active-index-0]="notificationForm.bookingMode === 'All'"
+          [class.active-index-1]="notificationForm.bookingMode === 'OnlyCancellation'"
+          [class.active-index-2]="notificationForm.bookingMode === 'OnlyNewBooking'"
+          [class.active-index-3]="notificationForm.bookingMode === 'None'"
+        >
           @for (mode of ['All', 'OnlyCancellation', 'OnlyNewBooking', 'None']; track mode) {
             <button type="button" [class.selected]="notificationForm.bookingMode === mode" (click)="notificationForm.bookingMode = mode">
               {{ bookingModeLabel(mode) }}
@@ -1108,15 +1072,19 @@
         </div>
         <app-icon name="user-x" />
       </div>
+      <label class="search-field">
+        <span>Поиск</span>
+        <input [ngModel]="notBookedSearch()" (ngModelChange)="notBookedSearch.set($event)" name="notBookedSearch" placeholder="Имя, фамилия, группа" />
+      </label>
       <div class="student-status-list">
         @if (!notBookedStudents()) {
           <span class="empty-inline">Загрузка студентов...</span>
         } @else if (notBookedStudents(); as students) {
           @if (notBookedStudentList().length) {
-            @if (students.admittedStudents.length) {
+            @if (filteredNotBookedAdmittedStudents().length) {
               <section>
                 <h3>Допущены</h3>
-                @for (student of students.admittedStudents; track student.id) {
+                @for (student of filteredNotBookedAdmittedStudents(); track student.id) {
                   <article>
                     <div>
                       <strong>{{ fullName(student) }}</strong>
@@ -1127,10 +1095,10 @@
                 }
               </section>
             }
-            @if (students.notAdmittedStudents.length) {
+            @if (filteredNotBookedNotAdmittedStudents().length) {
               <section>
                 <h3>Без допуска</h3>
-                @for (student of students.notAdmittedStudents; track student.id) {
+                @for (student of filteredNotBookedNotAdmittedStudents(); track student.id) {
                   <article>
                     <div>
                       <strong>{{ fullName(student) }}</strong>
@@ -1142,7 +1110,7 @@
               </section>
             }
           } @else {
-            <span class="empty-inline">Все доступные студенты уже записались</span>
+            <span class="empty-inline">Похоже, все, уже записались!</span>
           }
         }
       </div>
@@ -1263,12 +1231,15 @@
         <label><span>Дата рождения</span><input [(ngModel)]="student.birthDate" name="editStudentBirth" type="date" /></label>
         <label>
           <span>Группа <b>*</b></span>
-          <div class="custom-select locked-select" appHoverHint="Смена группы студента пока недоступна">
-            <button type="button" disabled aria-label="Смена группы студента пока недоступна">
-              <span>{{ editStudentGroupLabel(student) }}</span>
-              <app-icon name="lock" />
-            </button>
-          </div>
+          <app-select
+            [ngModel]="student.group?.id ?? ''"
+            name="editStudentGroup"
+            [options]="student.group ? [{ value: student.group.id, label: editStudentGroupLabel(student) }] : []"
+            [disabled]="true"
+            suffixIcon="lock"
+            emptyLabel="Группа не указана"
+            appHoverHint="Смена группы студента пока недоступна"
+          />
         </label>
       </div>
       <div class="action-row">
@@ -1286,25 +1257,14 @@
         <label><span>Название <b>*</b></span><input [(ngModel)]="subject.name" name="editSubjectName" required /></label>
         <label>
           <span>Преподаватель <b>*</b></span>
-          <div class="custom-select" [class.open]="customSelectOpen() === 'editSubjectTeacher:' + subject.id">
-            <button type="button" (click)="toggleCustomSelect('editSubjectTeacher:' + subject.id)" [disabled]="!data().teachers.length">
-              <span>{{ data().teachers.length ? editSubjectTeacherLabel(subject) : 'Нет преподавателей' }}</span>
-            </button>
-            @if (customSelectOpen() === 'editSubjectTeacher:' + subject.id) {
-              <div class="custom-select-menu">
-                @for (teacher of data().teachers; track teacher.id) {
-                  <button type="button" [class.selected]="subjectTeacherId(subject) === teacher.id" (click)="selectEditSubjectTeacher(subject, teacher)">
-                    {{ fullName(teacher) }}
-                  </button>
-                }
-              </div>
-            }
-          </div>
-          <select class="native-shadow" [ngModel]="subjectTeacherId(subject)" (ngModelChange)="setSubjectTeacher(subject, $event)" name="editSubjectTeacher" tabindex="-1">
-            @for (teacher of data().teachers; track teacher.id) {
-              <option [value]="teacher.id">{{ fullName(teacher) }}</option>
-            }
-          </select>
+          <app-select
+            name="editSubjectTeacher"
+            [ngModel]="subjectTeacherId(subject)"
+            (ngModelChange)="setSubjectTeacher(subject, $event)"
+            [options]="teacherOptions()"
+            placeholder="Выберите преподавателя"
+            emptyLabel="Нет преподавателей"
+          />
         </label>
       </div>
       <div class="toggle-list">
@@ -1361,5 +1321,120 @@
   </div>
 }
 
-<app-toast-stack [toasts]="toasts()" />
+@if (importReportOpen() && studentImportReport(); as report) {
+  <div class="modal-backdrop" (click)="importReportOpen.set(false)">
+    <section class="panel form-panel modal-panel wide" (click)="$event.stopPropagation()">
+      <div class="panel-heading">
+        <div>
+          <p class="eyebrow">Импорт студентов</p>
+          <h2>Отчёт</h2>
+        </div>
+        <app-icon name="users" />
+      </div>
+      <div class="metrics-grid">
+        <article><span>Всего</span><strong>{{ report.totalCount }}</strong></article>
+        <article><span>Импортировано</span><strong>{{ report.importedCount }}</strong></article>
+        <article><span>Ошибок</span><strong>{{ report.failedCount }}</strong></article>
+      </div>
+      @if (report.errors.length) {
+        <div class="entity-list">
+          @for (error of report.errors; track error.rowNumber + error.message) {
+            <article>
+              <strong>Строка {{ error.rowNumber }}</strong>
+              <span>{{ error.message }}</span>
+            </article>
+          }
+        </div>
+      } @else {
+        <p class="empty">Все строки импортированы без ошибок.</p>
+      }
+      <div class="modal-actions">
+        <button class="secondary-action" type="button" (click)="importReportOpen.set(false)">Закрыть</button>
+      </div>
+    </section>
+  </div>
+}
+
+@if (whatsNewOpen()) {
+  <div class="modal-backdrop" (click)="whatsNewOpen.set(false)">
+    <section class="panel modal-panel whats-new-panel" role="dialog" aria-modal="true" aria-labelledby="whats-new-title" (click)="$event.stopPropagation()">
+      <div class="panel-heading">
+        <div>
+          <p class="eyebrow">Релизы</p>
+          <h2 id="whats-new-title">Что нового?</h2>
+        </div>
+        <app-icon name="newspaper" />
+      </div>
+
+      @if (whatsNewLoading()) {
+        <p class="empty">Загружаем обновления...</p>
+      } @else {
+        <div class="whats-new-list">
+          @for (release of whatsNewItems(); track release.version) {
+            <article class="whats-new-card">
+              <div class="whats-new-card-head">
+                <div>
+                  <span>{{ release.version }}</span>
+                  <h3>{{ release.title }}</h3>
+                </div>
+                <time>{{ release.date }}</time>
+              </div>
+              @if (release.blocks?.length) {
+                @for (block of release.blocks; track $index) {
+                  @if (block.type === 'text') {
+                    <section class="whats-new-block">
+                      @if (block.title) {
+                        <h4>{{ block.title }}</h4>
+                      }
+                      <p>{{ block.text }}</p>
+                    </section>
+                  } @else if (block.type === 'list') {
+                    <section class="whats-new-block">
+                      @if (block.title) {
+                        <h4>{{ block.title }}</h4>
+                      }
+                      <ul>
+                        @for (item of block.items; track item) {
+                          <li>{{ item }}</li>
+                        }
+                      </ul>
+                    </section>
+                  } @else {
+                    <div class="whats-new-media-grid">
+                      @for (media of block.media; track media.src) {
+                        <img class="whats-new-media" [src]="media.src" [alt]="media.alt ?? ''" />
+                      }
+                    </div>
+                  }
+                }
+              } @else {
+                @if (release.summary) {
+                  <p>{{ release.summary }}</p>
+                }
+                @if (release.items?.length) {
+                  <ul>
+                    @for (item of release.items; track item) {
+                      <li>{{ item }}</li>
+                    }
+                  </ul>
+                }
+                @for (media of release.media ?? []; track media.src) {
+                  <img class="whats-new-media" [src]="media.src" [alt]="media.alt ?? ''" />
+                }
+              }
+            </article>
+          } @empty {
+            <p class="empty">Пока нет заметок к релизам.</p>
+          }
+        </div>
+      }
+
+      <div class="modal-actions">
+        <button class="secondary-action" type="button" (click)="whatsNewOpen.set(false)">Закрыть</button>
+      </div>
+    </section>
+  </div>
+}
+
+<app-toast-stack [toasts]="toasts()" (closeToast)="closeToast($event)" (runAction)="runToastAction($event)" />
 <app-error-modal [error]="api.error()" (close)="closeErrorModal()" />

@@ -1,0 +1,158 @@
+<div class="student-import-layout">
+</div>
+
+@if (importModalOpen) {
+  <div class="modal-backdrop" (click)="closeImportModal()">
+    <form class="panel form-panel modal-panel import-modal" (ngSubmit)="currentStep === 1 ? goToMapping() : importStudents()" (click)="$event.stopPropagation()">
+      <div class="panel-heading">
+        <div>
+          <p class="eyebrow">Шаг</p>
+          <h2>{{ currentStep === 1 ? 'Файл и группа' : 'Сопоставление колонок' }}</h2>
+        </div>
+        <app-icon [name]="currentStep === 1 ? 'arrow-down-to-line' : 'users'" />
+      </div>
+
+      <app-step-progress [steps]="importSteps" [currentStep]="currentStep" />
+
+      @if (currentStep === 1) {
+        <div class="step-pane form-grid">
+          <dl class="import-summary details full-row">
+            <div><dt>Формат</dt><dd>CSV. Разделитель - точка с запятой</dd></div>
+            <div class="csv-example-card">
+              <div class="csv-example-trigger" tabindex="0">
+                <dt>Пример CSV</dt>
+                <dd><app-icon name="info" /></dd>
+                <div class="csv-example-popover">
+                  <div class="excel-preview" aria-label="Пример CSV">
+                    @for (column of ['A', 'B', 'C', 'D', 'E', 'F', 'G']; track column) {
+                      <span class="excel-head">{{ column }}</span>
+                    }
+                    @for (header of ['Фамилия', 'Имя', 'Отчество', 'Email', 'Логин', 'Пароль', 'Дата рождения']; track header) {
+                      <span class="excel-field-head">{{ header }}</span>
+                    }
+                    @for (cell of ['Орлов', 'Константин', 'Олегович', 'kon.or22@example.com', 'kon.or22@example.com', 'S5gf97xd', '05.03.2000']; track $index) {
+                      <span class="excel-cell">{{ cell }}</span>
+                    }
+                  </div>
+                </div>
+              </div>
+            </div>
+          </dl>
+
+          <label class="file-picker full-row">
+            <span>CSV файл <b>*</b></span>
+            <input class="native-file" type="file" accept=".csv,text/csv,text/plain" (change)="onFileSelected($event)" />
+            <span class="file-surface">
+              <app-icon name="arrow-down-to-line" />
+              <span>{{ fileName || 'Выберите CSV' }}</span>
+              @if (file) {
+                <strong>{{ importRowCount }} строк</strong>
+              }
+            </span>
+          </label>
+
+          <label class="search-field compact-search">
+            <span>Поиск групп</span>
+            <input [(ngModel)]="groupSearch" name="importGroupSearch" placeholder="Название группы" />
+          </label>
+
+          <label>
+            <span>Группа <b>*</b></span>
+            <app-select
+              name="importGroup"
+              [(ngModel)]="selectedGroupId"
+              [options]="filteredGroupOptions"
+              placeholder="Выберите группу"
+              emptyLabel="Нет групп"
+            />
+          </label>
+
+          <app-checkbox class="full-row" name="hasHeaderRow" [(ngModel)]="hasHeaderRow" label="Первая строка содержит заголовки" />
+        </div>
+      } @else {
+        <div class="step-pane mapping-step">
+        <p class="preview-note">Ниже только первые 3 строки файла для проверки сопоставления.</p>
+
+        @if (missingRequiredFields().length) {
+          <p class="form-error">
+            Не хватает полей: {{ missingRequiredFields().map(fieldLabel.bind(this)).join(', ') }}
+          </p>
+        }
+
+        @if (duplicateFields().length) {
+          <p class="form-error">
+            Поля назначены повторно: {{ duplicateFields().map(fieldLabel.bind(this)).join(', ') }}
+          </p>
+        }
+
+        @if (error) {
+          <p class="form-error">{{ error }}</p>
+        }
+
+        <div class="preview-table-wrap">
+          <table class="preview-table">
+            <thead>
+              <tr>
+                @for (index of columnIndexes; track index) {
+                  <th [class.ignored-column]="fields[index] === 'Ignore'">
+                    <span>Колонка {{ index + 1 }}</span>
+                    <div class="mapping-field-control">
+                      <app-select
+                        class="mapping-select"
+                        [ngModel]="fields[index]"
+                        (ngModelChange)="updateField(index, $event)"
+                        [name]="'field-' + index"
+                        [options]="fieldOptions"
+                        placeholder="Поле"
+                      />
+                      @if (fields[index] === 'Ignore') {
+                        <span class="mapping-help" appHoverHint="Эта колонка будет пропущена при импорте. Значения из неё не попадут в карточку студента.">
+                          <app-icon name="circle-question-mark" />
+                        </span>
+                      }
+                    </div>
+                  </th>
+                }
+              </tr>
+            </thead>
+            <tbody>
+              @for (row of previewRows; track $index) {
+                <tr [class.header-row]="hasHeaderRow && $index === 0">
+                  @for (index of columnIndexes; track index) {
+                    <td [class.ignored-column]="fields[index] === 'Ignore'">{{ cell(row, index) || '—' }}</td>
+                  }
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+
+        @if (importing) {
+          <div class="import-loader" aria-live="polite">
+            <div class="student-card-stack">
+              @for (item of [1, 2, 3, 4, 5]; track item) {
+                <span class="student-card" [style.--i]="item">
+                  <app-icon name="user" />
+                </span>
+              }
+            </div>
+            <div>
+              <strong>Импортируем студентов</strong>
+              <span>Запрос выполняется</span>
+            </div>
+          </div>
+        }
+        </div>
+      }
+
+      <div class="modal-actions">
+        <button class="secondary-action" type="button" [disabled]="importing" (click)="currentStep === 1 ? closeImportModal() : currentStep = 1">
+          {{ currentStep === 1 ? 'Отмена' : 'Назад' }}
+        </button>
+        <button class="primary-action" type="submit" [disabled]="currentStep === 1 ? !canGoToMapping : !canImport">
+          {{ currentStep === 1 ? 'Далее' : 'Импортировать' }}
+        </button>
+      </div>
+    </form>
+  </div>
+}

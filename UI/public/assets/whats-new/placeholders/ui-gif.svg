@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="920" height="420" viewBox="0 0 920 420" fill="none">
+  <rect width="920" height="420" rx="18" fill="#F7FAF8"/>
+  <rect x="36" y="38" width="848" height="344" rx="14" fill="#FFFFFF" stroke="#DCE7DF"/>
+  <text x="64" y="92" fill="#5E7D68" font-family="Arial, sans-serif" font-size="28" font-weight="700">PLACEHOLDER GIF</text>
+  <text x="64" y="132" fill="#7B8F82" font-family="Arial, sans-serif" font-size="20">interface animation</text>
+  <rect x="330" y="190" width="260" height="92" rx="46" fill="#E8F3EC"/>
+  <circle cx="390" cy="236" r="38" fill="#5E7D68"/>
+</svg>

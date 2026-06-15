@@ -1,12 +1,34 @@
 @keyframes toast-in {
   from {
     opacity: 0;
-    transform: translateX(18px);
+    transform: translateX(18px) translateY(4px) scale(0.98);
   }
 
   to {
     opacity: 1;
-    transform: translateX(0);
+    transform: translateX(0) translateY(0) scale(1);
+  }
+}
+
+@keyframes toast-out {
+  from {
+    opacity: 1;
+    transform: translateX(0) translateY(0) scale(1);
+  }
+
+  to {
+    opacity: 0;
+    transform: translateX(18px) translateY(4px) scale(0.98);
+  }
+}
+
+@keyframes toast-life {
+  from {
+    transform: scaleX(1);
+  }
+
+  to {
+    transform: scaleX(0);
   }
 }
 
@@ -20,10 +42,12 @@
 }
 
 .toast {
+  --toast-duration: 6400ms;
   display: grid;
-  grid-template-columns: 12px minmax(0, 1fr);
+  position: relative;
+  grid-template-columns: 12px minmax(0, 1fr) 26px;
   gap: 14px;
-  align-items: center;
+  align-items: start;
   width: min(480px, calc(100vw - 48px));
   min-height: 76px;
   border: 1px solid var(--line);
@@ -31,11 +55,11 @@
   background: var(--surface);
   box-shadow: 0 12px 32px rgba(0, 0, 0, 0.14);
   color: var(--text);
-  padding: 19px 22px;
+  padding: 18px 18px;
   font-size: 16px;
   font-weight: 620;
   line-height: 1.35;
-  animation: toast-in 220ms ease both;
+  animation: toast-in 260ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
 
   &.success {
     border-color: color-mix(in srgb, var(--success) 42%, var(--line));
@@ -51,11 +75,58 @@
     border-color: color-mix(in srgb, var(--danger) 46%, var(--line));
     background: color-mix(in srgb, var(--danger) 6%, var(--surface));
   }
+
+  &.dismissing {
+    animation: toast-out 220ms ease both;
+  }
+}
+
+.toast-content {
+  display: grid;
+  gap: 7px;
+  min-width: 0;
+  padding-top: 1px;
+
+  > span {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+
+}
+
+.toast-action {
+  justify-self: start;
+  min-height: 32px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: var(--surface-strong);
+  color: var(--text);
+  padding: 7px 10px;
+  font-weight: 760;
+}
+
+.toast-close {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 18px;
+  line-height: 1;
+
+  &:hover {
+    background: var(--surface-strong);
+    color: var(--text);
+  }
 }
 
 .toast-dot {
   width: 11px;
   height: 11px;
+  margin-top: 6px;
   border-radius: 999px;
   background: var(--muted);
   box-shadow: 0 0 0 4px color-mix(in srgb, var(--muted) 12%, transparent);
@@ -73,5 +144,29 @@
   .error & {
     background: var(--danger);
     box-shadow: 0 0 0 4px color-mix(in srgb, var(--danger) 16%, transparent);
+  }
+}
+
+.toast-life {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 3px;
+  border-radius: 0 0 8px 8px;
+  background: var(--muted);
+  transform-origin: left center;
+  animation: toast-life var(--toast-duration) linear forwards;
+
+  .success & {
+    background: var(--success);
+  }
+
+  .warning & {
+    background: var(--warning);
+  }
+
+  .error & {
+    background: var(--danger);
   }
 }

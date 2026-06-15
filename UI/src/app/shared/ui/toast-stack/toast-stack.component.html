@@ -1,8 +1,22 @@
 <div class="toast-stack" aria-live="polite">
   @for (toast of toasts; track toast.id) {
-    <div class="toast" [class.success]="toast.tone === 'success'" [class.warning]="toast.tone === 'warning'" [class.error]="toast.tone === 'error'">
+    <div
+      class="toast"
+      [class.success]="toast.tone === 'success'"
+      [class.warning]="toast.tone === 'warning'"
+      [class.error]="toast.tone === 'error'"
+      [class.dismissing]="dismissingIds.has(toast.id)"
+      [ngStyle]="progressStyle(toast)"
+    >
       <span class="toast-dot"></span>
-      <span>{{ toast.text }}</span>
+      <div class="toast-content">
+        <span>{{ toast.text }}</span>
+        @if (toast.actionLabel) {
+          <button class="toast-action" type="button" (click)="runAction.emit(toast.id)">{{ toast.actionLabel }}</button>
+        }
+      </div>
+      <button class="toast-close" type="button" (click)="close(toast.id)" aria-label="Закрыть уведомление">×</button>
+      <span class="toast-life" aria-hidden="true"></span>
     </div>
   }
 </div>

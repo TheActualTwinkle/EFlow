@@ -3,9 +3,10 @@ import { Injectable, inject, signal } from '@angular/core';
 import { catchError, map, throwError } from 'rxjs';
 
 import type { components } from '../api/contracts';
-import { apiBaseUrl } from './environment';
+import { bookingApiBaseUrl, dataImportApiBaseUrl } from './environment';
 import { HttpActivityService } from './http-activity.service';
 import { localizeApiErrorCode, localizeValidationErrorCode } from './api-error-localization';
+import { StudentImportField, StudentsImportResult } from '../features/student-import/student-import.models';
 
 type Schemas = components['schemas'];
 type BookingRecordView = Schemas['BookingRecordView'];
@@ -72,116 +73,116 @@ export class ApiService {
   }
 
   getGroups() {
-    return this.http.get<GroupView[]>(`${apiBaseUrl}/groups`).pipe(catchError((error) => this.fail(error)));
+    return this.http.get<GroupView[]>(`${bookingApiBaseUrl}/groups`).pipe(catchError((error) => this.fail(error)));
   }
 
   getStudents() {
-    return this.http.get<StudentView[]>(`${apiBaseUrl}/students`).pipe(catchError((error) => this.fail(error)));
+    return this.http.get<StudentView[]>(`${bookingApiBaseUrl}/students`).pipe(catchError((error) => this.fail(error)));
   }
 
   getStudent(id: string) {
-    return this.http.get<StudentView>(`${apiBaseUrl}/students/${id}`).pipe(catchError((error) => this.fail(error)));
+    return this.http.get<StudentView>(`${bookingApiBaseUrl}/students/${id}`).pipe(catchError((error) => this.fail(error)));
   }
 
   getTeachers() {
-    return this.http.get<TeacherView[]>(`${apiBaseUrl}/teachers`).pipe(catchError((error) => this.fail(error)));
+    return this.http.get<TeacherView[]>(`${bookingApiBaseUrl}/teachers`).pipe(catchError((error) => this.fail(error)));
   }
 
   getTeacher(id: string) {
-    return this.http.get<TeacherView>(`${apiBaseUrl}/teachers/${id}`).pipe(catchError((error) => this.fail(error)));
+    return this.http.get<TeacherView>(`${bookingApiBaseUrl}/teachers/${id}`).pipe(catchError((error) => this.fail(error)));
   }
 
   getSubjects() {
-    return this.http.get<SubjectView[]>(`${apiBaseUrl}/subjects`).pipe(catchError((error) => this.fail(error)));
+    return this.http.get<SubjectView[]>(`${bookingApiBaseUrl}/subjects`).pipe(catchError((error) => this.fail(error)));
   }
 
   getSubject(id: string) {
-    return this.http.get<SubjectView>(`${apiBaseUrl}/subjects/${id}`).pipe(catchError((error) => this.fail(error)));
+    return this.http.get<SubjectView>(`${bookingApiBaseUrl}/subjects/${id}`).pipe(catchError((error) => this.fail(error)));
   }
 
   getSubjectsByTeacher(teacherId: string) {
-    return this.http.get<SubjectView[]>(`${apiBaseUrl}/subjects/by-teacher/${teacherId}`).pipe(catchError((error) => this.fail(error)));
+    return this.http.get<SubjectView[]>(`${bookingApiBaseUrl}/subjects/by-teacher/${teacherId}`).pipe(catchError((error) => this.fail(error)));
   }
 
   getSlots() {
-    return this.http.get<SubmissionSlotView[]>(`${apiBaseUrl}/submission-slots`).pipe(catchError((error) => this.fail(error)));
+    return this.http.get<SubmissionSlotView[]>(`${bookingApiBaseUrl}/submission-slots`).pipe(catchError((error) => this.fail(error)));
   }
 
   getSlot(id: string) {
-    return this.http.get<SubmissionSlotView>(`${apiBaseUrl}/submission-slots/${id}`).pipe(catchError((error) => this.fail(error)));
+    return this.http.get<SubmissionSlotView>(`${bookingApiBaseUrl}/submission-slots/${id}`).pipe(catchError((error) => this.fail(error)));
   }
 
   getSlotsByTeacher(teacherId: string) {
-    return this.http.get<SubmissionSlotView[]>(`${apiBaseUrl}/submission-slots/by-teacher/${teacherId}`).pipe(catchError((error) => this.fail(error)));
+    return this.http.get<SubmissionSlotView[]>(`${bookingApiBaseUrl}/submission-slots/by-teacher/${teacherId}`).pipe(catchError((error) => this.fail(error)));
   }
 
   getBookingsByStudent(studentId: string) {
-    return this.http.get<BookingRecordView[]>(`${apiBaseUrl}/bookings/by-student/${studentId}`).pipe(catchError((error) => this.fail(error)));
+    return this.http.get<BookingRecordView[]>(`${bookingApiBaseUrl}/bookings/by-student/${studentId}`).pipe(catchError((error) => this.fail(error)));
   }
 
   getBookings() {
-    return this.http.get<BookingRecordView[]>(`${apiBaseUrl}/bookings`).pipe(catchError((error) => this.fail(error)));
+    return this.http.get<BookingRecordView[]>(`${bookingApiBaseUrl}/bookings`).pipe(catchError((error) => this.fail(error)));
   }
 
   getBookingsBySlot(slotId: string, fetchGroups = false) {
     const params = fetchGroups ? new HttpParams().set('fetchGroups', true) : undefined;
-    return this.http.get<BookingRecordView[]>(`${apiBaseUrl}/bookings/by-slot/${slotId}`, { params }).pipe(catchError((error) => this.fail(error)));
+    return this.http.get<BookingRecordView[]>(`${bookingApiBaseUrl}/bookings/by-slot/${slotId}`, { params }).pipe(catchError((error) => this.fail(error)));
   }
 
   getNotBookedStudents(slotId: string) {
     return this.http
-      .get<NotBookedStudentsView>(`${apiBaseUrl}/bookings/${slotId}/not-booked-students`)
+      .get<NotBookedStudentsView>(`${bookingApiBaseUrl}/bookings/${slotId}/not-booked-students`)
       .pipe(catchError((error) => this.fail(error)));
   }
 
   getSlotAllowedStudents(slotId: string) {
     return this.http
-      .get<StudentView[]>(`${apiBaseUrl}/submission-slots/${slotId}/allowed-students`)
+      .get<StudentView[]>(`${bookingApiBaseUrl}/submission-slots/${slotId}/allowed-students`)
       .pipe(catchError((error) => this.fail(error)));
   }
 
   createGroup(name: string) {
-    return this.postLocation(`${apiBaseUrl}/groups`, { name });
+    return this.postLocation(`${bookingApiBaseUrl}/groups`, { name });
   }
 
   createTeacher(request: CreateTeacherRequest) {
-    return this.postLocation(`${apiBaseUrl}/teachers`, this.normalizePersonRequest(request));
+    return this.postLocation(`${bookingApiBaseUrl}/teachers`, this.normalizePersonRequest(request));
   }
 
   createStudent(request: CreateStudentRequest) {
-    return this.postLocation(`${apiBaseUrl}/students`, this.normalizePersonRequest(request));
+    return this.postLocation(`${bookingApiBaseUrl}/students`, this.normalizePersonRequest(request));
   }
 
   createSubject(name: string, teacherId: string, groupIds: string[]) {
-    return this.postLocation(`${apiBaseUrl}/subjects`, { name, teacherId, groupIds });
+    return this.postLocation(`${bookingApiBaseUrl}/subjects`, { name, teacherId, groupIds });
   }
 
   createSlot(request: CreateSubmissionSlotRequest) {
-    return this.postLocation(`${apiBaseUrl}/submission-slots`, request);
+    return this.postLocation(`${bookingApiBaseUrl}/submission-slots`, request);
   }
 
   updateGroup(id: string, name: string) {
-    return this.http.patch<void>(`${apiBaseUrl}/groups/${id}`, { name }).pipe(catchError((error) => this.fail(error)));
+    return this.http.patch<void>(`${bookingApiBaseUrl}/groups/${id}`, { name }).pipe(catchError((error) => this.fail(error)));
   }
 
   updateTeacher(id: string, request: UpdatePersonFormRequest) {
-    return this.http.patch<void>(`${apiBaseUrl}/teachers/${id}`, this.normalizePersonRequest(request)).pipe(catchError((error) => this.fail(error)));
+    return this.http.patch<void>(`${bookingApiBaseUrl}/teachers/${id}`, this.normalizePersonRequest(request)).pipe(catchError((error) => this.fail(error)));
   }
 
   updateStudent(id: string, request: UpdatePersonFormRequest) {
-    return this.http.patch<void>(`${apiBaseUrl}/students/${id}`, this.normalizePersonRequest(request)).pipe(catchError((error) => this.fail(error)));
+    return this.http.patch<void>(`${bookingApiBaseUrl}/students/${id}`, this.normalizePersonRequest(request)).pipe(catchError((error) => this.fail(error)));
   }
 
   updateUserEmail(id: string, email: string) {
-    return this.http.patch<void>(`${apiBaseUrl}/users/${id}/email`, { email }).pipe(catchError((error) => this.fail(error)));
+    return this.http.patch<void>(`${bookingApiBaseUrl}/users/${id}/email`, { email }).pipe(catchError((error) => this.fail(error)));
   }
 
   updateUserPassword(id: string, currentPassword: string | null, newPassword: string) {
-    return this.http.patch<void>(`${apiBaseUrl}/users/${id}/password`, { currentPassword, newPassword }).pipe(catchError((error) => this.fail(error)));
+    return this.http.patch<void>(`${bookingApiBaseUrl}/users/${id}/password`, { currentPassword, newPassword }).pipe(catchError((error) => this.fail(error)));
   }
 
   updateSubject(id: string, request: UpdateSubjectFormRequest) {
-    return this.http.patch<void>(`${apiBaseUrl}/subjects/${id}`, request).pipe(catchError((error) => this.fail(error)));
+    return this.http.patch<void>(`${bookingApiBaseUrl}/subjects/${id}`, request).pipe(catchError((error) => this.fail(error)));
   }
 
   updateSlot(
@@ -189,52 +190,69 @@ export class ApiService {
     request: UpdateSubmissionSlotFormRequest,
   ) {
     return this.http
-      .patch<void>(`${apiBaseUrl}/submission-slots/${id}`, this.normalizeSubmissionSlotRequest(request))
+      .patch<void>(`${bookingApiBaseUrl}/submission-slots/${id}`, this.normalizeSubmissionSlotRequest(request))
       .pipe(catchError((error) => this.fail(error)));
   }
 
   deleteSlot(id: string) {
-    return this.http.delete<void>(`${apiBaseUrl}/submission-slots/${id}`).pipe(catchError((error) => this.fail(error)));
+    return this.http.delete<void>(`${bookingApiBaseUrl}/submission-slots/${id}`).pipe(catchError((error) => this.fail(error)));
   }
 
   deleteGroup(id: string) {
-    return this.http.delete<void>(`${apiBaseUrl}/groups/${id}`).pipe(catchError((error) => this.fail(error)));
+    return this.http.delete<void>(`${bookingApiBaseUrl}/groups/${id}`).pipe(catchError((error) => this.fail(error)));
   }
 
   deleteTeacher(id: string) {
-    return this.http.delete<void>(`${apiBaseUrl}/teachers/${id}`).pipe(catchError((error) => this.fail(error)));
+    return this.http.delete<void>(`${bookingApiBaseUrl}/teachers/${id}`).pipe(catchError((error) => this.fail(error)));
   }
 
   deleteStudent(id: string) {
-    return this.http.delete<void>(`${apiBaseUrl}/students/${id}`).pipe(catchError((error) => this.fail(error)));
+    return this.http.delete<void>(`${bookingApiBaseUrl}/students/${id}`).pipe(catchError((error) => this.fail(error)));
   }
 
   deleteSubject(id: string) {
-    return this.http.delete<void>(`${apiBaseUrl}/subjects/${id}`).pipe(catchError((error) => this.fail(error)));
+    return this.http.delete<void>(`${bookingApiBaseUrl}/subjects/${id}`).pipe(catchError((error) => this.fail(error)));
   }
 
   addAdmission(slotId: string, studentId: string) {
-    return this.http.post(`${apiBaseUrl}/submission-slots/${slotId}/admissions/${studentId}`, {}).pipe(catchError((error) => this.fail(error)));
+    return this.http.post(`${bookingApiBaseUrl}/submission-slots/${slotId}/admissions/${studentId}`, {}).pipe(catchError((error) => this.fail(error)));
   }
 
   removeAdmission(slotId: string, studentId: string) {
-    return this.http.delete<void>(`${apiBaseUrl}/submission-slots/${slotId}/admissions/${studentId}`).pipe(catchError((error) => this.fail(error)));
+    return this.http.delete<void>(`${bookingApiBaseUrl}/submission-slots/${slotId}/admissions/${studentId}`).pipe(catchError((error) => this.fail(error)));
   }
 
   bookSlot(slotId: string, studentId: string) {
-    return this.postLocation(`${apiBaseUrl}/bookings`, { slotId, studentId });
+    return this.postLocation(`${bookingApiBaseUrl}/bookings`, { slotId, studentId });
   }
 
   cancelBooking(id: string) {
-    return this.http.delete<void>(`${apiBaseUrl}/bookings/${id}`).pipe(catchError((error) => this.fail(error)));
+    return this.http.delete<void>(`${bookingApiBaseUrl}/bookings/${id}`).pipe(catchError((error) => this.fail(error)));
   }
 
   updateNotificationSettings(slotId: string, userId: string, submissionRemindTimes: number[], bookingNotificationMode: number | null) {
     return this.http
-      .put<void>(`${apiBaseUrl}/submission-slots/${slotId}/notification-settings`, {
+      .put<void>(`${bookingApiBaseUrl}/submission-slots/${slotId}/notification-settings`, {
         userId,
         submissionRemindTimes,
         bookingNotificationMode,
+      })
+      .pipe(catchError((error) => this.fail(error)));
+  }
+
+  importStudentsCsv(groupId: string, file: File, fields: StudentImportField[], hasHeaderRow: boolean) {
+    const formData = new FormData();
+    formData.append('File', file, file.name);
+
+    for (const field of fields) {
+      formData.append('Fields', field);
+    }
+
+    formData.append('HasHeaderRow', String(hasHeaderRow));
+
+    return this.http
+      .post<StudentsImportResult>(`${dataImportApiBaseUrl}/csv/students`, formData, {
+        params: { groupId },
       })
       .pipe(catchError((error) => this.fail(error)));
   }

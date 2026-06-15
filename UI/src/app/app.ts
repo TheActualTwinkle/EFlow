@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component, computed, effect, signal } from '@angular/core';
+import { Component, ViewChild, computed, effect, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { NavigationEnd, Router } from '@angular/router';
 import { filter, finalize, forkJoin } from 'rxjs';
@@ -32,12 +32,17 @@ import {
   utcOffsetLabel,
 } from './shared/utils/date-time.utils';
 import { fullName, initials, remindTimeLabel, roleLabel } from './shared/utils/person.utils';
+import { AppCheckboxComponent } from './shared/ui/app-checkbox/app-checkbox.component';
 import { AppIconComponent } from './shared/ui/app-icon/app-icon.component';
+import { AppSelectComponent } from './shared/ui/app-select/app-select.component';
+import { AppSelectOption } from './shared/ui/app-select/app-select-option';
 import { ErrorModalComponent } from './shared/ui/error-modal/error-modal.component';
 import { HoverHintDirective } from './shared/ui/hover-hint/hover-hint.directive';
 import { ToastStackComponent } from './shared/ui/toast-stack/toast-stack.component';
 import { ToggleItemComponent } from './shared/ui/toggle-item/toggle-item.component';
 import { WorkspaceDataService } from './features/workspace/workspace-data.service';
+import { StudentImportComponent } from './features/student-import/student-import.component';
+import { StudentsImportResult } from './features/student-import/student-import.models';
 
 type Schemas = components['schemas'];
 type BookingRecordView = Schemas['BookingRecordView'];
@@ -57,25 +62,67 @@ type ConfirmDialog = {
   confirmLabel: string;
   action: () => void;
 };
+type WhatsNewMedia = {
+  type: 'image' | 'gif';
+  src: string;
+  alt?: string;
+};
+type WhatsNewBlock =
+  | {
+      type: 'text';
+      title?: string;
+      text: string;
+    }
+  | {
+      type: 'list';
+      title?: string;
+      items: string[];
+    }
+  | {
+      type: 'media';
+      media: WhatsNewMedia[];
+    };
+type WhatsNewRelease = {
+  version: string;
+  date: string;
+  title: string;
+  summary?: string;
+  items?: string[];
+  media?: WhatsNewMedia[];
+  blocks?: WhatsNewBlock[];
+};
+type WhatsNewPayload = {
+  releases?: WhatsNewRelease[];
+};
 
 @Component({
   selector: 'app-root',
   imports: [
     CommonModule,
     FormsModule,
+    AppCheckboxComponent,
     AppIconComponent,
+    AppSelectComponent,
     ErrorModalComponent,
     HoverHintDirective,
     ToastStackComponent,
     ToggleItemComponent,
+    StudentImportComponent,
   ],
   templateUrl: './app.html',
-  styleUrl: './app.less',
+  styleUrls: ['./app.workspace.less', './app.less'],
 })
 export class App {
+  @ViewChild(StudentImportComponent) private readonly studentImport?: StudentImportComponent;
+
   readonly activeView = signal<WorkspaceView>('overview');
   readonly activeAdminView = signal<AdminView>('groups');
   readonly toasts = signal<ToastMessage[]>([]);
+  readonly studentImportReport = signal<StudentsImportResult | null>(null);
+  readonly importReportOpen = signal(false);
+  readonly whatsNewOpen = signal(false);
+  readonly whatsNewLoading = signal(false);
+  readonly whatsNewItems = signal<WhatsNewRelease[]>([]);
   readonly data = signal<WorkspaceData>(emptyWorkspaceData());
   readonly loaded = signal(false);
   readonly workspaceLoading = computed(() => this.auth.isAuthenticated() && !this.loaded());
@@ -104,6 +151,7 @@ export class App {
   readonly slotOnlyAdmitted = signal(false);
   readonly bookingOnlyAdmitted = signal(false);
   readonly admissionSearch = signal('');
+  readonly notBookedSearch = signal('');
   readonly admissionSlotStudents = signal<StudentView[]>([]);
   readonly notBookedStudents = signal<NotBookedStudentsView | null>(null);
   readonly slotCreateGroupSearch = signal('');
@@ -122,6 +170,10 @@ export class App {
     bookingMode: 'All',
   };
   readonly personRoles = ['Student', 'Teacher'] as const;
+  readonly personRoleOptions: AppSelectOption[] = [
+    { value: 'Student', label: 'Студент' },
+    { value: 'Teacher', label: 'Преподаватель' },
+  ];
   readonly slotGroupSearch = signal('');
   readonly accountCurrentPasswordVisible = signal(false);
   readonly accountNewPasswordVisible = signal(false);
@@ -303,6 +355,41 @@ export class App {
 
   refresh(): void {
     this.loadActiveView(true);
+  }
+
+  openWhatsNew(): void {
+    this.whatsNewOpen.set(true);
+
+    if (this.whatsNewLoading() || this.whatsNewItems().length) {
+      return;
+    }
+
+    this.whatsNewLoading.set(true);
+    fetch('/assets/whats-new.json')
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error('Failed to load release notes');
+        }
+
+        return response.json() as Promise<WhatsNewPayload>;
+      })
+      .then((payload) => this.whatsNewItems.set(payload.releases ?? []))
+      .catch(() => this.whatsNewItems.set([]))
+      .finally(() => this.whatsNewLoading.set(false));
+  }
+
+  handleStudentsImported(result: StudentsImportResult): void {
+    const tone = result.failedCount ? 'warning' : 'success';
+    this.studentImportReport.set(result);
+    this.showToast(`Импортировано студентов: ${result.importedCount}`, tone, {
+      actionLabel: 'Открыть отчёт',
+      action: () => this.importReportOpen.set(true),
+    });
+    this.loadActiveView(true);
+  }
+
+  openStudentImport(): void {
+    this.studentImport?.openImportModal();
   }
 
   private loadActiveView(force = false): void {
@@ -724,13 +811,19 @@ export class App {
     this.customSelectOpen.set(null);
   }
 
-  selectPersonRole(role: 'Student' | 'Teacher'): void {
-    this.personForm.role = role;
+  selectPersonRole(role: string): void {
+    if (role === 'Student' || role === 'Teacher') {
+      this.personForm.role = role;
+    }
     this.closeCustomSelect();
   }
 
   personRoleLabel(): string {
     return this.roleLabel(this.personForm.role);
+  }
+
+  groupOptions(): AppSelectOption[] {
+    return this.data().groups.map((group) => ({ value: group.id, label: group.name }));
   }
 
   selectPersonGroup(group: GroupView): void {
@@ -745,6 +838,14 @@ export class App {
   selectSubjectTeacher(teacher: TeacherView): void {
     this.subjectForm.teacherId = teacher.id;
     this.closeCustomSelect();
+  }
+
+  selectSubjectTeacherById(teacherId: string): void {
+    this.subjectForm.teacherId = teacherId;
+  }
+
+  teacherOptions(teachers: TeacherView[] = this.data().teachers): AppSelectOption[] {
+    return teachers.map((teacher) => ({ value: teacher.id, label: this.fullName(teacher) }));
   }
 
   subjectTeacherLabel(): string {
@@ -772,6 +873,10 @@ export class App {
 
   slotSubjectLabel(): string {
     return this.data().subjects.find((subject) => subject.id === this.slotForm.subjectId)?.name ?? 'Выберите дисциплину';
+  }
+
+  subjectOptions(subjects: SubjectView[] = this.data().subjects): AppSelectOption[] {
+    return subjects.map((subject) => ({ value: subject.id, label: subject.name }));
   }
 
   selectSlotTeacher(teacher: TeacherView): void {
@@ -1081,6 +1186,7 @@ export class App {
   openNotBookedStudents(slot: SubmissionSlotView): void {
     this.selectedSlotId.set(slot.id);
     this.notBookedStudents.set(null);
+    this.notBookedSearch.set('');
     this.openModal('notBookedStudents');
     this.api.getNotBookedStudents(slot.id).subscribe((students) => {
       this.notBookedStudents.set(students);
@@ -1541,7 +1647,29 @@ export class App {
       return [];
     }
 
-    return [...students.admittedStudents, ...students.notAdmittedStudents];
+    return [...this.filteredNotBookedAdmittedStudents(), ...this.filteredNotBookedNotAdmittedStudents()];
+  }
+
+  filteredNotBookedAdmittedStudents(): StudentView[] {
+    return this.filterNotBookedStudents(this.notBookedStudents()?.admittedStudents ?? []);
+  }
+
+  filteredNotBookedNotAdmittedStudents(): StudentView[] {
+    return this.filterNotBookedStudents(this.notBookedStudents()?.notAdmittedStudents ?? []);
+  }
+
+  private filterNotBookedStudents(students: StudentView[]): StudentView[] {
+    const query = this.notBookedSearch().trim().toLowerCase();
+
+    if (!query) {
+      return students;
+    }
+
+    return students.filter((student) =>
+      [this.fullName(student), student.group?.name]
+        .filter(Boolean)
+        .some((value) => value!.toLowerCase().includes(query)),
+    );
   }
 
   bookingPosition(booking: BookingRecordView): number {
@@ -1799,13 +1927,17 @@ export class App {
     this.activeView.set('overview');
   }
 
-  private showToast(text: string, tone: ToastMessage['tone']): void {
-    const toast = { id: ++this.toastId, text, tone };
-    this.toasts.update((items) => [...items, toast]);
+  closeToast(id: number): void {
+    this.toasts.update((items) => items.filter((item) => item.id !== id));
+  }
 
-    window.setTimeout(() => {
-      this.toasts.update((items) => items.filter((item) => item.id !== toast.id));
-    }, 3200);
+  runToastAction(id: number): void {
+    this.toasts().find((toast) => toast.id === id)?.action?.();
+  }
+
+  private showToast(text: string, tone: ToastMessage['tone'], options: Pick<ToastMessage, 'actionLabel' | 'action'> = {}): void {
+    const toast = { id: ++this.toastId, text, tone, createdAt: Date.now(), durationMs: 6400, ...options };
+    this.toasts.update((items) => [...items, toast]);
   }
 
   private confirmDestructiveAction(dialog: ConfirmDialog): void {
