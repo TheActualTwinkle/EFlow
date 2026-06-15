@@ -5,6 +5,7 @@ using EFlow.Booking.Persistence;
 using EFlow.Booking.WebApi;
 using EFlow.Booking.WebApi.Extensions;
 using EFlow.Booking.WebApi.Middleware;
+using EFlow.Common.Extensions;
 using EFlow.Common.Messaging.Init;
 using FluentPatcher;
 using Hangfire;

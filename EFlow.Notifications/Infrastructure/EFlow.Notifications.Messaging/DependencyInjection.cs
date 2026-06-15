@@ -1,3 +1,5 @@
+using EFlow.Common.Clients.Booking;
+using EFlow.Common.Clients.Booking.Authentication;
 using EFlow.Common.Messaging;
 using EFlow.Notifications.Messaging.Booking;
 using EFlow.Notifications.Messaging.Booking.Interfaces;
@@ -19,22 +21,15 @@ public static class DependencyInjection
         {
             services.Configure<BookingReminderSettings>(configuration.GetSection(BookingReminderSettings.SectionName));
 
-            services
-                .AddOptions<BookingClientJwtSettings>()
-                .Bind(configuration.GetRequiredSection(BookingClientJwtSettings.SectionName))
-                .Validate(settings => settings.ExpireMinutes > 0, "Jwt:ExpireMinutes must be positive.")
-                .ValidateOnStart();
-
-            services.AddTransient<BookingAuthenticationHandler>();
+            services.AddBookingServiceAuthentication(
+                configuration.GetRequiredSection("Jwt"),
+                subject: "eflow-notifications",
+                "EFlow.Notifications");
 
             services
-                .AddHttpClient<IBookingClient, BookingClient>((serviceProvider, client) =>
-                {
-                    var options = serviceProvider.GetRequiredService<IOptions<BookingReminderSettings>>().Value;
-
-                    client.BaseAddress = new Uri(options.BookingApiBaseUrl);
-                })
-                .AddHttpMessageHandler<BookingAuthenticationHandler>();
+                .AddBookingServiceHttpClient<IBookingClient, BookingClient>(serviceProvider =>
+                    serviceProvider.GetRequiredService<IOptions<BookingReminderSettings>>().Value.BookingApiBaseUrl)
+                .AddHttpMessageHandler<BookingInternalAuthenticationHandler>();
 
             return services;
         }

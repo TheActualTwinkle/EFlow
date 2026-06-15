@@ -34,6 +34,10 @@ export interface ToastMessage {
   id: number;
   text: string;
   tone: 'success' | 'warning' | 'error';
+  createdAt: number;
+  durationMs: number;
+  actionLabel?: string;
+  action?: () => void;
 }
 
 export interface WorkspaceData {

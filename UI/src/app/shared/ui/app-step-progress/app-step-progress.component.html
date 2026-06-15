@@ -1,0 +1,8 @@
+<div class="step-progress">
+  @for (step of steps; track step; let index = $index) {
+    <div class="step-item" [class.active]="isActive(index)" [class.completed]="isCompleted(index)">
+      <span>{{ index + 1 }}</span>
+      <strong>{{ step }}</strong>
+    </div>
+  }
+</div>

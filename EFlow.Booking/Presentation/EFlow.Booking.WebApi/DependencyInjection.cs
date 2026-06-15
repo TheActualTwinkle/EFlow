@@ -113,6 +113,14 @@ public static class DependencyInjection
                         .RequireAssertion(context =>
                             context.User.HasClaim(ClaimTypes.NameIdentifier, "eflow-notifications") ||
                             context.User.HasClaim("sub", "eflow-notifications")));
+                
+                options.AddPolicy(
+                    InternalAuthorizationPolicies.DataImport,
+                    policy => policy
+                        .RequireAuthenticatedUser()
+                        .RequireAssertion(context =>
+                            context.User.HasClaim(ClaimTypes.NameIdentifier, "eflow-data-import") ||
+                            context.User.HasClaim("sub", "eflow-data-import")));
             });
 
             return services;

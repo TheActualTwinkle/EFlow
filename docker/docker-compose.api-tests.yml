@@ -12,3 +12,7 @@ services:
   booking-api:
     ports:
       - "${BOOKING_API_PORT:-8081}:8081"
+
+  data-import-api:
+    ports:
+      - "${DATA_IMPORT_API_PORT:-8083}:8083"

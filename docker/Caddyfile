@@ -1,9 +1,23 @@
 {$APP_DOMAIN_NAME} {
     encode gzip zstd
 
-    handle /api/* {
+    handle_path /api/data-import/* {
         rate_limit {
-            zone api_per_ip {
+            zone api_data_import_per_ip {
+                key {http.request.remote.host}
+                window 1m
+                events 10
+            }
+            log_key
+        }
+
+        rewrite * /api{uri}
+        reverse_proxy data-import-api:8083
+    }
+
+    handle_path /api/booking/* {
+        rate_limit {
+            zone api_booking_per_ip {
                 key {http.request.remote.host}
                 window 1m
                 events 120
@@ -11,6 +25,7 @@
             log_key
         }
 
+        rewrite * /api{uri}
         reverse_proxy booking-api:8081
     }
 

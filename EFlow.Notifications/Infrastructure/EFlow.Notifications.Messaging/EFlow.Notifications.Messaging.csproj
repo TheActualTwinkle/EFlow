@@ -11,6 +11,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\..\..\EFlow.Shared\EFlow.Common.IntegrationEvents\EFlow.Common.IntegrationEvents.csproj" />
+      <ProjectReference Include="..\..\..\EFlow.Shared\EFlow.Common.Clients\EFlow.Common.Clients.csproj" />
       <ProjectReference Include="..\..\..\EFlow.Shared\EFlow.Common.Messaging\EFlow.Common.Messaging.csproj" />
     </ItemGroup>
 

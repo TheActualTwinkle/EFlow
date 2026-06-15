@@ -3,7 +3,7 @@ import { Injectable, computed, signal } from '@angular/core';
 import { catchError, map, of, tap } from 'rxjs';
 
 import type { components } from '../api/contracts';
-import { apiBaseUrl } from './environment';
+import { bookingApiBaseUrl } from './environment';
 
 type CurrentUser = components['schemas']['CurrentUserView'];
 
@@ -29,7 +29,7 @@ export class AuthService {
     this.loadingState.set(true);
     this.errorState.set(null);
 
-    return this.http.post(`${apiBaseUrl}/auth/login`, { username, password }, { responseType: 'text' }).pipe(
+    return this.http.post(`${bookingApiBaseUrl}/auth/login`, { username, password }, { responseType: 'text' }).pipe(
       map(() => true),
       catchError((error: HttpErrorResponse | Error) => {
         this.errorState.set(this.formatAuthError(error));
@@ -42,7 +42,7 @@ export class AuthService {
   loadCurrentUser() {
     this.loadingState.set(true);
 
-    return this.http.get<CurrentUser>(`${apiBaseUrl}/auth/me`).pipe(
+    return this.http.get<CurrentUser>(`${bookingApiBaseUrl}/auth/me`).pipe(
       tap((user) => this.userState.set(user)),
       map(() => true),
       catchError(() => {
@@ -54,7 +54,7 @@ export class AuthService {
   }
 
   logoutOnServer() {
-    return this.http.post(`${apiBaseUrl}/auth/logout`, {}, { responseType: 'text' }).pipe(
+    return this.http.post(`${bookingApiBaseUrl}/auth/logout`, {}, { responseType: 'text' }).pipe(
       catchError(() => of(null)),
       tap(() => this.logout()),
       map(() => true),

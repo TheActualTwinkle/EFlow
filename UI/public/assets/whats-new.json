@@ -1,0 +1,39 @@
+{
+  "releases": [
+    {
+      "version": "1.1.0",
+      "date": "2026-06-15",
+      "title": "Импорт студентов из CSV и отображение не записанных студентов в слот",
+      "blocks": [
+        {
+          "type": "list",
+          "title": "Импорт студентов из CSV"
+        },
+        {
+          "type": "media",
+          "media": [
+            {
+              "type": "image",
+              "src": "/assets/whats-new/placeholders/bookings-image.svg",
+              "alt": "Заглушка изображения записей и допусков"
+            }
+          ]
+        },
+        {
+          "type": "list",
+          "title": "Добавлен список студентов, которые ещё не записались на выбранное окно защиты."
+        },
+        {
+          "type": "media",
+          "media": [
+            {
+              "type": "gif",
+              "src": "/assets/whats-new/placeholders/ui-gif.svg",
+              "alt": "Заглушка gif обновления интерфейса"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
