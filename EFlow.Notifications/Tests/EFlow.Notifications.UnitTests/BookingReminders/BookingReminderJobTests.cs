@@ -137,7 +137,7 @@ public sealed class BookingReminderJobTests
             Options.Create(
                 new BookingReminderSettings
                 {
-                    BookingApiBaseUrl = "http://localhost",
+                    BookingApiBaseUrl = new Uri("http://localhost"),
                     PollInterval = PollInterval
                 }),
             loggerMock.Object);

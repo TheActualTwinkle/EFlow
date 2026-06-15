@@ -72,6 +72,25 @@ services:
     expose:
       - "${BOOKING_API_PORT:-8081}"
 
+  data-import-api:
+    image: eflow-data-import-api:${IMAGE_TAG:?IMAGE_TAG is required}
+    build:
+      context: ..
+      dockerfile: EFlow.DataImport/Presentation/EFlow.DataImport.WebApi/Dockerfile
+    restart: unless-stopped
+    depends_on:
+      - booking-api
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      BookingApi__BaseUrl: http://booking-api:8081
+      Jwt__Key: ${JWT_KEY:?JWT_KEY is required}
+      Jwt__Issuer: ${JWT_ISSUER:-https://${APP_DOMAIN_NAME}}
+      Jwt__Audience: ${JWT_AUDIENCE:-https://${APP_DOMAIN_NAME}}
+      Jwt__ExpireMinutes: 5
+      Cors__AllowedOrigins__0: ${CORS_ALLOWED_ORIGIN_0?CORS_ALLOWED_ORIGIN_0 is required}
+    expose:
+      - "${DATA_IMPORT_API_PORT:-8083}"
+
   notifications-api:
     image: eflow-notifications-api:${IMAGE_TAG:?IMAGE_TAG is required}
     build:
@@ -107,6 +126,7 @@ services:
     restart: unless-stopped
     depends_on:
       - booking-api
+      - data-import-api
     expose:
       - "80"
     

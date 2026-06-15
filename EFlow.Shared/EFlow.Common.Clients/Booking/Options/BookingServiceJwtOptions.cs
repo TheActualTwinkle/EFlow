@@ -1,9 +1,7 @@
-namespace EFlow.Notifications.Messaging.Booking.Settings;
+namespace EFlow.Common.Clients.Booking.Options;
 
-public sealed record BookingClientJwtSettings
+public sealed record BookingServiceJwtOptions
 {
-    public const string SectionName = "Jwt";
-
     public required string Key { get; init; }
 
     public required string Issuer { get; init; }
