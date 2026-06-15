@@ -859,3 +859,34 @@ app-icon {
   background: var(--surface);
   box-shadow: 0 -10px 22px color-mix(in srgb, var(--text) 5%, transparent);
 }
+
+.import-report-panel {
+  padding-bottom: 0;
+}
+
+.import-report-panel .modal-actions {
+  bottom: 0;
+  width: calc(100% + 36px);
+  margin: 8px -18px 0;
+  padding: 14px 18px 18px;
+  background: var(--surface);
+  box-shadow: 0 -10px 22px color-mix(in srgb, var(--text) 5%, transparent);
+}
+
+.metrics-grid .metric-success {
+  border-color: color-mix(in srgb, var(--success) 46%, var(--line));
+  background: color-mix(in srgb, var(--success) 10%, var(--surface-strong));
+
+  strong {
+    color: var(--success);
+  }
+}
+
+.metrics-grid .metric-danger {
+  border-color: color-mix(in srgb, var(--danger) 46%, var(--line));
+  background: color-mix(in srgb, var(--danger) 10%, var(--surface-strong));
+
+  strong {
+    color: var(--danger);
+  }
+}

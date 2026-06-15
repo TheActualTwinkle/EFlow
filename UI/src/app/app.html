@@ -52,9 +52,9 @@
           <span>{{ sidebarSubtitle() }}</span>
         </div>
         <div class="brand-actions">
-          <button class="brand-news-button" type="button" (click)="openWhatsNew()" aria-label="Что нового" appHoverHint="Что нового?">
-            <app-icon name="newspaper" />
-          </button>
+<!--          <button class="brand-news-button" type="button" (click)="openWhatsNew()" aria-label="Что нового" appHoverHint="Что нового?"> TODO: FIX -->
+<!--            <app-icon name="newspaper" />-->
+<!--          </button>-->
           <a class="brand-github-link" href="https://github.com/TheActualTwinkle/EFlow" target="_blank" rel="noopener noreferrer" aria-label="GitHub проекта" appHoverHint="GitHub проекта">
             <app-icon name="github" />
           </a>
@@ -1034,7 +1034,7 @@
 
 @if (activeModal() === 'admissions' && selectedSlot(); as slot) {
   <div class="modal-backdrop" (click)="closeModal()">
-    <section class="panel form-panel modal-panel wide" (click)="$event.stopPropagation()">
+    <section class="panel form-panel modal-panel wide import-report-panel" (click)="$event.stopPropagation()">
       <div class="panel-heading">
         <div>
           <p class="eyebrow">Допуски</p>
@@ -1064,7 +1064,7 @@
 
 @if (activeModal() === 'notBookedStudents' && selectedSlot(); as slot) {
   <div class="modal-backdrop" (click)="closeModal()">
-    <section class="panel form-panel modal-panel wide" (click)="$event.stopPropagation()">
+    <section class="panel form-panel modal-panel wide import-report-panel" (click)="$event.stopPropagation()">
       <div class="panel-heading">
         <div>
           <p class="eyebrow">Не записались</p>
@@ -1323,7 +1323,7 @@
 
 @if (importReportOpen() && studentImportReport(); as report) {
   <div class="modal-backdrop" (click)="importReportOpen.set(false)">
-    <section class="panel form-panel modal-panel wide" (click)="$event.stopPropagation()">
+    <section class="panel form-panel modal-panel wide import-report-panel" (click)="$event.stopPropagation()">
       <div class="panel-heading">
         <div>
           <p class="eyebrow">Импорт студентов</p>
@@ -1333,8 +1333,8 @@
       </div>
       <div class="metrics-grid">
         <article><span>Всего</span><strong>{{ report.totalCount }}</strong></article>
-        <article><span>Импортировано</span><strong>{{ report.importedCount }}</strong></article>
-        <article><span>Ошибок</span><strong>{{ report.failedCount }}</strong></article>
+        <article class="metric-success"><span>Импортировано</span><strong>{{ report.importedCount }}</strong></article>
+        <article class="metric-danger"><span>Ошибок</span><strong>{{ report.failedCount }}</strong></article>
       </div>
       @if (report.errors.length) {
         <div class="entity-list">

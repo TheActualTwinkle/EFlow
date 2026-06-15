@@ -41,13 +41,15 @@ export class ToastStackComponent implements OnChanges, OnDestroy {
         continue;
       }
 
-      const timer = window.setTimeout(() => this.close(toast.id), toast.durationMs);
-      this.timers.set(toast.id, timer);
+      if (toast.durationMs > 0) {
+        const timer = window.setTimeout(() => this.close(toast.id), toast.durationMs);
+        this.timers.set(toast.id, timer);
+      }
     }
   }
 
   progressStyle(toast: ToastMessage): Record<string, string> {
-    return { '--toast-duration': `${toast.durationMs}ms` };
+    return { '--toast-duration': `${toast.durationMs || 1}ms` };
   }
 
   close(id: number): void {

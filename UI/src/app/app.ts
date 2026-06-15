@@ -382,6 +382,7 @@ export class App {
     const tone = result.failedCount ? 'warning' : 'success';
     this.studentImportReport.set(result);
     this.showToast(`Импортировано студентов: ${result.importedCount}`, tone, {
+      durationMs: -1,
       actionLabel: 'Открыть отчёт',
       action: () => this.importReportOpen.set(true),
     });
@@ -1935,7 +1936,11 @@ export class App {
     this.toasts().find((toast) => toast.id === id)?.action?.();
   }
 
-  private showToast(text: string, tone: ToastMessage['tone'], options: Pick<ToastMessage, 'actionLabel' | 'action'> = {}): void {
+  private showToast(
+    text: string,
+    tone: ToastMessage['tone'],
+    options: Pick<ToastMessage, 'actionLabel' | 'action'> & { durationMs?: number } = {},
+  ): void {
     const toast = { id: ++this.toastId, text, tone, createdAt: Date.now(), durationMs: 6400, ...options };
     this.toasts.update((items) => [...items, toast]);
   }
