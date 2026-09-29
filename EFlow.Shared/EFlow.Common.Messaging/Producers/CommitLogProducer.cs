@@ -3,7 +3,7 @@ using Microsoft.Extensions.Logging;
 
 namespace EFlow.Common.Messaging.Producers;
 
-public class CommitLogProducer<TKey, TValue> : ICommitLogProducer<TKey, TValue>
+public class CommitLogProducer<TKey, TValue> : ICommitLogProducer<TKey, TValue>, IDisposable
 {
     private readonly IProducer<TKey, TValue> _producer;
 
@@ -41,4 +41,11 @@ public class CommitLogProducer<TKey, TValue> : ICommitLogProducer<TKey, TValue>
         TValue value,
         CancellationToken cancellationToken = new()) =>
         await ProduceAsync(topic, key, value, headers: null, cancellationToken);
+
+    public void Dispose()
+    {
+        _producer.Dispose();
+        
+        GC.SuppressFinalize(this);
+    }
 }
