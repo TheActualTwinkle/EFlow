@@ -22,7 +22,7 @@ public static class DependencyInjection
                 subject: "eflow-data-import",
                 name: "EFlow.DataImport");
 
-            services.AddBookingServiceHttpClient<IBookingCurrentUserClient, BookingCurrentUserClient>(
+            services.AddBookingServiceHttpClient<IBookingServiceClient, BookingServiceClient>(
                 serviceProvider => serviceProvider.GetRequiredService<IOptions<BookingApiOptions>>().Value.BaseUrl);
 
             services.AddBookingServiceHttpClient<IBookingStudentImportClient, BookingStudentImportClient>(

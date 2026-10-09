@@ -12,7 +12,7 @@ namespace EFlow.DataImport.WebApi.Controllers;
 [Route("api/csv")]
 public sealed class CsvImportController(
     IStudentImportWorker studentImportWorker,
-    IBookingCurrentUserClient bookingCurrentUserClient)
+    IBookingServiceClient bookingServiceClient)
     : ControllerBase
 {
     private const long MaxImportBodyBytes = 100 * 1024 * 1024;
@@ -28,13 +28,13 @@ public sealed class CsvImportController(
         [FromForm] ImportStudentsRequest request,
         CancellationToken cancellationToken)
     {
-        if (ValidateStudentImportRequest(groupId, request, out var actionResult))
+        if (ValidateStudentImportRequest(request, out var actionResult))
             return actionResult;
 
         var authorizationHeader = Request.Headers.Authorization.ToString();
         var cookieHeader = Request.Headers.Cookie.ToString();
 
-        var currentUser = await bookingCurrentUserClient.GetCurrentUserAsync(
+        var currentUser = await bookingServiceClient.GetCurrentUserAsync(
             authorizationHeader,
             cookieHeader,
             cancellationToken);
@@ -71,18 +71,10 @@ public sealed class CsvImportController(
     }
 
     private bool ValidateStudentImportRequest(
-        Guid groupId,
         ImportStudentsRequest request,
         [NotNullWhen(true)] out IActionResult? actionResult)
     {
         actionResult = null;
-
-        if (groupId == Guid.Empty)
-        {
-            actionResult = UnprocessableEntity("Group ID is required");
-
-            return true;
-        }
 
         if (request.File.Length == 0)
         {

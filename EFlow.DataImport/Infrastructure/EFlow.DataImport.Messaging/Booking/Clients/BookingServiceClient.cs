@@ -4,8 +4,8 @@ using EFlow.DataImport.Messaging.Booking.Models;
 
 namespace EFlow.DataImport.Messaging.Booking.Clients;
 
-public sealed class BookingCurrentUserClient(HttpClient httpClient)
-    : IBookingCurrentUserClient
+public sealed class BookingServiceClient(HttpClient httpClient)
+    : IBookingServiceClient
 {
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
 
