@@ -2,7 +2,7 @@ using EFlow.DataImport.Messaging.Booking.Models;
 
 namespace EFlow.DataImport.Messaging.Booking.Abstractions;
 
-public interface IBookingCurrentUserClient
+public interface IBookingServiceClient
 {
     Task<CurrentUserResult> GetCurrentUserAsync(
         string? authorizationHeader,
