@@ -15,6 +15,9 @@ public sealed class StudentImportWorker(IBookingStudentImportClient bookingStude
     private const char Separator = ';';
     private const string BirthDateFormat = "dd.MM.yyyy";
 
+    private const int ParseBatchSize = 4096;
+    private const int ParallelParseThreshold = 512;
+
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
 
     public async Task<StudentImportProxyResult> ImportStudentsAsync(
@@ -70,7 +73,7 @@ public sealed class StudentImportWorker(IBookingStudentImportClient bookingStude
         if (fieldsResult.Error is not null)
             return new StudentParseResult { InvalidMappingMessage = fieldsResult.Error };
 
-        var fields = fieldsResult.Fields!;
+        var fields = fieldsResult.Fields!.ToList();
         var students = new List<ImportedStudent>();
         var errors = new List<StudentImportRowError>();
         var totalCount = 0;
@@ -84,27 +87,32 @@ public sealed class StudentImportWorker(IBookingStudentImportClient bookingStude
             await reader.ReadLineAsync(cancellationToken);
 
         var rowNumber = request.HasHeaderRow ? 1 : 0;
+        
+        var batch = new List<(string Line, int RowNumber)>(ParseBatchSize);
 
         while (await reader.ReadLineAsync(cancellationToken) is { } line)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             rowNumber++;
 
             if (string.IsNullOrWhiteSpace(line))
                 continue;
 
             totalCount++;
+            batch.Add((line, rowNumber));
 
-            var parseResult = TryParseStudent(line, fields, rowNumber);
-
-            if (parseResult.Error is not null)
-            {
-                errors.Add(parseResult.Error);
-
+            if (batch.Count != ParseBatchSize)
                 continue;
-            }
 
-            students.Add(parseResult.Student!);
+            AppendBatch();
+            
+            batch.Clear();
         }
+
+        if (batch.Count > 0)
+            AppendBatch();
+
+        cancellationToken.ThrowIfCancellationRequested();
 
         return new StudentParseResult
         {
@@ -112,6 +120,50 @@ public sealed class StudentImportWorker(IBookingStudentImportClient bookingStude
             Students = students,
             Errors = errors
         };
+
+        void AppendBatch()
+        {
+            var results = ParseStudentBatch(batch, fields, cancellationToken);
+
+            foreach (var result in results)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+
+                if (result.Error is not null)
+                    errors.Add(result.Error);
+                else
+                    students.Add(result.Student!);
+            }
+        }
+    }
+
+    private static (ImportedStudent? Student, StudentImportRowError? Error)[] ParseStudentBatch(
+        List<(string Line, int RowNumber)> batch,
+        List<StudentImportField> fields,
+        CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+
+        if (batch.Count >= ParallelParseThreshold)
+            return batch
+                .AsParallel()
+                .AsOrdered()
+                .WithCancellation(cancellationToken)
+                .Select(row => TryParseStudent(row.Line, fields, row.RowNumber))
+                .ToArray();
+
+        var results = new (ImportedStudent? Student, StudentImportRowError? Error)[batch.Count];
+
+        for (var i = 0; i < batch.Count; i++)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var row = batch[i];
+            results[i] = TryParseStudent(row.Line, fields, row.RowNumber);
+        }
+
+        cancellationToken.ThrowIfCancellationRequested();
+
+        return results;
     }
 
     private static (IReadOnlyList<StudentImportField>? Fields, string? Error) ParseFields(IReadOnlyList<string> fields)
